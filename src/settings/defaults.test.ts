@@ -11,14 +11,14 @@ describe("mergeWithDefaults", () => {
   it("merges nested clock settings while respecting bounds", () => {
     const result = mergeWithDefaults({
       clock: {
-        scale: 2,
+        scale: 5,
         rimWidth: -10,
         handWidth: 3,
         dotSize: 100,
       },
     });
 
-    expect(result.clock.scale).toBeCloseTo(1);
+    expect(result.clock.scale).toBeCloseTo(2);
     expect(result.clock.rimWidth).toBeCloseTo(1);
     expect(result.clock.handWidth).toBeCloseTo(3);
     expect(result.clock.dotSize).toBeCloseTo(24);

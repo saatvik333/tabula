@@ -21,8 +21,8 @@
   --tabula-clock-rim-width: 2px;
   --tabula-clock-hand-width: 5px;
   --tabula-clock-dot-size: 8px;
-  --tabula-base-cell-size: 4rem;
-  --tabula-base-field-gap: 2.4rem;
+  --tabula-base-cell-size: 2rem;
+  --tabula-base-field-gap: 1.2rem;
   --tabula-cell-gap: 0.25rem;
   --tabula-search-max: 640px;
   --tabula-font-family: "Roboto", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -346,8 +346,8 @@ body[data-background-type="color"]::after {
 
 @media (max-width: 900px) {
   :root {
-    --tabula-base-cell-size: 3rem;
-    --tabula-base-field-gap: 1.8rem;
+    --tabula-base-cell-size: 1.5rem;
+    --tabula-base-field-gap: 0.9rem;
   }
 
   .tabula-tagline {
@@ -357,8 +357,8 @@ body[data-background-type="color"]::after {
 
 @media (max-width: 640px) {
   :root {
-    --tabula-base-cell-size: 2.2rem;
-    --tabula-base-field-gap: 1.2rem;
+    --tabula-base-cell-size: 1.1rem;
+    --tabula-base-field-gap: 0.6rem;
   }
 
   .tabula-search {
@@ -373,8 +373,8 @@ body[data-background-type="color"]::after {
 
 @media (max-width: 480px) {
   :root {
-    --tabula-base-cell-size: 1.9rem;
-    --tabula-base-field-gap: 1rem;
+    --tabula-base-cell-size: 0.95rem;
+    --tabula-base-field-gap: 0.5rem;
   }
 
   .tabula-clock {
