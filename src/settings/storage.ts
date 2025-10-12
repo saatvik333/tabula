@@ -161,6 +161,8 @@ const combineWithCurrent = (current: Settings, partial: PartialSettings): Partia
     ...current.clock,
     ...(partial.clock ?? {}),
   },
+  tagline: partial.tagline ?? current.tagline,
+  pinnedTabs: partial.pinnedTabs ? [...partial.pinnedTabs] : current.pinnedTabs,
   search: {
     ...current.search,
     ...(partial.search ?? {}),

@@ -15,6 +15,7 @@ describe("mergeWithDefaults", () => {
         rimWidth: -10,
         handWidth: 3,
         dotSize: 100,
+        format: DEFAULT_SETTINGS.clock.format,
       },
     });
 
@@ -23,6 +24,7 @@ describe("mergeWithDefaults", () => {
     expect(result.clock.handWidth).toBeCloseTo(3);
     expect(result.clock.dotSize).toBeCloseTo(24);
     expect(result.preset).toBe(DEFAULT_SETTINGS.preset);
+    expect(result.clock.format).toBe(DEFAULT_SETTINGS.clock.format);
   });
 
   it("sanitises colour values", () => {
@@ -64,6 +66,50 @@ describe("mergeWithDefaults", () => {
     expect(result.search.engine).toBe("duckduckgo");
     expect(result.search.position).toBe("bottom");
     expect(result.search.placeholder).toBe("Find...");
+  });
+
+  it("coerces time format and preserves defaults when invalid", () => {
+    const result = mergeWithDefaults({
+      clock: {
+        ...DEFAULT_SETTINGS.clock,
+        format: "12h",
+      },
+    });
+
+    expect(result.clock.format).toBe("12h");
+
+    const fallback = mergeWithDefaults({
+      clock: {
+        ...DEFAULT_SETTINGS.clock,
+        // @ts-expect-error testing invalid input
+        format: "invalid",
+      },
+    });
+
+    expect(fallback.clock.format).toBe(DEFAULT_SETTINGS.clock.format);
+  });
+
+  it("sanitises tagline and pinned tabs", () => {
+    const result = mergeWithDefaults({
+      tagline: "  Custom tagline   ",
+      pinnedTabs: [
+        {
+          id: "one",
+          title: "Example",
+          url: "https://example.com",
+        },
+        {
+          // invalid url should be dropped
+          id: "two",
+          title: "Invalid",
+          url: "notaurl",
+        },
+      ],
+    });
+
+    expect(result.tagline).toBe("Custom tagline");
+    expect(result.pinnedTabs).toHaveLength(1);
+    expect(result.pinnedTabs[0]).toMatchObject({ title: "Example", url: "https://example.com" });
   });
 
   it("applies preset definitions when provided", () => {

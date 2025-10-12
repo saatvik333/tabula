@@ -43,6 +43,10 @@
                 <option value="dark">Dark</option>
               </select>
             </label>
+            <label class="field">
+              <span class="field__label">Tagline</span>
+              <input type="text" id="taglineInput" name="taglineInput" class="field__control" maxlength="120" placeholder="Your space, no noise" />
+            </label>
           </div>
         </section>
 
@@ -90,6 +94,17 @@
             <p>Tune the layout and proportions of the clock grid.</p>
           </header>
           <div class="panel__grid">
+            <fieldset class="field field--inline">
+              <legend class="field__label">Time format</legend>
+              <label class="choice">
+                <input type="radio" name="timeFormat" id="timeFormat24" value="24h" />
+                <span>24-hour</span>
+              </label>
+              <label class="choice">
+                <input type="radio" name="timeFormat" id="timeFormat12" value="12h" />
+                <span>12-hour</span>
+              </label>
+            </fieldset>
             <label class="field">
               <span class="field__label">Scale</span>
               <div class="field__range">
@@ -211,6 +226,35 @@
                 <span>Below clock</span>
               </label>
             </fieldset>
+          </div>
+        </section>
+
+        <section class="panel">
+          <header class="panel__header">
+            <h2>Pinned tabs</h2>
+            <p>Collect your favourite sites for one-click access on every new tab.</p>
+          </header>
+          <div class="pinned-manager">
+            <div class="pinned-manager__list" id="pinnedList">
+              <p class="pinned-manager__empty" id="pinnedEmpty">No pinned tabs yet. Add your go-to destinations below.</p>
+            </div>
+            <div class="pinned-manager__form">
+              <div class="field">
+                <span class="field__label">Title</span>
+                <input type="text" id="pinnedAddTitle" name="pinnedAddTitle" class="field__control" maxlength="40" placeholder="Factory" />
+              </div>
+              <div class="field">
+                <span class="field__label">URL</span>
+                <input type="url" id="pinnedAddUrl" name="pinnedAddUrl" class="field__control" placeholder="https://example.com" />
+              </div>
+              <div class="field">
+                <span class="field__label">Icon URL (optional)</span>
+                <input type="url" id="pinnedAddIcon" name="pinnedAddIcon" class="field__control" placeholder="https://example.com/icon.svg" />
+              </div>
+              <div class="pinned-manager__actions">
+                <button type="button" id="pinnedAddButton" class="button button--primary">Add pinned tab</button>
+              </div>
+            </div>
           </div>
         </section>
 

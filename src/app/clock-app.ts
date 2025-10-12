@@ -1,9 +1,9 @@
 import { createClockDisplay, type ClockDisplay } from "$src/clock/clock-display";
 import { createElement } from "$src/core/dom";
 import { startAlignedSecondTicker, type StopTicker } from "$src/core/ticker";
-import { getCurrentTime, timesEqual, type Time } from "$src/core/time";
+import { formatTimeForDisplay, getCurrentTime, timesEqual, type Meridiem, type Time } from "$src/core/time";
 import { applySettingsToDocument } from "$src/settings/apply";
-import type { SearchEngine, Settings } from "$src/settings/schema";
+import type { PinnedTab, SearchEngine, Settings } from "$src/settings/schema";
 import { loadSettings, subscribeToSettings } from "$src/settings/storage";
 import { getSystemPrefersDark, resolveTheme, watchSystemTheme, type ThemeVariant } from "$src/settings/theme";
 
@@ -48,6 +48,12 @@ export class ClockApp {
   private searchInput: HTMLInputElement | null = null;
 
   private tagline: HTMLElement | null = null;
+
+  private pinnedSection: HTMLElement | null = null;
+
+  private pinnedList: HTMLElement | null = null;
+
+  private meridiemBadge: HTMLElement | null = null;
 
   constructor(
     private readonly container: HTMLElement,
@@ -107,12 +113,23 @@ export class ClockApp {
     const clockShell = createElement("div", { className: "tabula-clock" });
     clockShell.append(this.display.element);
 
+    const meridiemBadge = createElement("span", { className: "tabula-clock-meridiem" });
+    meridiemBadge.hidden = true;
+    clockShell.append(meridiemBadge);
+
     const searchForm = this.createSearchForm();
+
+    const pinnedSection = createElement("div", { className: "tabula-pinned" });
+    pinnedSection.classList.add("is-hidden");
+    const pinnedHeading = createElement("p", { className: "tabula-pinned__heading" });
+    pinnedHeading.textContent = "Pinned";
+    const pinnedList = createElement("div", { className: "tabula-pinned__list" });
+    pinnedSection.append(pinnedHeading, pinnedList);
 
     const tagline = createElement("p", { className: "tabula-tagline" });
     tagline.textContent = "Your space, no noise";
 
-    root.append(controls, searchForm, clockShell, tagline);
+    root.append(controls, searchForm, pinnedSection, clockShell, tagline);
 
     this.container.replaceChildren(root);
 
@@ -120,6 +137,9 @@ export class ClockApp {
     this.clockContainer = clockShell;
     this.searchForm = searchForm;
     this.tagline = tagline;
+    this.pinnedSection = pinnedSection;
+    this.pinnedList = pinnedList;
+    this.meridiemBadge = meridiemBadge;
   }
 
   private createSearchForm(): HTMLFormElement {
@@ -159,6 +179,9 @@ export class ClockApp {
     this.configureSystemWatcher(settings.themeMode);
     this.refreshTheme();
     this.updateSearch(settings);
+    this.updateTagline(settings);
+    this.updatePinnedTabs(settings);
+    this.render(true);
   }
 
   private configureSystemWatcher(mode: Settings["themeMode"]): void {
@@ -191,15 +214,81 @@ export class ClockApp {
     this.searchForm.classList.toggle("is-hidden", !search.enabled);
     this.searchInput.placeholder = search.placeholder;
 
+    const pinnedReference = this.pinnedSection && !this.pinnedSection.classList.contains("is-hidden") ? this.pinnedSection : this.clockContainer;
+
     if (search.position === "top") {
-      if (this.clockContainer && this.root.children.item(0) !== this.searchForm) {
-        this.root.insertBefore(this.searchForm, this.clockContainer);
+      if (pinnedReference && this.searchForm.nextSibling !== pinnedReference) {
+        this.root.insertBefore(this.searchForm, pinnedReference);
       }
-    } else if (this.clockContainer && this.tagline) {
-      const reference = this.tagline;
-      if (this.searchForm.nextSibling !== reference) {
-        this.root.insertBefore(this.searchForm, reference);
+    } else if (this.tagline) {
+      if (this.searchForm.nextSibling !== this.tagline) {
+        this.root.insertBefore(this.searchForm, this.tagline);
       }
+    }
+  }
+
+  private updateTagline(settings: Settings): void {
+    if (!this.tagline) return;
+    this.tagline.textContent = settings.tagline;
+  }
+
+  private updatePinnedTabs(settings: Settings): void {
+    if (!this.pinnedSection || !this.pinnedList) return;
+    const tabs: PinnedTab[] = settings.pinnedTabs;
+    this.pinnedSection.classList.toggle("is-hidden", tabs.length === 0);
+    this.pinnedList.replaceChildren();
+
+    if (tabs.length === 0) {
+      if (this.settings) {
+        this.updateSearch(this.settings);
+      }
+      return;
+    }
+
+    const fragment = document.createDocumentFragment();
+
+    tabs.forEach((tab) => {
+      const item = createElement<HTMLAnchorElement>("a", { className: "tabula-pinned__item" });
+      item.href = tab.url;
+      item.target = "_blank";
+      item.rel = "noreferrer noopener";
+      item.title = tab.title;
+
+      const iconWrapper = createElement("span", { className: "tabula-pinned__icon" });
+      if (tab.icon) {
+        const image = createElement<HTMLImageElement>("img", { className: "tabula-pinned__icon-image" });
+        image.src = tab.icon;
+        image.alt = "";
+        image.loading = "lazy";
+        iconWrapper.append(image);
+      } else {
+        const fallback = createElement("span", { className: "tabula-pinned__icon-fallback" });
+        fallback.textContent = tab.title.slice(0, 1).toUpperCase();
+        iconWrapper.append(fallback);
+      }
+
+      const label = createElement("span", { className: "tabula-pinned__label" });
+      label.textContent = tab.title;
+
+      item.append(iconWrapper, label);
+      fragment.appendChild(item);
+    });
+
+    this.pinnedList.appendChild(fragment);
+
+    if (this.settings) {
+      this.updateSearch(this.settings);
+    }
+  }
+
+  private updateMeridiem(indicator: Meridiem | null): void {
+    if (!this.meridiemBadge) return;
+    if (indicator) {
+      this.meridiemBadge.textContent = indicator;
+      this.meridiemBadge.hidden = false;
+    } else {
+      this.meridiemBadge.textContent = "";
+      this.meridiemBadge.hidden = true;
     }
   }
 
@@ -231,6 +320,9 @@ export class ClockApp {
     }
 
     this.currentTime = nextTime;
-    this.display.render(nextTime);
+    const format = this.settings?.clock.format ?? "24h";
+    const formatted = formatTimeForDisplay(nextTime, format);
+    this.display.render({ hours: formatted.hours, minutes: formatted.minutes, seconds: formatted.seconds });
+    this.updateMeridiem(formatted.meridiem);
   }
 }

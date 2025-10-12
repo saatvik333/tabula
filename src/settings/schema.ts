@@ -17,6 +17,15 @@ export type PresetName =
   | "everforest"
   | "custom";
 
+export type TimeFormat = "12h" | "24h";
+
+export type PinnedTab = {
+  id: string;
+  title: string;
+  url: string;
+  icon?: string;
+};
+
 export type Palette = {
   background: string;
   face: string;
@@ -38,12 +47,15 @@ export type Settings = {
     rimWidth: number;
     handWidth: number;
     dotSize: number;
+    format: TimeFormat;
   };
   palettes: {
     light: Palette;
     dark: Palette;
   };
   preset: PresetName;
+  tagline: string;
+  pinnedTabs: PinnedTab[];
   search: {
     enabled: boolean;
     engine: SearchEngine;

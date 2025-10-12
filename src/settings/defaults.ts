@@ -1,12 +1,14 @@
 import type {
   Palette,
   PartialSettings,
+  PinnedTab,
   Settings,
   ThemeMode,
   BackgroundType,
   SearchEngine,
   SearchPosition,
   PresetName,
+  TimeFormat,
 } from "$src/settings/schema";
 import { applyPresetToSettings, isPresetName } from "$src/settings/presets";
 
@@ -69,6 +71,72 @@ const coercePreset = (value: unknown): PresetName => {
   }
   return "monochrome";
 };
+
+const coerceTimeFormat = (value: unknown, fallback: TimeFormat): TimeFormat => {
+  if (value === "12h" || value === "24h") {
+    return value;
+  }
+  return fallback;
+};
+
+const DEFAULT_TAGLINE = "Your space, no noise";
+
+const sanitizeTagline = (value: unknown, fallback: string): string => {
+  const text = sanitizeString(value, fallback);
+  return text.slice(0, 120);
+};
+
+const isValidUrl = (value: string): boolean => {
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
+};
+
+const sanitizePinnedTab = (value: unknown): PinnedTab | null => {
+  if (!value || typeof value !== "object") return null;
+  const candidate = value as Partial<PinnedTab>;
+  const url = typeof candidate.url === "string" ? candidate.url.trim() : "";
+  if (!url || !isValidUrl(url)) {
+    return null;
+  }
+  let title = sanitizeString(candidate.title, "");
+  if (!title) {
+    try {
+      const parsed = new URL(url);
+      title = parsed.hostname.replace(/^www\./i, "") || parsed.hostname;
+    } catch {
+      title = url;
+    }
+  }
+  const idCandidate = typeof candidate.id === "string" ? candidate.id.trim() : "";
+  const iconCandidate = typeof candidate.icon === "string" ? candidate.icon.trim() : "";
+  const id = idCandidate || url;
+  const base: PinnedTab = { id, title, url };
+  if (iconCandidate) {
+    base.icon = iconCandidate;
+  }
+  return base;
+};
+
+const sanitizePinnedTabs = (value: unknown, fallback: PinnedTab[]): PinnedTab[] => {
+  if (!Array.isArray(value)) {
+    return [...fallback];
+  }
+  const seen = new Set<string>();
+  const result: PinnedTab[] = [];
+  for (const entry of value) {
+    if (result.length >= 12) break;
+    const sanitized = sanitizePinnedTab(entry);
+    if (!sanitized) continue;
+    if (seen.has(sanitized.id)) continue;
+    seen.add(sanitized.id);
+    result.push(sanitized);
+  }
+  return result;
+};
 const MONOCHROME_LIGHT: Palette = {
   background: "#f3f4f6",
   face: "#ffffff",
@@ -101,12 +169,15 @@ const BASE_DEFAULT_SETTINGS: Settings = {
     rimWidth: 2,
     handWidth: 5,
     dotSize: 8,
+    format: "24h",
   },
   palettes: {
     light: MONOCHROME_LIGHT,
     dark: MONOCHROME_DARK,
   },
   preset: "monochrome",
+  tagline: DEFAULT_TAGLINE,
+  pinnedTabs: [],
   search: {
     enabled: false,
     engine: "google",
@@ -125,6 +196,7 @@ const mergeClock = (
   rimWidth: clamp(Number(value?.rimWidth), fallback.rimWidth, 1, 12),
   handWidth: clamp(Number(value?.handWidth), fallback.handWidth, 2, 14),
   dotSize: clamp(Number(value?.dotSize), fallback.dotSize, 4, 24),
+  format: coerceTimeFormat(value?.format, fallback.format),
 });
 
 const mergeBackground = (
@@ -157,6 +229,8 @@ export const mergeWithDefaults = (partial: PartialSettings | undefined): Setting
   const clock = mergeClock(source.clock, DEFAULT_SETTINGS.clock);
   const search = mergeSearch(source.search, DEFAULT_SETTINGS.search);
   const initialPreset = presetProvided ? coercePreset(source.preset) : DEFAULT_SETTINGS.preset;
+  const tagline = sanitizeTagline(source.tagline, DEFAULT_SETTINGS.tagline);
+  const pinnedTabs = sanitizePinnedTabs(source.pinnedTabs, DEFAULT_SETTINGS.pinnedTabs);
 
   const baseSettings: Settings = {
     themeMode,
@@ -168,6 +242,8 @@ export const mergeWithDefaults = (partial: PartialSettings | undefined): Setting
       dark: sanitizePalette(source.palettes?.dark, DEFAULT_PALETTE_DARK),
     },
     preset: presetProvided ? initialPreset : DEFAULT_SETTINGS.preset,
+    tagline,
+    pinnedTabs,
   };
 
   if (!presetProvided && typeof partial === "undefined") {

@@ -209,6 +209,8 @@ body[data-background-type="color"]::after {
   backdrop-filter: blur(28px) saturate(160%);
   -webkit-backdrop-filter: blur(28px) saturate(160%);
   transition: transform 220ms ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .clock {
@@ -338,6 +340,107 @@ body[data-background-type="color"]::after {
   line-height: 1;
 }
 
+.tabula-clock-meridiem {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--tabula-radius-full);
+  font-size: 0.75rem;
+  font-weight: var(--tabula-weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--md-on-surface);
+  background: rgba(var(--tabula-face-color-rgb, 255, 255, 255), 0.35);
+  box-shadow: 0 6px 18px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.3);
+}
+
+.tabula-pinned {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.tabula-pinned.is-hidden {
+  display: none;
+}
+
+.tabula-pinned__heading {
+  margin: 0;
+  font-size: 0.85rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--md-on-surface-variant);
+}
+
+.tabula-pinned__list {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  width: min(100%, 720px);
+}
+
+.tabula-pinned__item {
+  text-decoration: none;
+  color: var(--md-on-surface);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.9rem 1rem;
+  border-radius: var(--tabula-radius-lg);
+  border: 1px solid rgba(var(--tabula-rim-color-rgb, 148, 163, 184), 0.35);
+  background: linear-gradient(
+    135deg,
+    rgba(var(--tabula-face-color-rgb, 255, 255, 255), 0.65),
+    rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.18)
+  );
+  box-shadow: 0 18px 42px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.35);
+  transition: transform 180ms ease, box-shadow 180ms ease, border 180ms ease;
+}
+
+.tabula-pinned__item:hover {
+  transform: translateY(-4px);
+  border-color: rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.4);
+  box-shadow: 0 24px 52px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.45);
+}
+
+.tabula-pinned__icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 18px;
+  background: rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: inset 0 0 22px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.45);
+}
+
+.tabula-pinned__icon-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tabula-pinned__icon-fallback {
+  font-size: 1.2rem;
+  font-weight: var(--tabula-weight-semibold);
+  color: var(--md-on-surface);
+}
+
+.tabula-pinned__label {
+  font-size: 0.95rem;
+  font-weight: var(--tabula-weight-medium);
+  text-align: center;
+  max-width: 132px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* order handled via DOM positioning */
 
 .tabula--search-enabled .tabula-clock {
@@ -369,6 +472,15 @@ body[data-background-type="color"]::after {
   .tabula-search__button {
     padding-inline: 1rem;
   }
+
+  .tabula-pinned__list {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+
+  .tabula-clock-meridiem {
+    top: 0.75rem;
+    right: 0.75rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -384,5 +496,14 @@ body[data-background-type="color"]::after {
 
   .tabula-search {
     width: 100%;
+  }
+
+  .tabula-pinned__item {
+    padding: 0.75rem;
+  }
+
+  .tabula-pinned__icon {
+    width: 46px;
+    height: 46px;
   }
 }

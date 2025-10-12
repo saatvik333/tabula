@@ -196,6 +196,149 @@ body[data-background-type="color"]::after {
   box-shadow: 0 14px 26px rgba(0, 0, 0, 0.2);
 }
 
+.pinned-manager {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+}
+
+.pinned-manager__list {
+  display: grid;
+  gap: 1rem;
+}
+
+.pinned-manager__empty {
+  margin: 0;
+  padding: 1.5rem;
+  border-radius: var(--tabula-radius-md);
+  border: 1px dashed var(--md-outline);
+  background: rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.05);
+  color: var(--md-on-surface-variant);
+  text-align: center;
+}
+
+.pinned-manager__form {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.pinned-manager__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.75rem;
+}
+
+.pinned-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  border-radius: var(--tabula-radius-lg);
+  border: 1px solid var(--md-outline);
+  background: var(--md-surface);
+}
+
+.pinned-item__preview {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.pinned-item__icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  background: rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.14);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.pinned-item__icon-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pinned-item__icon-fallback {
+  font-weight: var(--tabula-weight-semibold);
+  color: var(--md-on-surface);
+  font-size: 1.1rem;
+}
+
+.pinned-item__title {
+  font-weight: var(--tabula-weight-medium);
+  color: var(--md-on-surface);
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pinned-item__inputs {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.pinned-item__input {
+  width: 100%;
+  padding: 0.55rem 0.8rem;
+  border-radius: var(--tabula-radius-sm);
+  border: 1px solid var(--md-outline);
+  background: var(--md-surface);
+  color: var(--md-on-surface);
+  font-size: 0.95rem;
+}
+
+.pinned-item__input:focus {
+  outline: none;
+  border-color: var(--md-primary);
+  box-shadow: 0 0 0 3px rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.22);
+}
+
+.pinned-item__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.pinned-item__action {
+  border: 1px solid var(--md-outline);
+  background: var(--md-surface);
+  border-radius: var(--tabula-radius-sm);
+  padding: 0.35rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 160ms ease, border 160ms ease, transform 160ms ease;
+}
+
+.pinned-item__action:hover:not(:disabled) {
+  background: rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.18);
+  border-color: rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.4);
+  transform: translateY(-1px);
+}
+
+.pinned-item__action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pinned-item__action .material-symbols-outlined {
+  font-size: 18px;
+}
+
+.pinned-item__action--remove:hover:not(:disabled) {
+  background: rgba(244, 67, 54, 0.16);
+  border-color: rgba(244, 67, 54, 0.35);
+}
+
 .field {
   display: flex;
   flex-direction: column;
@@ -339,6 +482,18 @@ body[data-background-type="color"]::after {
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18);
 }
 
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.button:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
 .button--primary {
   background: var(--md-primary);
   color: var(--md-on-primary);
@@ -388,5 +543,24 @@ body[data-background-type="image"] [data-background="color"] {
   .button {
     width: 100%;
     text-align: center;
+  }
+
+  .pinned-item {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.9rem;
+  }
+
+  .pinned-item__preview {
+    justify-content: flex-start;
+    gap: 0.6rem;
+  }
+
+  .pinned-item__actions {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+
+  .pinned-manager__form {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
