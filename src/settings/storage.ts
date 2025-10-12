@@ -8,29 +8,61 @@ const listeners = new Set<Listener>();
 
 let cachedSettings: Settings | null = null;
 
-const hasChromeStorage = (): boolean =>
-  typeof chrome !== "undefined" && !!chrome.storage && !!chrome.storage.sync;
+const extensionAPI: any =
+  (typeof globalThis !== "undefined" && (globalThis as any).chrome) ??
+  (typeof globalThis !== "undefined" && (globalThis as any).browser) ??
+  null;
 
-const readFromChrome = (): Promise<Settings> =>
-  new Promise((resolve, reject) => {
-    try {
-      chrome.storage.sync.get(SETTINGS_STORAGE_KEY, (items) => {
-        const raw = items?.[SETTINGS_STORAGE_KEY];
-        resolve(mergeWithDefaults(raw));
+const extensionStorage: any = extensionAPI?.storage?.sync ?? extensionAPI?.storage?.local ?? null;
+const extensionOnChanged: any = extensionAPI?.storage?.onChanged ?? null;
+
+const broadcastChannel: BroadcastChannel | null =
+  typeof BroadcastChannel === "function" ? new BroadcastChannel("tabula:settings") : null;
+
+const hasExtensionStorage = (): boolean => !!extensionStorage;
+
+const invokeGet = async (store: any, key: string): Promise<PartialSettings | undefined> => {
+  if (!store) return undefined;
+  try {
+    const result = store.get(key);
+    if (result && typeof result.then === "function") {
+      const resolved = await result;
+      return resolved?.[key] as PartialSettings | undefined;
+    }
+    return await new Promise<PartialSettings | undefined>((resolve, reject) => {
+      store.get(key, (items: Record<string, unknown>) => {
+        const error = extensionAPI?.runtime?.lastError;
+        if (error) {
+          reject(error);
+          return;
+        }
+        resolve(items?.[key] as PartialSettings | undefined);
       });
-    } catch (error) {
-      reject(error);
-    }
-  });
+    });
+  } catch (error) {
+    throw error;
+  }
+};
 
-const writeToChrome = (settings: Settings): Promise<void> =>
-  new Promise((resolve, reject) => {
-    try {
-      chrome.storage.sync.set({ [SETTINGS_STORAGE_KEY]: settings }, () => resolve());
-    } catch (error) {
-      reject(error);
-    }
+const invokeSet = async (store: any, key: string, value: Settings): Promise<void> => {
+  if (!store) return;
+  const payload = { [key]: value };
+  const result = store.set(payload);
+  if (result && typeof result.then === "function") {
+    await result;
+    return;
+  }
+  await new Promise<void>((resolve, reject) => {
+    store.set(payload, () => {
+      const error = extensionAPI?.runtime?.lastError;
+      if (error) {
+        reject(error);
+        return;
+      }
+      resolve();
+    });
   });
+};
 
 const localStorageAvailable = (): boolean =>
   typeof window !== "undefined" && typeof window.localStorage !== "undefined";
@@ -64,23 +96,37 @@ const writeToLocalStorage = (settings: Settings): void => {
 const notify = (settings: Settings): void => {
   cachedSettings = settings;
   listeners.forEach((listener) => listener(settings));
+  try {
+    broadcastChannel?.postMessage(settings);
+  } catch (error) {
+    console.warn("Failed to broadcast settings", error);
+  }
 };
 
-let chromeListenerInitialized = false;
+let extensionListenerInitialized = false;
 
-const ensureChromeListener = (): void => {
-  if (chromeListenerInitialized || !hasChromeStorage()) return;
+const ensureExtensionListener = (): void => {
+  if (extensionListenerInitialized || !extensionOnChanged) return;
 
-  chrome.storage.onChanged.addListener((changes, area) => {
-    if (area !== "sync") return;
+  const handler = (changes: Record<string, { newValue?: PartialSettings }>, area: string) => {
+    if (area !== "sync" && area !== "local") return;
     const change = changes[SETTINGS_STORAGE_KEY];
-    if (!change || typeof change !== "object") return;
-    if ("newValue" in change) {
-      notify(mergeWithDefaults(change.newValue as PartialSettings));
-    }
-  });
+    if (!change || typeof change !== "object" || typeof change.newValue === "undefined") return;
+    notify(mergeWithDefaults(change.newValue));
+  };
 
-  chromeListenerInitialized = true;
+  extensionOnChanged.addListener(handler);
+  extensionListenerInitialized = true;
+};
+
+const ensureBroadcastListener = (listener: Listener): BroadcastChannel | null => {
+  if (typeof BroadcastChannel !== "function") return null;
+  const channel = new BroadcastChannel("tabula:settings");
+  channel.onmessage = (event) => {
+    if (!event?.data) return;
+    listener(mergeWithDefaults(event.data as PartialSettings));
+  };
+  return channel;
 };
 
 export const loadSettings = async (): Promise<Settings> => {
@@ -88,15 +134,20 @@ export const loadSettings = async (): Promise<Settings> => {
     return cachedSettings;
   }
 
-  const settings = hasChromeStorage()
-    ? await readFromChrome().catch((error) => {
-        console.warn("Failed to read settings from chrome.storage", error);
-        return readFromLocalStorage();
-      })
-    : readFromLocalStorage();
+  if (hasExtensionStorage()) {
+    try {
+      const raw = await invokeGet(extensionStorage, SETTINGS_STORAGE_KEY);
+      const merged = mergeWithDefaults(raw);
+      cachedSettings = merged;
+      return merged;
+    } catch (error) {
+      console.warn("Failed to read settings from extension storage", error);
+    }
+  }
 
-  cachedSettings = settings;
-  return settings;
+  const fallback = readFromLocalStorage();
+  cachedSettings = fallback;
+  return fallback;
 };
 
 const combineWithCurrent = (current: Settings, partial: PartialSettings): Partial<Settings> => ({
@@ -126,17 +177,21 @@ const combineWithCurrent = (current: Settings, partial: PartialSettings): Partia
   },
 });
 
+const persist = async (settings: Settings): Promise<void> => {
+  if (hasExtensionStorage()) {
+    try {
+      await invokeSet(extensionStorage, SETTINGS_STORAGE_KEY, settings);
+      return;
+    } catch (error) {
+      console.warn("Failed to persist settings to extension storage", error);
+    }
+  }
+  writeToLocalStorage(settings);
+};
+
 export const saveSettings = async (settings: Settings): Promise<Settings> => {
   const next = mergeWithDefaults(settings);
-
-  if (hasChromeStorage()) {
-    await writeToChrome(next).catch((error) => {
-      console.warn("Failed to persist settings to chrome.storage", error);
-    });
-  } else {
-    writeToLocalStorage(next);
-  }
-
+  await persist(next);
   notify(next);
   return next;
 };
@@ -145,22 +200,16 @@ export const updateSettings = async (partial: PartialSettings): Promise<Settings
   const current = await loadSettings();
   const combined = combineWithCurrent(current, partial);
   const next = mergeWithDefaults(combined);
-
-  if (hasChromeStorage()) {
-    await writeToChrome(next).catch((error) => {
-      console.warn("Failed to persist settings to chrome.storage", error);
-    });
-  } else {
-    writeToLocalStorage(next);
-  }
-
+  await persist(next);
   notify(next);
   return next;
 };
 
 export const subscribeToSettings = (listener: Listener): (() => void) => {
   listeners.add(listener);
-  ensureChromeListener();
+  ensureExtensionListener();
+
+  const broadcast = ensureBroadcastListener(listener);
 
   if (cachedSettings) {
     listener(cachedSettings);
@@ -168,5 +217,6 @@ export const subscribeToSettings = (listener: Listener): (() => void) => {
 
   return () => {
     listeners.delete(listener);
+    broadcast?.close();
   };
 };

@@ -95,7 +95,10 @@ export class ClockApp {
     const controls = createElement("div", { className: "tabula-controls" });
     const settingsButton = createElement<HTMLButtonElement>("button", { className: "tabula-settings-button" });
     settingsButton.type = "button";
-    settingsButton.textContent = "Customize";
+    settingsButton.innerHTML = `
+      <span class="material-symbols-outlined" aria-hidden="true">tune</span>
+      <span class="tabula-settings-button__label">Customize</span>
+    `;
     settingsButton.setAttribute("aria-label", "Open Tabula settings");
     settingsButton.addEventListener("click", () => this.openOptions());
 
@@ -131,7 +134,10 @@ export class ClockApp {
 
     const button = createElement<HTMLButtonElement>("button", { className: "tabula-search__button" });
     button.type = "submit";
-    button.textContent = "Search";
+    button.innerHTML = `
+      <span class="material-symbols-outlined" aria-hidden="true">search</span>
+      <span class="tabula-search__label">Search</span>
+    `;
 
     form.append(input, button);
 
