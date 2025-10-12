@@ -121,7 +121,7 @@ const mergeClock = (
   value: Partial<Settings["clock"]> | undefined,
   fallback: Settings["clock"],
 ): Settings["clock"] => ({
-  scale: clamp(Number(value?.scale), fallback.scale, 0.6, 1.4),
+  scale: clamp(Number(value?.scale), fallback.scale, 0.6, 1),
   rimWidth: clamp(Number(value?.rimWidth), fallback.rimWidth, 1, 12),
   handWidth: clamp(Number(value?.handWidth), fallback.handWidth, 2, 14),
   dotSize: clamp(Number(value?.dotSize), fallback.dotSize, 4, 24),

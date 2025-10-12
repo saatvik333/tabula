@@ -18,7 +18,7 @@ describe("mergeWithDefaults", () => {
       },
     });
 
-    expect(result.clock.scale).toBeCloseTo(1.4);
+    expect(result.clock.scale).toBeCloseTo(1);
     expect(result.clock.rimWidth).toBeCloseTo(1);
     expect(result.clock.handWidth).toBeCloseTo(3);
     expect(result.clock.dotSize).toBeCloseTo(24);
