@@ -1,0 +1,29 @@
+{
+  "name": "tabula-extension",
+  "version": "1.0.0",
+  "description": "Tabula – a customizable new tab extension. Your space, no noise.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "npm run clean && vite build && npm run copy:static",
+    "copy:static": "mkdir -p dist && mv dist/src/pages/newtab/index.html dist/newtab.html && rm -rf dist/src && cp manifest.json dist/manifest.json && cp -r src/assets/icons dist/icons",
+    "preview": "vite preview",
+    "clean": "rm -rf dist",
+    "test": "vitest --run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --run --coverage",
+    "type-check": "tsc --noEmit"
+  },
+  "author": "Saatvik Sharma",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^24.7.2",
+    "@vitest/ui": "^3.2.4",
+    "jsdom": "^27.0.0",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.7",
+    "vitest": "^3.2.4"
+  },
+  "dependencies": {}
+}

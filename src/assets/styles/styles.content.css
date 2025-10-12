@@ -1,0 +1,228 @@
+:root {
+  --field-gap: 2.5rem;
+  --cell-size: 4rem;
+  --cell-border-size: 2px;
+  --hand-thickness: 5px;
+  --dot-size: 8px;
+}
+
+/* Default (light) theme */
+:root:not([data-theme="dark"]) {
+  --cell-background-color: oklch(98% 0 0);
+  --cell-border-color: oklch(88% 0 0);
+  --hand-color: oklch(15% 0 0);
+  --body-bg: oklch(96% 0 0);
+}
+
+/* Dark theme based on data attribute */
+:root[data-theme="dark"] {
+  --cell-background-color: oklch(18% 0 0);
+  --cell-border-color: oklch(28% 0 0);
+  --hand-color: oklch(95% 0 0);
+  --body-bg: oklch(12% 0 0);
+}
+
+/* Dark theme based on class (for compatibility) */
+:root.dark-theme {
+  --cell-background-color: oklch(18% 0 0);
+  --cell-border-color: oklch(28% 0 0);
+  --hand-color: oklch(95% 0 0);
+  --body-bg: oklch(12% 0 0);
+}
+
+/* Light theme based on class (for compatibility) */
+:root.light-theme {
+  --cell-background-color: oklch(98% 0 0);
+  --cell-border-color: oklch(88% 0 0);
+  --hand-color: oklch(15% 0 0);
+  --body-bg: oklch(96% 0 0);
+}
+
+/* Size variations */
+.size-small :root {
+  --cell-size: 3rem;
+  --field-gap: 2rem;
+  --hand-thickness: 2.5px;
+  --dot-size: 5px;
+}
+
+.size-large :root {
+  --cell-size: 5rem;
+  --field-gap: 3rem;
+  --hand-thickness: 6px;
+  --dot-size: 10px;
+}
+
+/* Add a class prefix for the content script to avoid style conflicts */
+.clock-of-clocks * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.clock-of-clocks body {
+  background-color: var(--body-bg);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+}
+
+.clock-of-clocks #app {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.clock-of-clocks .clock {
+  display: flex;
+  gap: var(--field-gap);
+}
+
+.clock-of-clocks .clock > .pair {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.clock-of-clocks .digit {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+  gap: 0.25rem;
+}
+
+.clock-of-clocks .cell {
+  height: var(--cell-size);
+  width: var(--cell-size);
+  position: relative;
+  background-color: var(--cell-background-color);
+  border: var(--cell-border-size) solid var(--cell-border-color);
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.clock-of-clocks .cell > .hand {
+  width: 45%;
+  height: var(--hand-thickness);
+  background-color: var(--hand-color);
+  position: absolute;
+  transform-origin: center left;
+  top: 50%;
+  left: 50%;
+  translate: 0% -50%;
+  rotate: 135deg;
+  transition: rotate 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 2px;
+}
+
+.clock-of-clocks .cell > .dot {
+  width: var(--dot-size);
+  height: var(--dot-size);
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  background-color: var(--hand-color);
+  border-radius: 50%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1440px) {
+  :root {
+    --cell-size: 3rem;
+    --field-gap: 2rem;
+    --hand-thickness: 2.5px;
+    --dot-size: 5px;
+  }
+  .size-small :root {
+    --cell-size: 2.5rem;
+    --field-gap: 1.5rem;
+    --hand-thickness: 2px;
+    --dot-size: 4px;
+  }
+  .size-large :root {
+    --cell-size: 3.5rem;
+    --field-gap: 2.5rem;
+    --hand-thickness: 3px;
+    --dot-size: 6px;
+  }
+}
+
+@media (max-width: 1024px) {
+  :root {
+    --field-gap: 1.5rem;
+    --cell-size: 2.25rem;
+    --hand-thickness: 2px;
+    --dot-size: 4px;
+  }
+  .size-small :root {
+    --cell-size: 1.75rem;
+    --field-gap: 1rem;
+    --hand-thickness: 1.5px;
+    --dot-size: 3px;
+  }
+  .size-large :root {
+    --cell-size: 2.75rem;
+    --field-gap: 1.75rem;
+    --hand-thickness: 2.5px;
+    --dot-size: 5px;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --field-gap: 1rem;
+    --cell-size: 1.75rem;
+    --hand-thickness: 2px;
+    --dot-size: 3.5px;
+  }
+  .size-small :root {
+    --cell-size: 1.25rem;
+    --field-gap: 0.75rem;
+    --hand-thickness: 1.5px;
+    --dot-size: 2.5px;
+  }
+  .size-large :root {
+    --cell-size: 2.25rem;
+    --field-gap: 1.25rem;
+    --hand-thickness: 2.5px;
+    --dot-size: 4.5px;
+  }
+
+  .clock-of-clocks .clock > .pair {
+    gap: 0.2rem;
+  }
+
+  .clock-of-clocks .digit {
+    gap: 0.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --cell-size: 1.25rem;
+    --field-gap: 0.75rem;
+    --hand-thickness: 1.5px;
+    --dot-size: 3px;
+    --cell-border-size: 1.5px;
+  }
+  .size-small :root {
+    --cell-size: 1rem;
+    --field-gap: 0.5rem;
+    --hand-thickness: 1px;
+    --dot-size: 2px;
+  }
+  .size-large :root {
+    --cell-size: 1.5rem;
+    --field-gap: 1rem;
+    --hand-thickness: 2px;
+    --dot-size: 4px;
+  }
+
+  .clock-of-clocks .clock > .pair {
+    gap: 0.15rem;
+  }
+
+  .clock-of-clocks .digit {
+    gap: 0.15rem;
+  }
+}
