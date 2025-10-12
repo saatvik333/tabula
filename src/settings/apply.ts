@@ -73,6 +73,14 @@ export const applySettingsToDocument = (
   root.style.setProperty("--tabula-text-color", onSurface);
   const accentRgb = hexToRgb(primary) ?? "56, 189, 248";
   root.style.setProperty("--tabula-accent-color-rgb", accentRgb);
+  const backgroundRgb = hexToRgb(surface) ?? "17, 23, 42";
+  const faceRgb = hexToRgb(surfaceContainer) ?? backgroundRgb;
+  const rimRgb = hexToRgb(outline) ?? accentRgb;
+  const handRgb = hexToRgb(onSurface) ?? "226, 232, 240";
+  root.style.setProperty("--tabula-background-color-rgb", backgroundRgb);
+  root.style.setProperty("--tabula-face-color-rgb", faceRgb);
+  root.style.setProperty("--tabula-rim-color-rgb", rimRgb);
+  root.style.setProperty("--tabula-hand-color-rgb", handRgb);
 
   root.style.setProperty("--tabula-background-image", formatBackgroundImage(settings));
   root.style.setProperty("--tabula-background-blur", formatPixels(settings.background.blur));

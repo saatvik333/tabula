@@ -9,6 +9,12 @@
   --md-on-surface-variant: rgba(226, 232, 240, 0.6);
   --md-shadow-1: 0 20px 60px rgba(2, 6, 23, 0.54);
   --md-shadow-2: 0 12px 32px rgba(2, 6, 23, 0.4);
+  --tabula-background-color: #111827;
+  --tabula-face-color: #1f2937;
+  --tabula-rim-color: #374151;
+  --tabula-hand-color: #f3f4f6;
+  --tabula-text-color: #f3f4f6;
+  --tabula-accent-color: #38bdf8;
   --tabula-background-image: none;
   --tabula-background-blur: 0px;
   --tabula-clock-scale: 1;
@@ -29,6 +35,10 @@
   --tabula-radius-md: 18px;
   --tabula-gap-card: clamp(1.5rem, 4vw, 3rem);
   --tabula-accent-color-rgb: 56, 189, 248;
+  --tabula-background-color-rgb: 17, 23, 39;
+  --tabula-face-color-rgb: 31, 41, 55;
+  --tabula-rim-color-rgb: 55, 65, 81;
+  --tabula-hand-color-rgb: 243, 244, 246;
 }
 
 :root {
@@ -48,15 +58,25 @@ body {
   display: flex;
   align-items: stretch;
   justify-content: center;
-  background: linear-gradient(160deg, #161616 0%, #101010 40%, #050505 100%);
+  background: linear-gradient(
+    160deg,
+    rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.98) 0%,
+    rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.92) 45%,
+    rgba(var(--tabula-background-color-rgb, 17, 23, 42), 1) 100%
+  );
   color: var(--md-on-surface);
   position: relative;
   overflow: hidden;
 }
 
 :root[data-theme="light"] body {
-  background: linear-gradient(150deg, #f5f5f5 0%, #e7e7e7 45%, #d4d4d4 100%);
-  color: #1f1f1f;
+  background: linear-gradient(
+    160deg,
+    rgba(var(--tabula-background-color-rgb, 245, 245, 245), 0.94) 0%,
+    rgba(var(--tabula-background-color-rgb, 245, 245, 245), 0.88) 40%,
+    rgba(var(--tabula-background-color-rgb, 245, 245, 245), 1) 100%
+  );
+  color: var(--md-on-surface);
 }
 
 body::before {
@@ -82,20 +102,32 @@ body::after {
   content: "";
   position: fixed;
   inset: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.45));
+  background: linear-gradient(
+    135deg,
+    rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.16),
+    rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.55)
+  );
   mix-blend-mode: soft-light;
   pointer-events: none;
 }
 
 body[data-background-type="color"]::after {
-  background: linear-gradient(160deg, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.45));
+  background: linear-gradient(
+    160deg,
+    rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.18),
+    rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.45)
+  );
   mix-blend-mode: normal;
 }
 
 :root[data-theme="light"] body::after {
-  background: rgba(255, 255, 255, 0.65);
+  background: linear-gradient(
+    135deg,
+    rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.2),
+    rgba(var(--tabula-background-color-rgb, 245, 245, 245), 0.6)
+  );
   mix-blend-mode: screen;
-  opacity: 0.7;
+  opacity: 0.75;
 }
 
 #app {
@@ -128,7 +160,7 @@ body[data-background-type="color"]::after {
   align-items: center;
   gap: 0.45rem;
   border: none;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.18);
   color: var(--md-on-surface);
   padding: 0.55rem 1.25rem;
   border-radius: var(--tabula-radius-full);
@@ -140,18 +172,8 @@ body[data-background-type="color"]::after {
 
 .tabula-settings-button:hover {
   transform: translateY(-1px);
-  background: rgba(255, 255, 255, 0.09);
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
-}
-
-:root[data-theme="light"] .tabula-settings-button {
-  background: rgba(0, 0, 0, 0.06);
-  color: #1f1f1f;
-}
-
-:root[data-theme="light"] .tabula-settings-button:hover {
-  background: rgba(0, 0, 0, 0.12);
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.18);
+  background: rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.28);
+  box-shadow: 0 14px 34px rgba(var(--tabula-background-color-rgb, 12, 12, 12), 0.35);
 }
 
 .tabula-settings-button .material-symbols-outlined {
@@ -177,18 +199,16 @@ body[data-background-type="color"]::after {
   justify-content: center;
   padding: clamp(1.25rem, 4vw, 2.5rem);
   border-radius: var(--tabula-radius-xl);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04));
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  box-shadow: 0 28px 80px rgba(15, 15, 15, 0.55);
+  background: linear-gradient(
+    135deg,
+    rgba(var(--tabula-face-color-rgb, 255, 255, 255), 0.78),
+    rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.28)
+  );
+  border: 1px solid rgba(var(--tabula-rim-color-rgb, 148, 163, 184), 0.45);
+  box-shadow: 0 28px 80px rgba(var(--tabula-background-color-rgb, 15, 15, 15), 0.45);
   backdrop-filter: blur(28px) saturate(160%);
   -webkit-backdrop-filter: blur(28px) saturate(160%);
   transition: transform 220ms ease;
-}
-
-:root[data-theme="light"] .tabula-clock {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.4));
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.12);
 }
 
 .clock {
@@ -213,19 +233,15 @@ body[data-background-type="color"]::after {
   width: var(--tabula-cell-size);
   height: var(--tabula-cell-size);
   border-radius: 50%;
-  border: var(--tabula-clock-rim-width) solid rgba(255, 255, 255, 0.28);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05));
+  border: var(--tabula-clock-rim-width) solid rgba(var(--tabula-rim-color-rgb, 148, 163, 184), 0.6);
+  background: linear-gradient(
+    135deg,
+    rgba(var(--tabula-face-color-rgb, 255, 255, 255), 0.9),
+    rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.18)
+  );
   box-shadow:
-    inset 0 0 18px rgba(0, 0, 0, 0.25),
-    0 12px 32px rgba(0, 0, 0, 0.35);
-}
-
-:root[data-theme="light"] .cell {
-  border: var(--tabula-clock-rim-width) solid rgba(0, 0, 0, 0.1);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.7));
-  box-shadow:
-    inset 0 0 18px rgba(0, 0, 0, 0.08),
-    0 12px 28px rgba(0, 0, 0, 0.15);
+    inset 0 0 18px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.45),
+    0 12px 32px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.38);
 }
 
 .hand {
@@ -234,17 +250,12 @@ body[data-background-type="color"]::after {
   left: 50%;
   width: 48%;
   height: var(--tabula-clock-hand-width);
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(var(--tabula-hand-color-rgb, 255, 255, 255), 0.9);
   border-radius: 999px;
   transform-origin: center left;
   translate: 0 -50%;
   transition: rotate 180ms ease-out;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.35);
-}
-
-:root[data-theme="light"] .hand {
-  background: rgba(28, 28, 30, 0.9);
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 0 10px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.35);
 }
 
 .dot {
@@ -252,15 +263,10 @@ body[data-background-type="color"]::after {
   width: var(--tabula-clock-dot-size);
   height: var(--tabula-clock-dot-size);
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(var(--tabula-hand-color-rgb, 255, 255, 255), 0.9);
   inset: 50% auto auto 50%;
   translate: -50% -50%;
-  box-shadow: 0 0 14px rgba(255, 255, 255, 0.28);
-}
-
-:root[data-theme="light"] .dot {
-  background: rgba(28, 28, 30, 0.9);
-  box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 14px rgba(var(--tabula-hand-color-rgb, 255, 255, 255), 0.35);
 }
 
 .tabula-search {
@@ -270,18 +276,16 @@ body[data-background-type="color"]::after {
   gap: 0.65rem;
   padding: 0.9rem 1.1rem;
   border-radius: var(--tabula-radius-full);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03));
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+  background: linear-gradient(
+    135deg,
+    rgba(var(--tabula-face-color-rgb, 255, 255, 255), 0.5),
+    rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.18)
+  );
+  border: 1px solid rgba(var(--tabula-rim-color-rgb, 148, 163, 184), 0.4);
+  box-shadow: 0 18px 48px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.38);
   backdrop-filter: blur(24px) saturate(160%);
   -webkit-backdrop-filter: blur(24px) saturate(160%);
   transition: opacity 160ms ease, transform 160ms ease;
-}
-
-:root[data-theme="light"] .tabula-search {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.6));
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
 }
 
 .tabula-search.is-hidden {
@@ -314,20 +318,15 @@ body[data-background-type="color"]::after {
   border-radius: var(--tabula-radius-full);
   font-size: 0.95rem;
   font-weight: var(--tabula-weight-medium);
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.22);
   color: var(--md-on-surface);
   cursor: pointer;
   transition: transform 160ms ease, box-shadow 160ms ease;
 }
 
-:root[data-theme="light"] .tabula-search__button {
-  background: rgba(0, 0, 0, 0.08);
-  color: #111111;
-}
-
 .tabula-search__button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.32);
+  box-shadow: 0 12px 24px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.32);
 }
 
 .tabula-search__button .material-symbols-outlined {
