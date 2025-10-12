@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark light" />
+    <title>Tabula Settings</title>
+    <link rel="stylesheet" href="../../assets/styles/options.css" />
+  </head>
+  <body>
+    <main class="settings" id="settings">
+      <header class="settings__header">
+        <h1>Tabula preferences</h1>
+        <p>Personalise your new tab with colours, backgrounds, and layout options.</p>
+      </header>
+
+      <form id="settings-form" class="settings__form">
+        <section class="panel">
+          <header class="panel__header">
+            <h2>Theme</h2>
+            <p>Select how Tabula adapts to your environment.</p>
+          </header>
+          <div class="panel__grid">
+            <label class="field">
+              <span class="field__label">Theme mode</span>
+              <select id="themeMode" name="themeMode" class="field__control">
+                <option value="system">Match system</option>
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+              </select>
+            </label>
+          </div>
+        </section>
+
+        <section class="panel">
+          <header class="panel__header">
+            <h2>Background</h2>
+            <p>Use a solid colour or bring your own image with adjustable blur.</p>
+          </header>
+          <div class="panel__grid panel__grid--split">
+            <fieldset class="field field--inline">
+              <legend class="field__label">Background type</legend>
+              <label class="choice">
+                <input type="radio" name="backgroundType" id="backgroundTypeColor" value="color" />
+                <span>Colour</span>
+              </label>
+              <label class="choice">
+                <input type="radio" name="backgroundType" id="backgroundTypeImage" value="image" />
+                <span>Image</span>
+              </label>
+            </fieldset>
+
+            <label class="field" data-background="color">
+              <span class="field__label">Background colour</span>
+              <input type="color" id="backgroundColor" name="backgroundColor" class="field__control" />
+            </label>
+
+            <label class="field" data-background="image">
+              <span class="field__label">Image URL</span>
+              <input type="url" id="backgroundImage" name="backgroundImage" placeholder="https://example.com/wallpaper.jpg" class="field__control" />
+            </label>
+
+            <label class="field">
+              <span class="field__label">Blur</span>
+              <div class="field__range">
+                <input type="range" id="backgroundBlur" name="backgroundBlur" min="0" max="40" step="1" />
+                <output id="backgroundBlurValue" for="backgroundBlur">0px</output>
+              </div>
+            </label>
+          </div>
+        </section>
+
+        <section class="panel">
+          <header class="panel__header">
+            <h2>Clock</h2>
+            <p>Tune the layout and proportions of the clock grid.</p>
+          </header>
+          <div class="panel__grid">
+            <label class="field">
+              <span class="field__label">Scale</span>
+              <div class="field__range">
+                <input type="range" id="clockScale" name="clockScale" min="0.6" max="1.4" step="0.02" />
+                <output id="clockScaleValue" for="clockScale">1.00x</output>
+              </div>
+            </label>
+            <label class="field">
+              <span class="field__label">Rim width</span>
+              <div class="field__range">
+                <input type="range" id="rimWidth" name="rimWidth" min="1" max="12" step="0.5" />
+                <output id="rimWidthValue" for="rimWidth">2px</output>
+              </div>
+            </label>
+            <label class="field">
+              <span class="field__label">Hand width</span>
+              <div class="field__range">
+                <input type="range" id="handWidth" name="handWidth" min="2" max="14" step="0.5" />
+                <output id="handWidthValue" for="handWidth">5px</output>
+              </div>
+            </label>
+            <label class="field">
+              <span class="field__label">Dot size</span>
+              <div class="field__range">
+                <input type="range" id="dotSize" name="dotSize" min="4" max="24" step="1" />
+                <output id="dotSizeValue" for="dotSize">8px</output>
+              </div>
+            </label>
+          </div>
+        </section>
+
+        <section class="panel">
+          <header class="panel__header">
+            <h2>Palette</h2>
+            <p>Customise colours for light and dark appearances.</p>
+          </header>
+          <div class="panel__grid panel__grid--palette">
+            <fieldset class="palette" data-theme="light">
+              <legend>Light theme</legend>
+              <label class="field">
+                <span class="field__label">Background</span>
+                <input type="color" id="lightBackground" name="lightBackground" />
+              </label>
+              <label class="field">
+                <span class="field__label">Clock face</span>
+                <input type="color" id="lightFace" name="lightFace" />
+              </label>
+              <label class="field">
+                <span class="field__label">Rim</span>
+                <input type="color" id="lightRim" name="lightRim" />
+              </label>
+              <label class="field">
+                <span class="field__label">Hands</span>
+                <input type="color" id="lightHand" name="lightHand" />
+              </label>
+              <label class="field">
+                <span class="field__label">Accent</span>
+                <input type="color" id="lightAccent" name="lightAccent" />
+              </label>
+            </fieldset>
+
+            <fieldset class="palette" data-theme="dark">
+              <legend>Dark theme</legend>
+              <label class="field">
+                <span class="field__label">Background</span>
+                <input type="color" id="darkBackground" name="darkBackground" />
+              </label>
+              <label class="field">
+                <span class="field__label">Clock face</span>
+                <input type="color" id="darkFace" name="darkFace" />
+              </label>
+              <label class="field">
+                <span class="field__label">Rim</span>
+                <input type="color" id="darkRim" name="darkRim" />
+              </label>
+              <label class="field">
+                <span class="field__label">Hands</span>
+                <input type="color" id="darkHand" name="darkHand" />
+              </label>
+              <label class="field">
+                <span class="field__label">Accent</span>
+                <input type="color" id="darkAccent" name="darkAccent" />
+              </label>
+            </fieldset>
+          </div>
+        </section>
+
+        <section class="panel">
+          <header class="panel__header">
+            <h2>Search</h2>
+            <p>Toggle the optional search bar and choose your preferred engine.</p>
+          </header>
+          <div class="panel__grid">
+            <label class="field field--inline">
+              <input type="checkbox" id="searchEnabled" name="searchEnabled" />
+              <span class="field__label">Show search bar</span>
+            </label>
+            <label class="field">
+              <span class="field__label">Search engine</span>
+              <select id="searchEngine" name="searchEngine" class="field__control">
+                <option value="google">Google</option>
+                <option value="bing">Bing</option>
+                <option value="duckduckgo">DuckDuckGo</option>
+                <option value="brave">Brave</option>
+              </select>
+            </label>
+            <label class="field">
+              <span class="field__label">Placeholder text</span>
+              <input type="text" id="searchPlaceholder" name="searchPlaceholder" class="field__control" />
+            </label>
+            <fieldset class="field field--inline">
+              <legend class="field__label">Placement</legend>
+              <label class="choice">
+                <input type="radio" name="searchPosition" id="searchTop" value="top" />
+                <span>Above clock</span>
+              </label>
+              <label class="choice">
+                <input type="radio" name="searchPosition" id="searchBottom" value="bottom" />
+                <span>Below clock</span>
+              </label>
+            </fieldset>
+          </div>
+        </section>
+
+        <footer class="settings__actions">
+          <div class="settings__status" id="status" role="status" aria-live="polite"></div>
+          <div class="settings__buttons">
+            <button type="submit" class="button button--primary">Save changes</button>
+            <button type="button" id="resetButton" class="button">Reset to defaults</button>
+          </div>
+        </footer>
+      </form>
+    </main>
+
+    <script type="module" src="main.ts"></script>
+  </body>
+</html>

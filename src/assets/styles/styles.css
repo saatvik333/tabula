@@ -1,14 +1,26 @@
 :root {
-  --background: #0f172a;
-  --foreground: #e2e8f0;
-  --cell-background: rgba(15, 23, 42, 0.9);
-  --cell-border: rgba(148, 163, 184, 0.4);
-  --cell-size: 4rem;
-  --cell-gap: 0.25rem;
-  --field-gap: 2.5rem;
-  --hand-length: 45%;
-  --hand-thickness: 5px;
-  --dot-size: 8px;
+  color-scheme: light dark;
+  --tabula-background-color: #0f172a;
+  --tabula-background-image: none;
+  --tabula-background-blur: 0px;
+  --tabula-text-color: #e2e8f0;
+  --tabula-face-color: rgba(15, 23, 42, 0.88);
+  --tabula-rim-color: rgba(148, 163, 184, 0.55);
+  --tabula-hand-color: #f8fafc;
+  --tabula-accent-color: #38bdf8;
+  --tabula-clock-scale: 1;
+  --tabula-clock-rim-width: 2px;
+  --tabula-clock-hand-width: 5px;
+  --tabula-clock-dot-size: 8px;
+  --tabula-base-cell-size: 4rem;
+  --tabula-base-field-gap: 2.5rem;
+  --tabula-cell-gap: 0.25rem;
+  --tabula-search-max: 640px;
+}
+
+:root {
+  --tabula-cell-size: calc(var(--tabula-base-cell-size) * var(--tabula-clock-scale));
+  --tabula-field-gap: calc(var(--tabula-base-field-gap) * var(--tabula-clock-scale));
 }
 
 * {
@@ -18,13 +30,54 @@
 }
 
 body {
-  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   min-height: 100vh;
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
-  background: radial-gradient(circle at top, #1e293b 0%, var(--background) 60%, #020617 100%);
-  color: var(--foreground);
+  background-color: var(--tabula-background-color);
+  color: var(--tabula-text-color);
+  position: relative;
+  overflow: hidden;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: var(--tabula-background-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: blur(var(--tabula-background-blur));
+  transform: scale(1.02);
+  opacity: 1;
+  pointer-events: none;
+  transition: filter 200ms ease, opacity 200ms ease;
+}
+
+body[data-background-type="color"]::before {
+  opacity: 0;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(140deg, rgba(15, 23, 42, 0.85), rgba(2, 6, 23, 0.92));
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+body[data-background-type="color"]::after {
+  background: linear-gradient(160deg, rgba(15, 23, 42, 0.78), rgba(2, 6, 23, 0.82));
+  mix-blend-mode: normal;
+}
+
+:root[data-theme="light"] body::after {
+  background: linear-gradient(140deg, rgba(248, 250, 252, 0.7), rgba(226, 232, 240, 0.85));
+  mix-blend-mode: normal;
+  opacity: 0.6;
 }
 
 #app {
@@ -32,100 +85,220 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: clamp(1.5rem, 5vw, 4rem);
+  position: relative;
+  z-index: 1;
+}
+
+.tabula {
+  width: min(100%, 960px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  position: relative;
+}
+
+.tabula-controls {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.tabula-settings-button {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(15, 23, 42, 0.55);
+  color: var(--tabula-hand-color);
+  padding: 0.45rem 1.25rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 140ms ease, box-shadow 140ms ease, border 140ms ease;
+}
+
+.tabula-settings-button:hover {
+  transform: translateY(-1px);
+  border-color: var(--tabula-accent-color);
+  box-shadow: 0 14px 34px rgba(2, 6, 23, 0.35);
+}
+
+.tabula-tagline {
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(248, 250, 252, 0.35);
+  text-align: center;
+}
+
+.tabula-clock {
+  display: flex;
+  padding: clamp(1rem, 4vw, 2.25rem);
+  border-radius: 36px;
+  background: linear-gradient(
+    130deg,
+    rgba(255, 255, 255, 0.04),
+    rgba(15, 23, 42, 0.45)
+  );
+  backdrop-filter: blur(24px);
+  box-shadow:
+    0 22px 60px rgba(2, 6, 23, 0.55),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  transition: transform 220ms ease;
 }
 
 .clock {
   display: flex;
-  gap: var(--field-gap);
-  padding: 1rem 1.5rem;
-  border-radius: 36px;
-  background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(16px);
-  box-shadow: 0 18px 60px rgba(15, 23, 42, 0.45);
+  gap: var(--tabula-field-gap);
 }
 
 .time-field {
   display: flex;
-  gap: 0.75rem;
+  gap: calc(var(--tabula-cell-gap) * 3);
 }
 
 .digit {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   grid-template-rows: repeat(6, 1fr);
-  gap: var(--cell-gap);
+  gap: var(--tabula-cell-gap);
 }
 
 .cell {
   position: relative;
-  width: var(--cell-size);
-  height: var(--cell-size);
+  width: var(--tabula-cell-size);
+  height: var(--tabula-cell-size);
   border-radius: 50%;
-  border: 2px solid var(--cell-border);
-  background: var(--cell-background);
-  box-shadow: inset 0 0 18px rgba(2, 6, 23, 0.7), 0 6px 18px rgba(15, 23, 42, 0.35);
+  border: var(--tabula-clock-rim-width) solid var(--tabula-rim-color);
+  background: var(--tabula-face-color);
+  box-shadow:
+    inset 0 0 30px rgba(2, 6, 23, 0.45),
+    0 18px 36px rgba(2, 6, 23, 0.35);
 }
 
 .hand {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: var(--hand-length);
-  height: var(--hand-thickness);
-  background: var(--foreground);
+  width: 48%;
+  height: var(--tabula-clock-hand-width);
+  background: var(--tabula-hand-color);
   border-radius: 999px;
   transform-origin: center left;
   translate: 0 -50%;
   transition: rotate 180ms ease-out;
+  box-shadow: 0 0 10px rgba(15, 23, 42, 0.25);
 }
 
 .dot {
   position: absolute;
-  width: var(--dot-size);
-  height: var(--dot-size);
+  width: var(--tabula-clock-dot-size);
+  height: var(--tabula-clock-dot-size);
   border-radius: 50%;
-  background: var(--foreground);
+  background: var(--tabula-hand-color);
   inset: 50% auto auto 50%;
   translate: -50% -50%;
-  box-shadow: 0 0 12px rgba(226, 232, 240, 0.45);
+  box-shadow: 0 0 18px rgba(226, 232, 240, 0.4);
 }
 
-@media (max-width: 1024px) {
+.tabula-search {
+  width: min(100%, var(--tabula-search-max));
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.45);
+  box-shadow:
+    0 10px 30px rgba(2, 6, 23, 0.35),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(18px);
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.tabula-search.is-hidden {
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+}
+
+.tabula-search__input {
+  flex: 1;
+  font-size: 1rem;
+  border: none;
+  background: transparent;
+  color: var(--tabula-hand-color);
+  caret-color: var(--tabula-accent-color);
+  outline: none;
+}
+
+.tabula-search__input::placeholder {
+  color: rgba(226, 232, 240, 0.55);
+}
+
+.tabula-search__button {
+  border: none;
+  padding: 0.55rem 1.2rem;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  background: var(--tabula-accent-color);
+  color: #020617;
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.tabula-search__button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(56, 189, 248, 0.35);
+}
+
+/* order handled via DOM positioning */
+
+.tabula--search-enabled .tabula-clock {
+  transform: translateY(0);
+}
+
+@media (max-width: 900px) {
   :root {
-    --cell-size: 2.8rem;
-    --field-gap: 1.75rem;
-    --hand-thickness: 4px;
-    --dot-size: 6px;
+    --tabula-base-cell-size: 3rem;
+    --tabula-base-field-gap: 1.8rem;
   }
 
-  #app {
-    padding: 1.5rem;
+  .tabula-tagline {
+    font-size: 0.75rem;
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 640px) {
   :root {
-    --cell-size: 2rem;
-    --field-gap: 1.2rem;
-    --hand-thickness: 3px;
-    --dot-size: 5px;
+    --tabula-base-cell-size: 2.2rem;
+    --tabula-base-field-gap: 1.2rem;
   }
 
-  .clock {
-    padding: 1rem;
+  .tabula-search {
+    gap: 0.6rem;
+    padding: 0.75rem 0.9rem;
+  }
+
+  .tabula-search__button {
+    padding-inline: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --tabula-base-cell-size: 1.9rem;
+    --tabula-base-field-gap: 1rem;
+  }
+
+  .tabula-clock {
     border-radius: 28px;
-  }
-}
-
-@media (max-width: 540px) {
-  :root {
-    --cell-size: 1.6rem;
-    --field-gap: 0.9rem;
-    --hand-thickness: 2.5px;
+    padding: 1rem;
   }
 
-  .time-field {
-    gap: 0.5rem;
+  .tabula-search {
+    width: 100%;
   }
 }

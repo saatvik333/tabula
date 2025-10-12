@@ -44,7 +44,7 @@
     },
     
     // Type Definitions
-    "types": ["vitest/globals", "node"]
+    "types": ["vitest/globals", "node", "chrome"]
   },
   "include": ["src/**/*", "vitest.config.ts"],
   "exclude": ["node_modules", "dist", "build"]

@@ -9,6 +9,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         newtab: path.resolve(__dirname, "src/pages/newtab/index.html"),
+        options: path.resolve(__dirname, "src/pages/options/index.html"),
       },
       output: {
         entryFileNames: "assets/[name].js",
