@@ -55,7 +55,7 @@ export const applySettingsToDocument = (
 
   root.style.setProperty("--md-surface", surface);
   root.style.setProperty("--md-surface-container", surfaceContainer);
-  root.style.setProperty("--md-surface-container-high", `${surfaceContainer}`);
+  root.style.setProperty("--md-surface-container-high", surfaceContainer);
   root.style.setProperty("--md-surface-variant", surfaceVariant);
   root.style.setProperty("--md-outline", outline);
   root.style.setProperty("--md-primary", primary);

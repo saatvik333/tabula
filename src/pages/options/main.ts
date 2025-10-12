@@ -1,6 +1,15 @@
 import { DEFAULT_SETTINGS, mergeWithDefaults } from "$src/settings/defaults";
 import { applySettingsToDocument } from "$src/settings/apply";
-import type { Settings, ThemeMode, BackgroundType, SearchEngine, SearchPosition } from "$src/settings/schema";
+import type {
+  Settings,
+  ThemeMode,
+  BackgroundType,
+  SearchEngine,
+  SearchPosition,
+  PresetName,
+  Palette,
+} from "$src/settings/schema";
+import { applyPresetToSettings, listAvailablePresets } from "$src/settings/presets";
 import { loadSettings, saveSettings } from "$src/settings/storage";
 import { getSystemPrefersDark, resolveTheme } from "$src/settings/theme";
 
@@ -56,6 +65,7 @@ const searchEngineSelect = getElement<HTMLSelectElement>("searchEngine");
 const searchPlaceholderInput = getElement<HTMLInputElement>("searchPlaceholder");
 const searchTopInput = getElement<HTMLInputElement>("searchTop");
 const searchBottomInput = getElement<HTMLInputElement>("searchBottom");
+const presetContainer = getElement<HTMLDivElement>("presetChips");
 
 const setStatus = (text: string, tone: "default" | "success" | "error" = "default") => {
   statusEl.textContent = text;
@@ -63,6 +73,8 @@ const setStatus = (text: string, tone: "default" | "success" | "error" = "defaul
 };
 
 let previewHandle = 0;
+let isApplyingPreset = false;
+let presetButtons: HTMLButtonElement[] = [];
 
 const schedule = (fn: () => void, delay = 60) => {
   window.clearTimeout(previewHandle);
@@ -89,6 +101,40 @@ const updateSearchFieldState = (enabled: boolean) => {
   [searchEngineSelect, searchPlaceholderInput, searchTopInput, searchBottomInput].forEach((element) => {
     element.disabled = !enabled;
   });
+};
+
+const markPresetActive = (name: PresetName) => {
+  presetButtons.forEach((btn) => {
+    const isActive = btn.dataset["preset"] === name;
+    btn.classList.toggle("is-active", isActive);
+    btn.setAttribute("aria-pressed", String(isActive));
+  });
+};
+
+const renderPresetChips = () => {
+  presetContainer.innerHTML = "";
+  const fragment = document.createDocumentFragment();
+  presetButtons = listAvailablePresets().map((preset) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "preset-chip";
+    button.dataset["preset"] = preset;
+    button.textContent = preset
+      .split("-")
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(" ");
+    button.addEventListener("click", () => {
+      state = applyPresetToSettings(preset, state);
+      isApplyingPreset = true;
+      syncForm(state);
+      isApplyingPreset = false;
+      setStatus(`Applied ${button.textContent} preset`, "success");
+    });
+    fragment.appendChild(button);
+    return button;
+  });
+
+  presetContainer.appendChild(fragment);
 };
 
 const syncForm = (settings: Settings) => {
@@ -132,10 +178,15 @@ const syncForm = (settings: Settings) => {
   updateRangeOutputs();
   updateSearchFieldState(state.search.enabled);
   applyPreview();
+  markPresetActive(state.preset ?? "custom");
 };
 
 const handleThemeModeChange = () => {
   state.themeMode = themeModeSelect.value as ThemeMode;
+  if (!isApplyingPreset) {
+    state.preset = "custom";
+    markPresetActive(state.preset);
+  }
   schedule(() => {
     applyPreview();
     setStatus("Preview updated");
@@ -145,6 +196,10 @@ const handleThemeModeChange = () => {
 const handleBackgroundTypeChange = (type: BackgroundType) => {
   state.background.type = type;
   document.body.dataset["backgroundType"] = type;
+  if (!isApplyingPreset) {
+    state.preset = "custom";
+    markPresetActive(state.preset);
+  }
   schedule(() => {
     applyPreview();
   });
@@ -167,55 +222,95 @@ backgroundTypeImage.addEventListener("change", () => handleBackgroundTypeChange(
 
 backgroundColorInput.addEventListener("input", () => {
   state.background.color = backgroundColorInput.value;
+  if (!isApplyingPreset) {
+    state.preset = "custom";
+    markPresetActive(state.preset);
+  }
   schedule(applyPreview);
 });
 
 backgroundImageInput.addEventListener("input", () => {
   state.background.imageUrl = backgroundImageInput.value.trim();
+  if (!isApplyingPreset) {
+    state.preset = "custom";
+    markPresetActive(state.preset);
+  }
   schedule(applyPreview);
 });
 
 backgroundBlurRange.addEventListener("input", () => {
   state.background.blur = Number(backgroundBlurRange.value);
   backgroundBlurValue.value = `${Math.round(state.background.blur)}px`;
+  if (!isApplyingPreset) {
+    state.preset = "custom";
+    markPresetActive(state.preset);
+  }
   schedule(applyPreview);
 });
 
 clockScaleRange.addEventListener("input", () => {
   state.clock.scale = Number(clockScaleRange.value);
   clockScaleValue.value = `${state.clock.scale.toFixed(2)}x`;
+  if (!isApplyingPreset) {
+    state.preset = "custom";
+    markPresetActive(state.preset);
+  }
   schedule(applyPreview);
 });
 
 rimWidthRange.addEventListener("input", () => {
   state.clock.rimWidth = Number(rimWidthRange.value);
   rimWidthValue.value = `${state.clock.rimWidth.toFixed(1)}px`;
+  if (!isApplyingPreset) {
+    state.preset = "custom";
+    markPresetActive(state.preset);
+  }
   schedule(applyPreview);
 });
 
 handWidthRange.addEventListener("input", () => {
   state.clock.handWidth = Number(handWidthRange.value);
   handWidthValue.value = `${state.clock.handWidth.toFixed(1)}px`;
+  if (!isApplyingPreset) {
+    state.preset = "custom";
+    markPresetActive(state.preset);
+  }
   schedule(applyPreview);
 });
 
 dotSizeRange.addEventListener("input", () => {
   state.clock.dotSize = Number(dotSizeRange.value);
   dotSizeValue.value = `${Math.round(state.clock.dotSize)}px`;
+  if (!isApplyingPreset) {
+    state.preset = "custom";
+    markPresetActive(state.preset);
+  }
   schedule(applyPreview);
 });
 
-lightBackgroundInput.addEventListener("input", () => handlePaletteChange("light", "background", lightBackgroundInput.value));
-lightFaceInput.addEventListener("input", () => handlePaletteChange("light", "face", lightFaceInput.value));
-lightRimInput.addEventListener("input", () => handlePaletteChange("light", "rim", lightRimInput.value));
-lightHandInput.addEventListener("input", () => handlePaletteChange("light", "hand", lightHandInput.value));
-lightAccentInput.addEventListener("input", () => handlePaletteChange("light", "accent", lightAccentInput.value));
+const handleColorInput = (
+  theme: "light" | "dark",
+  key: keyof Palette,
+  getter: () => string,
+) => {
+  handlePaletteChange(theme, key, getter());
+  if (!isApplyingPreset) {
+    state.preset = "custom";
+    markPresetActive(state.preset);
+  }
+};
 
-darkBackgroundInput.addEventListener("input", () => handlePaletteChange("dark", "background", darkBackgroundInput.value));
-darkFaceInput.addEventListener("input", () => handlePaletteChange("dark", "face", darkFaceInput.value));
-darkRimInput.addEventListener("input", () => handlePaletteChange("dark", "rim", darkRimInput.value));
-darkHandInput.addEventListener("input", () => handlePaletteChange("dark", "hand", darkHandInput.value));
-darkAccentInput.addEventListener("input", () => handlePaletteChange("dark", "accent", darkAccentInput.value));
+lightBackgroundInput.addEventListener("input", () => handleColorInput("light", "background", () => lightBackgroundInput.value));
+lightFaceInput.addEventListener("input", () => handleColorInput("light", "face", () => lightFaceInput.value));
+lightRimInput.addEventListener("input", () => handleColorInput("light", "rim", () => lightRimInput.value));
+lightHandInput.addEventListener("input", () => handleColorInput("light", "hand", () => lightHandInput.value));
+lightAccentInput.addEventListener("input", () => handleColorInput("light", "accent", () => lightAccentInput.value));
+
+darkBackgroundInput.addEventListener("input", () => handleColorInput("dark", "background", () => darkBackgroundInput.value));
+darkFaceInput.addEventListener("input", () => handleColorInput("dark", "face", () => darkFaceInput.value));
+darkRimInput.addEventListener("input", () => handleColorInput("dark", "rim", () => darkRimInput.value));
+darkHandInput.addEventListener("input", () => handleColorInput("dark", "hand", () => darkHandInput.value));
+darkAccentInput.addEventListener("input", () => handleColorInput("dark", "accent", () => darkAccentInput.value));
 
 searchEnabledInput.addEventListener("change", () => {
   state.search.enabled = searchEnabledInput.checked;
@@ -271,6 +366,7 @@ resetButton.addEventListener("click", async () => {
 });
 
 const init = async () => {
+  renderPresetChips();
   try {
     const stored = await loadSettings();
     syncForm(stored);

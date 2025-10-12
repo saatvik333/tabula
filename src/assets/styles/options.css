@@ -115,6 +115,12 @@ body[data-background-type="color"]::after {
   gap: clamp(1.25rem, 2vw, 1.75rem);
 }
 
+:root[data-theme="light"] .panel {
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.12);
+}
+
 .panel__header h2 {
   margin: 0 0 0.35rem;
   font-size: 1.35rem;
@@ -139,6 +145,55 @@ body[data-background-type="color"]::after {
 .panel__grid--palette {
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 1.5rem;
+}
+
+.preset-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.preset-chip {
+  border: 1px solid var(--md-outline);
+  border-radius: var(--tabula-radius-full);
+  padding: 0.55rem 1.1rem;
+  background: var(--md-surface);
+  color: var(--md-on-surface);
+  font-size: 0.95rem;
+  font-weight: var(--tabula-weight-medium);
+  text-transform: capitalize;
+  cursor: pointer;
+  transition: transform 140ms ease, background 140ms ease, border 140ms ease, box-shadow 140ms ease;
+}
+
+.preset-chip:hover {
+  transform: translateY(-1px);
+  border-color: var(--md-primary);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+}
+
+.preset-chip.is-active {
+  background: var(--md-primary);
+  color: var(--md-on-primary);
+  border-color: transparent;
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.22);
+}
+
+:root[data-theme="light"] .preset-chip {
+  background: rgba(255, 255, 255, 0.72);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #1f2933;
+}
+
+:root[data-theme="light"] .preset-chip:hover {
+  border-color: rgba(0, 0, 0, 0.18);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+}
+
+:root[data-theme="light"] .preset-chip.is-active {
+  background: rgba(0, 0, 0, 0.9);
+  color: #f5f5f5;
+  box-shadow: 0 14px 26px rgba(0, 0, 0, 0.2);
 }
 
 .field {

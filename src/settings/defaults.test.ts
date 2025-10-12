@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { DEFAULT_SETTINGS, mergeWithDefaults } from "$src/settings/defaults";
+import { getPresetDefinition } from "$src/settings/presets";
 
 describe("mergeWithDefaults", () => {
   it("returns defaults when no override provided", () => {
@@ -21,6 +22,7 @@ describe("mergeWithDefaults", () => {
     expect(result.clock.rimWidth).toBeCloseTo(1);
     expect(result.clock.handWidth).toBeCloseTo(3);
     expect(result.clock.dotSize).toBeCloseTo(24);
+    expect(result.preset).toBe(DEFAULT_SETTINGS.preset);
   });
 
   it("sanitises colour values", () => {
@@ -45,6 +47,7 @@ describe("mergeWithDefaults", () => {
 
     expect(result.palettes.dark.background).toBe("#123456");
     expect(result.palettes.dark.face).toBe(DEFAULT_SETTINGS.palettes.dark.face);
+    expect(result.preset).toBe("custom");
   });
 
   it("normalises search configuration", () => {
@@ -61,5 +64,23 @@ describe("mergeWithDefaults", () => {
     expect(result.search.engine).toBe("duckduckgo");
     expect(result.search.position).toBe("bottom");
     expect(result.search.placeholder).toBe("Find...");
+  });
+
+  it("applies preset definitions when provided", () => {
+    const result = mergeWithDefaults({ preset: "nord" });
+    const definition = getPresetDefinition("nord");
+
+    expect(result.preset).toBe("nord");
+    expect(result.palettes.light).toEqual(definition.light);
+    expect(result.palettes.dark).toEqual(definition.dark);
+  });
+
+  it("falls back to default preset when unknown", () => {
+    const result = mergeWithDefaults({
+      // @ts-expect-error testing invalid preset input
+      preset: "unknown",
+    });
+
+    expect(result.preset).toBe("monochrome");
   });
 });

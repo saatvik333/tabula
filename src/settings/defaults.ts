@@ -6,7 +6,9 @@ import type {
   BackgroundType,
   SearchEngine,
   SearchPosition,
+  PresetName,
 } from "$src/settings/schema";
+import { applyPresetToSettings, isPresetName } from "$src/settings/presets";
 
 const clamp = (value: number, fallback: number, min: number, max: number): number =>
   Number.isFinite(value) ? Math.min(max, Math.max(min, value)) : fallback;
@@ -61,29 +63,38 @@ const sanitizePalette = (value: unknown, fallback: Palette): Palette => {
 const sanitizeBoolean = (value: unknown, fallback: boolean): boolean =>
   typeof value === "boolean" ? value : fallback;
 
-export const DEFAULT_PALETTE_LIGHT: Palette = {
-  background: "#f8fafc",
+const coercePreset = (value: unknown): PresetName => {
+  if (isPresetName(value)) {
+    return value;
+  }
+  return "monochrome";
+};
+const MONOCHROME_LIGHT: Palette = {
+  background: "#f3f4f6",
   face: "#ffffff",
-  rim: "#cbd5f5",
-  hand: "#0f172a",
-  accent: "#2563eb",
+  rim: "#d1d5db",
+  hand: "#111827",
+  accent: "#6b7280",
 };
 
-export const DEFAULT_PALETTE_DARK: Palette = {
-  background: "#0f172a",
-  face: "#172554",
-  rim: "#334155",
-  hand: "#e2e8f0",
-  accent: "#38bdf8",
+const MONOCHROME_DARK: Palette = {
+  background: "#111827",
+  face: "#1f2937",
+  rim: "#374151",
+  hand: "#f3f4f6",
+  accent: "#9ca3af",
 };
 
-export const DEFAULT_SETTINGS: Settings = {
+export const DEFAULT_PALETTE_LIGHT: Palette = MONOCHROME_LIGHT;
+export const DEFAULT_PALETTE_DARK: Palette = MONOCHROME_DARK;
+ 
+const BASE_DEFAULT_SETTINGS: Settings = {
   themeMode: "system",
   background: {
     type: "color",
-    color: "#0f172a",
+    color: "#111111",
     imageUrl: "",
-    blur: 0,
+    blur: 24,
   },
   clock: {
     scale: 1,
@@ -92,9 +103,10 @@ export const DEFAULT_SETTINGS: Settings = {
     dotSize: 8,
   },
   palettes: {
-    light: DEFAULT_PALETTE_LIGHT,
-    dark: DEFAULT_PALETTE_DARK,
+    light: MONOCHROME_LIGHT,
+    dark: MONOCHROME_DARK,
   },
+  preset: "monochrome",
   search: {
     enabled: false,
     engine: "google",
@@ -102,6 +114,8 @@ export const DEFAULT_SETTINGS: Settings = {
     position: "top",
   },
 };
+
+export const DEFAULT_SETTINGS: Settings = applyPresetToSettings("monochrome", BASE_DEFAULT_SETTINGS);
 
 const mergeClock = (
   value: Partial<Settings["clock"]> | undefined,
@@ -136,12 +150,15 @@ const mergeSearch = (
 export const mergeWithDefaults = (partial: PartialSettings | undefined): Settings => {
   const source = (partial ?? {}) as Partial<Settings>;
 
+  const presetProvided = partial !== undefined && Object.prototype.hasOwnProperty.call(partial as object, "preset");
+
   const themeMode = coerceThemeMode(source.themeMode);
   const background = mergeBackground(source.background, DEFAULT_SETTINGS.background);
   const clock = mergeClock(source.clock, DEFAULT_SETTINGS.clock);
   const search = mergeSearch(source.search, DEFAULT_SETTINGS.search);
+  const initialPreset = presetProvided ? coercePreset(source.preset) : DEFAULT_SETTINGS.preset;
 
-  return {
+  const baseSettings: Settings = {
     themeMode,
     background,
     clock,
@@ -150,5 +167,36 @@ export const mergeWithDefaults = (partial: PartialSettings | undefined): Setting
       light: sanitizePalette(source.palettes?.light, DEFAULT_PALETTE_LIGHT),
       dark: sanitizePalette(source.palettes?.dark, DEFAULT_PALETTE_DARK),
     },
+    preset: presetProvided ? initialPreset : DEFAULT_SETTINGS.preset,
   };
+
+  if (!presetProvided && typeof partial === "undefined") {
+    const applied = applyPresetToSettings(DEFAULT_SETTINGS.preset as Exclude<PresetName, "custom">, baseSettings);
+    return {
+      ...applied,
+      themeMode,
+      clock,
+      search,
+    };
+  }
+
+  if (presetProvided && initialPreset !== "custom") {
+    const applied = applyPresetToSettings(initialPreset as Exclude<PresetName, "custom">, baseSettings);
+    return {
+      ...applied,
+      themeMode,
+      clock,
+      search,
+    };
+  }
+
+  if (!presetProvided) {
+    const shouldMarkCustom = Boolean(source.palettes) || Boolean(source.background);
+    return {
+      ...baseSettings,
+      preset: shouldMarkCustom ? "custom" : DEFAULT_SETTINGS.preset,
+    };
+  }
+
+  return baseSettings;
 };

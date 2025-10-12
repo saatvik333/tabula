@@ -6,6 +6,17 @@ export type SearchEngine = "google" | "bing" | "duckduckgo" | "brave";
 
 export type SearchPosition = "top" | "bottom";
 
+export type PresetName =
+  | "monochrome"
+  | "nord"
+  | "catppuccin"
+  | "tokyo-night"
+  | "gruvbox"
+  | "rose-pine"
+  | "pitch-black"
+  | "everforest"
+  | "custom";
+
 export type Palette = {
   background: string;
   face: string;
@@ -32,6 +43,7 @@ export type Settings = {
     light: Palette;
     dark: Palette;
   };
+  preset: PresetName;
   search: {
     enabled: boolean;
     engine: SearchEngine;
