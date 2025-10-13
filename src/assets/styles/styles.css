@@ -149,6 +149,145 @@ body[data-background-type="color"]::after {
   position: relative;
 }
 
+.tabula-widgets {
+  position: absolute;
+  top: clamp(1.2rem, 5vw, 3.2rem);
+  right: clamp(1.2rem, 6vw, 4rem);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: min(320px, 30vw);
+  z-index: 5;
+}
+
+.tabula-widgets.is-hidden {
+  display: none;
+}
+
+.tabula-widget {
+  border-radius: var(--tabula-radius-xl);
+  padding: 1.1rem 1.35rem;
+  background: linear-gradient(135deg, rgba(var(--tabula-face-color-rgb, 255, 255, 255), 0.42), rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.18));
+  border: 1px solid rgba(var(--tabula-rim-color-rgb, 148, 163, 184), 0.32);
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  color: var(--md-on-surface);
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.tabula-widget__header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.tabula-widget__title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: var(--tabula-weight-semibold);
+}
+
+.tabula-widget__meta {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--md-on-surface-variant);
+}
+
+.tabula-widget__value {
+  margin: 0;
+  font-weight: var(--tabula-weight-semibold);
+  font-size: 1.4rem;
+}
+
+.tabula-widget__value--xl {
+  font-size: 2.4rem;
+  letter-spacing: 0.04em;
+}
+
+.tabula-widget__status {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--md-on-surface-variant);
+}
+
+.tabula-widget__actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.3rem;
+}
+
+.tabula-widget__button {
+  flex: 1;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--tabula-radius-full);
+  background: linear-gradient(135deg, rgba(var(--tabula-face-color-rgb, 255, 255, 255), 0.28), rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.14));
+  color: var(--md-on-surface);
+  font-size: 0.85rem;
+  font-weight: var(--tabula-weight-medium);
+  padding: 0.45rem 0.8rem;
+  cursor: pointer;
+  transition: transform 140ms ease, background 140ms ease, border 140ms ease;
+}
+
+.tabula-widget__button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.45);
+}
+
+.tabula-widget__button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.tabula-widget__button--primary {
+  border-color: rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.55);
+  background: linear-gradient(135deg, rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.6), rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.32));
+  color: var(--md-on-primary);
+}
+
+.tabula-widget__button--primary.is-active {
+  background: linear-gradient(135deg, rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.75), rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.4));
+}
+
+.tabula-widget--weather {
+  gap: 0.45rem;
+}
+
+.tabula-widget--pomodoro {
+  gap: 0.5rem;
+}
+
+@media (max-width: 900px) {
+  .tabula-widgets {
+    position: static;
+    width: min(100%, 420px);
+    margin-top: 1.5rem;
+    align-self: stretch;
+  }
+}
+
+@media (max-width: 640px) {
+  .tabula-widget {
+    padding: 1rem 1.1rem;
+  }
+
+  .tabula-widget__value--xl {
+    font-size: 2rem;
+  }
+
+  .tabula-widget__actions {
+    flex-wrap: wrap;
+  }
+
+  .tabula-widget__button {
+    flex: 1 1 calc(50% - 0.5rem);
+  }
+}
+
 .tabula-controls {
   position: fixed;
   bottom: clamp(1rem, 5vw, 2.5rem);

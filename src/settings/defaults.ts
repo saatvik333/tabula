@@ -9,6 +9,10 @@ import type {
   SearchPosition,
   PresetName,
   TimeFormat,
+  WidgetsSettings,
+  WeatherWidgetSettings,
+  PomodoroWidgetSettings,
+  TemperatureUnit,
 } from "$src/settings/schema";
 import { applyPresetToSettings, isPresetName } from "$src/settings/presets";
 
@@ -70,6 +74,13 @@ const coercePreset = (value: unknown): PresetName => {
     return value;
   }
   return "material";
+};
+
+const coerceTemperatureUnit = (value: unknown, fallback: TemperatureUnit): TemperatureUnit => {
+  if (value === "metric" || value === "imperial") {
+    return value;
+  }
+  return fallback;
 };
 
 const coerceTimeFormat = (value: unknown, fallback: TimeFormat): TimeFormat => {
@@ -137,6 +148,49 @@ const sanitizePinnedTabs = (value: unknown, fallback: PinnedTab[]): PinnedTab[] 
   }
   return result;
 };
+
+const sanitizeWeather = (
+  value: Partial<WeatherWidgetSettings> | undefined,
+  fallback: WeatherWidgetSettings,
+): WeatherWidgetSettings => ({
+  enabled: sanitizeBoolean(value?.enabled, fallback.enabled),
+  location: sanitizeString(value?.location, fallback.location),
+  unit: coerceTemperatureUnit(value?.unit, fallback.unit),
+});
+
+const clampMinutes = (value: unknown, fallback: number, min: number, max: number): number =>
+  clamp(Number(value), fallback, min, max);
+
+const sanitizePomodoro = (
+  value: Partial<PomodoroWidgetSettings> | undefined,
+  fallback: PomodoroWidgetSettings,
+): PomodoroWidgetSettings => {
+  const focusMinutes = clampMinutes(value?.focusMinutes, fallback.focusMinutes, 5, 90);
+  const breakMinutes = clampMinutes(value?.breakMinutes, fallback.breakMinutes, 1, 45);
+  const longBreakMinutes = clampMinutes(value?.longBreakMinutes, fallback.longBreakMinutes, 5, 60);
+  const cyclesBeforeLongBreak = clampMinutes(
+    value?.cyclesBeforeLongBreak,
+    fallback.cyclesBeforeLongBreak,
+    1,
+    8,
+  );
+
+  return {
+    enabled: sanitizeBoolean(value?.enabled, fallback.enabled),
+    focusMinutes,
+    breakMinutes,
+    longBreakMinutes,
+    cyclesBeforeLongBreak,
+  };
+};
+
+const mergeWidgets = (
+  value: Partial<WidgetsSettings> | undefined,
+  fallback: WidgetsSettings,
+): WidgetsSettings => ({
+  weather: sanitizeWeather(value?.weather, fallback.weather),
+  pomodoro: sanitizePomodoro(value?.pomodoro, fallback.pomodoro),
+});
 const MATERIAL_LIGHT: Palette = {
   background: "#f3f4f6",
   face: "#ffffff",
@@ -184,6 +238,20 @@ const BASE_DEFAULT_SETTINGS: Settings = {
     engine: "google",
     placeholder: "Search the web",
     position: "top",
+  },
+  widgets: {
+    weather: {
+      enabled: true,
+      location: "New York, NY",
+      unit: "metric",
+    },
+    pomodoro: {
+      enabled: true,
+      focusMinutes: 25,
+      breakMinutes: 5,
+      longBreakMinutes: 15,
+      cyclesBeforeLongBreak: 4,
+    },
   },
 };
 
@@ -233,6 +301,7 @@ export const mergeWithDefaults = (partial: PartialSettings | undefined): Setting
   const background = mergeBackground(source.background, DEFAULT_SETTINGS.background);
   const clock = mergeClock(source.clock, DEFAULT_SETTINGS.clock);
   const search = mergeSearch(source.search, DEFAULT_SETTINGS.search);
+  const widgets = mergeWidgets(source.widgets, DEFAULT_SETTINGS.widgets);
   const initialPreset = presetProvided ? coercePreset(source.preset) : DEFAULT_SETTINGS.preset;
   const tagline = sanitizeTagline(source.tagline, DEFAULT_SETTINGS.tagline);
   const pinnedTabs = sanitizePinnedTabs(source.pinnedTabs, DEFAULT_SETTINGS.pinnedTabs);
@@ -242,6 +311,7 @@ export const mergeWithDefaults = (partial: PartialSettings | undefined): Setting
     background,
     clock,
     search,
+    widgets,
     palettes: {
       light: sanitizePalette(source.palettes?.light, DEFAULT_PALETTE_LIGHT),
       dark: sanitizePalette(source.palettes?.dark, DEFAULT_PALETTE_DARK),
@@ -258,6 +328,7 @@ export const mergeWithDefaults = (partial: PartialSettings | undefined): Setting
       themeMode,
       clock,
       search,
+      widgets,
     };
   }
 
@@ -268,6 +339,7 @@ export const mergeWithDefaults = (partial: PartialSettings | undefined): Setting
       themeMode,
       clock,
       search,
+      widgets,
     };
   }
 

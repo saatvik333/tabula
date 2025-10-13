@@ -238,6 +238,52 @@
 
         <section class="panel">
           <header class="panel__header">
+            <h2>Widgets</h2>
+            <p>Curate at-a-glance cards like weather snapshots and a Pomodoro timer.</p>
+          </header>
+          <div class="panel__grid panel__grid--widgets">
+            <fieldset class="field field--inline">
+              <input type="checkbox" id="weatherEnabled" name="weatherEnabled" />
+              <span class="field__label">Show weather widget</span>
+            </fieldset>
+            <label class="field" data-widget="weather">
+              <span class="field__label">Location</span>
+              <input type="text" id="weatherLocation" name="weatherLocation" class="field__control" placeholder="City, Country" />
+            </label>
+            <label class="field" data-widget="weather">
+              <span class="field__label">Units</span>
+              <select id="weatherUnit" name="weatherUnit" class="field__control">
+                <option value="metric">Celsius</option>
+                <option value="imperial">Fahrenheit</option>
+              </select>
+            </label>
+            <p class="field__hint" id="weatherStatus">Weather data provided by Open-Meteo.</p>
+
+            <fieldset class="field field--inline">
+              <input type="checkbox" id="pomodoroEnabled" name="pomodoroEnabled" />
+              <span class="field__label">Enable Pomodoro timer</span>
+            </fieldset>
+            <label class="field" data-widget="pomodoro">
+              <span class="field__label">Focus length (minutes)</span>
+              <input type="number" id="pomodoroFocus" name="pomodoroFocus" class="field__control" min="5" max="90" step="1" />
+            </label>
+            <label class="field" data-widget="pomodoro">
+              <span class="field__label">Short break (minutes)</span>
+              <input type="number" id="pomodoroBreak" name="pomodoroBreak" class="field__control" min="1" max="45" step="1" />
+            </label>
+            <label class="field" data-widget="pomodoro">
+              <span class="field__label">Long break (minutes)</span>
+              <input type="number" id="pomodoroLongBreak" name="pomodoroLongBreak" class="field__control" min="5" max="60" step="1" />
+            </label>
+            <label class="field" data-widget="pomodoro">
+              <span class="field__label">Focus sessions before long break</span>
+              <input type="number" id="pomodoroCycles" name="pomodoroCycles" class="field__control" min="1" max="8" step="1" />
+            </label>
+          </div>
+        </section>
+
+        <section class="panel">
+          <header class="panel__header">
             <h2>Pinned tabs</h2>
             <p>Collect your favourite sites for one-click access on every new tab.</p>
           </header>

@@ -147,6 +147,19 @@ body[data-background-type="color"]::after {
   gap: 1.5rem;
 }
 
+.panel__grid--widgets {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+[data-widget] {
+  transition: opacity 120ms ease;
+}
+
+[data-widget][data-disabled="true"] {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
 .preset-grid {
   display: flex;
   flex-wrap: wrap;
@@ -403,6 +416,14 @@ body[data-background-type="color"]::after {
 
 .field__hint[data-tone="active"] {
   color: var(--md-primary);
+}
+
+.field__hint[data-tone="info"] {
+  color: var(--md-on-surface);
+}
+
+.field__hint[data-tone="muted"] {
+  color: var(--md-on-surface-variant);
 }
 
 .field input[type="url"]::placeholder,

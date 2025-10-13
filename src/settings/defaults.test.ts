@@ -90,6 +90,32 @@ describe("mergeWithDefaults", () => {
     expect(invalid.background.imageData).toBeUndefined();
   });
 
+  it("sanitises widget settings", () => {
+    const result = mergeWithDefaults({
+      widgets: {
+        weather: {
+          enabled: true,
+          location: "  London  ",
+          unit: "imperial",
+        },
+        pomodoro: {
+          enabled: true,
+          focusMinutes: 120,
+          breakMinutes: -5,
+          longBreakMinutes: 80,
+          cyclesBeforeLongBreak: 12,
+        },
+      },
+    });
+
+    expect(result.widgets.weather.location).toBe("London");
+    expect(result.widgets.weather.unit).toBe("imperial");
+    expect(result.widgets.pomodoro.focusMinutes).toBe(90);
+    expect(result.widgets.pomodoro.breakMinutes).toBe(1);
+    expect(result.widgets.pomodoro.longBreakMinutes).toBe(60);
+    expect(result.widgets.pomodoro.cyclesBeforeLongBreak).toBe(8);
+  });
+
   it("coerces time format and preserves defaults when invalid", () => {
     const result = mergeWithDefaults({
       clock: {

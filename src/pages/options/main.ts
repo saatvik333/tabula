@@ -10,6 +10,7 @@ import type {
   Palette,
   PinnedTab,
   TimeFormat,
+  TemperatureUnit,
 } from "$src/settings/schema";
 import { applyPresetToSettings, listAvailablePresets } from "$src/settings/presets";
 import { loadSettings, saveSettings } from "$src/settings/storage";
@@ -73,6 +74,15 @@ const searchEngineSelect = getElement<HTMLSelectElement>("searchEngine");
 const searchPlaceholderInput = getElement<HTMLInputElement>("searchPlaceholder");
 const searchTopInput = getElement<HTMLInputElement>("searchTop");
 const searchBottomInput = getElement<HTMLInputElement>("searchBottom");
+const weatherEnabledInput = getElement<HTMLInputElement>("weatherEnabled");
+const weatherLocationInput = getElement<HTMLInputElement>("weatherLocation");
+const weatherUnitSelect = getElement<HTMLSelectElement>("weatherUnit");
+const weatherStatusHint = getElement<HTMLParagraphElement>("weatherStatus");
+const pomodoroEnabledInput = getElement<HTMLInputElement>("pomodoroEnabled");
+const pomodoroFocusInput = getElement<HTMLInputElement>("pomodoroFocus");
+const pomodoroBreakInput = getElement<HTMLInputElement>("pomodoroBreak");
+const pomodoroLongBreakInput = getElement<HTMLInputElement>("pomodoroLongBreak");
+const pomodoroCyclesInput = getElement<HTMLInputElement>("pomodoroCycles");
 const presetContainer = getElement<HTMLDivElement>("presetChips");
 const pinnedListContainer = getElement<HTMLDivElement>("pinnedList");
 const pinnedEmptyState = getElement<HTMLParagraphElement>("pinnedEmpty");
@@ -179,6 +189,40 @@ const updateSearchFieldState = (enabled: boolean) => {
   [searchEngineSelect, searchPlaceholderInput, searchTopInput, searchBottomInput].forEach((element) => {
     element.disabled = !enabled;
   });
+};
+
+const WEATHER_HINT_DEFAULT = "Weather data provided by Open-Meteo.";
+
+const markWidgetFields = (elements: HTMLElement[], enabled: boolean) => {
+  elements.forEach((element) => {
+    if (enabled) {
+      delete element.dataset["disabled"];
+    } else {
+      element.dataset["disabled"] = "true";
+    }
+    const controls = element.querySelectorAll<HTMLElement>("input, select");
+    controls.forEach((control) => {
+      (control as HTMLInputElement | HTMLSelectElement).disabled = !enabled;
+    });
+  });
+};
+
+const weatherFieldElements = [weatherLocationInput.parentElement!, weatherUnitSelect.parentElement!].filter(Boolean) as HTMLElement[];
+const pomodoroFieldElements = [
+  pomodoroFocusInput.parentElement!,
+  pomodoroBreakInput.parentElement!,
+  pomodoroLongBreakInput.parentElement!,
+  pomodoroCyclesInput.parentElement!,
+].filter(Boolean) as HTMLElement[];
+
+const updateWeatherFieldState = (enabled: boolean) => {
+  markWidgetFields(weatherFieldElements, enabled);
+  weatherStatusHint.dataset["tone"] = enabled ? "muted" : "info";
+  weatherStatusHint.textContent = enabled ? WEATHER_HINT_DEFAULT : "Enable the weather widget to display conditions.";
+};
+
+const updatePomodoroFieldState = (enabled: boolean) => {
+  markWidgetFields(pomodoroFieldElements, enabled);
 };
 
 const markPresetActive = (name: PresetName) => {
@@ -445,6 +489,18 @@ const syncForm = (settings: Settings) => {
     searchBottomInput.checked = true;
   }
 
+  weatherEnabledInput.checked = state.widgets.weather.enabled;
+  weatherLocationInput.value = state.widgets.weather.location;
+  weatherUnitSelect.value = state.widgets.weather.unit;
+  updateWeatherFieldState(state.widgets.weather.enabled);
+
+  pomodoroEnabledInput.checked = state.widgets.pomodoro.enabled;
+  pomodoroFocusInput.value = state.widgets.pomodoro.focusMinutes.toString();
+  pomodoroBreakInput.value = state.widgets.pomodoro.breakMinutes.toString();
+  pomodoroLongBreakInput.value = state.widgets.pomodoro.longBreakMinutes.toString();
+  pomodoroCyclesInput.value = state.widgets.pomodoro.cyclesBeforeLongBreak.toString();
+  updatePomodoroFieldState(state.widgets.pomodoro.enabled);
+
   updateRangeOutputs();
   updateSearchFieldState(state.search.enabled);
   renderPinnedList();
@@ -675,6 +731,53 @@ searchBottomInput.addEventListener("change", () => {
   if (searchBottomInput.checked) {
     handleSearchPositionChange("bottom");
   }
+});
+
+weatherEnabledInput.addEventListener("change", () => {
+  state.widgets.weather.enabled = weatherEnabledInput.checked;
+  updateWeatherFieldState(state.widgets.weather.enabled);
+  schedule(() => setStatus("Weather widget preference updated"));
+});
+
+weatherLocationInput.addEventListener("input", () => {
+  state.widgets.weather.location = weatherLocationInput.value;
+  schedule(() => setStatus("Weather location updated"));
+});
+
+weatherUnitSelect.addEventListener("change", () => {
+  state.widgets.weather.unit = weatherUnitSelect.value as TemperatureUnit;
+  schedule(() => setStatus("Weather unit updated"));
+});
+
+pomodoroEnabledInput.addEventListener("change", () => {
+  state.widgets.pomodoro.enabled = pomodoroEnabledInput.checked;
+  updatePomodoroFieldState(state.widgets.pomodoro.enabled);
+  schedule(() => setStatus("Pomodoro widget preference updated"));
+});
+
+const updatePomodoroDuration = (key: keyof Settings["widgets"]["pomodoro"], input: HTMLInputElement, min: number, max: number) => {
+  const raw = Number(input.value);
+  const fallback = state.widgets.pomodoro[key] as number;
+  const next = Number.isFinite(raw) ? Math.min(max, Math.max(min, raw)) : fallback;
+  state.widgets.pomodoro[key] = next;
+  input.value = next.toString();
+  schedule(() => setStatus("Pomodoro durations updated"));
+};
+
+pomodoroFocusInput.addEventListener("input", () => {
+  updatePomodoroDuration("focusMinutes", pomodoroFocusInput, 5, 90);
+});
+
+pomodoroBreakInput.addEventListener("input", () => {
+  updatePomodoroDuration("breakMinutes", pomodoroBreakInput, 1, 45);
+});
+
+pomodoroLongBreakInput.addEventListener("input", () => {
+  updatePomodoroDuration("longBreakMinutes", pomodoroLongBreakInput, 5, 60);
+});
+
+pomodoroCyclesInput.addEventListener("input", () => {
+  updatePomodoroDuration("cyclesBeforeLongBreak", pomodoroCyclesInput, 1, 8);
 });
 
 pinnedAddButton.addEventListener("click", () => {

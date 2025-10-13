@@ -6,6 +6,8 @@ import { applySettingsToDocument } from "$src/settings/apply";
 import type { PinnedTab, SearchEngine, Settings } from "$src/settings/schema";
 import { loadSettings, subscribeToSettings } from "$src/settings/storage";
 import { getSystemPrefersDark, resolveTheme, watchSystemTheme, type ThemeVariant } from "$src/settings/theme";
+import { createWeatherWidget, type WeatherWidgetController } from "$src/widgets/weather-widget";
+import { createPomodoroWidget, type PomodoroWidgetController } from "$src/widgets/pomodoro-widget";
 
 type TimeSource = () => Time;
 
@@ -55,6 +57,12 @@ export class ClockApp {
 
   private meridiemBadge: HTMLElement | null = null;
 
+  private widgetsContainer: HTMLElement | null = null;
+
+  private weatherWidget: WeatherWidgetController | null = null;
+
+  private pomodoroWidget: PomodoroWidgetController | null = null;
+
   constructor(
     private readonly container: HTMLElement,
     timeSource: TimeSource = getCurrentTime,
@@ -91,6 +99,16 @@ export class ClockApp {
       this.stopSystemWatcher();
       this.stopSystemWatcher = null;
     }
+
+    if (this.weatherWidget) {
+      this.weatherWidget.destroy();
+      this.weatherWidget = null;
+    }
+
+    if (this.pomodoroWidget) {
+      this.pomodoroWidget.destroy();
+      this.pomodoroWidget = null;
+    }
   }
 
   private buildLayout(): void {
@@ -125,8 +143,14 @@ export class ClockApp {
     const tagline = createElement("p", { className: "tabula-tagline" });
     tagline.textContent = "Your space, no noise";
 
+    const widgetsContainer = createElement("aside", { className: "tabula-widgets" });
+    const weatherWidget = createWeatherWidget();
+    const pomodoroWidget = createPomodoroWidget();
+    widgetsContainer.append(weatherWidget.element, pomodoroWidget.element);
+
     root.append(controls, clockShell, pinnedSection, tagline);
     root.insertBefore(searchForm, clockShell);
+    root.append(widgetsContainer);
 
     this.container.replaceChildren(root);
 
@@ -137,6 +161,9 @@ export class ClockApp {
     this.pinnedSection = pinnedSection;
     this.pinnedList = pinnedList;
     this.meridiemBadge = meridiemBadge;
+    this.widgetsContainer = widgetsContainer;
+    this.weatherWidget = weatherWidget;
+    this.pomodoroWidget = pomodoroWidget;
   }
 
   private createSearchForm(): HTMLFormElement {
@@ -178,6 +205,7 @@ export class ClockApp {
     this.updateSearch(settings);
     this.updateTagline(settings);
     this.updatePinnedTabs(settings);
+    this.updateWidgets(settings);
     this.render(true);
   }
 
@@ -322,5 +350,15 @@ export class ClockApp {
     const formatted = formatTimeForDisplay(nextTime, format);
     this.display.render({ hours: formatted.hours, minutes: formatted.minutes, seconds: formatted.seconds });
     this.updateMeridiem(formatted.meridiem);
+  }
+
+  private updateWidgets(settings: Settings): void {
+    if (!this.widgetsContainer || !this.weatherWidget || !this.pomodoroWidget) return;
+
+    this.weatherWidget.update(settings.widgets.weather);
+    this.pomodoroWidget.update(settings.widgets.pomodoro);
+
+    const allDisabled = !settings.widgets.weather.enabled && !settings.widgets.pomodoro.enabled;
+    this.widgetsContainer.classList.toggle("is-hidden", allDisabled);
   }
 }

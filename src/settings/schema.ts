@@ -22,6 +22,8 @@ export type PresetName =
 
 export type TimeFormat = "12h" | "24h";
 
+export type TemperatureUnit = "metric" | "imperial";
+
 export type PinnedTab = {
   id: string;
   title: string;
@@ -35,6 +37,25 @@ export type Palette = {
   rim: string;
   hand: string;
   accent: string;
+};
+
+export type WeatherWidgetSettings = {
+  enabled: boolean;
+  location: string;
+  unit: TemperatureUnit;
+};
+
+export type PomodoroWidgetSettings = {
+  enabled: boolean;
+  focusMinutes: number;
+  breakMinutes: number;
+  longBreakMinutes: number;
+  cyclesBeforeLongBreak: number;
+};
+
+export type WidgetsSettings = {
+  weather: WeatherWidgetSettings;
+  pomodoro: PomodoroWidgetSettings;
 };
 
 export type Settings = {
@@ -66,6 +87,7 @@ export type Settings = {
     placeholder: string;
     position: SearchPosition;
   };
+  widgets: WidgetsSettings;
 };
 
 export type PartialSettings = Partial<Settings>;
