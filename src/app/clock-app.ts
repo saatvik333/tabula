@@ -125,7 +125,8 @@ export class ClockApp {
     const tagline = createElement("p", { className: "tabula-tagline" });
     tagline.textContent = "Your space, no noise";
 
-    root.append(controls, searchForm, pinnedSection, clockShell, tagline);
+    root.append(controls, clockShell, pinnedSection, tagline);
+    root.insertBefore(searchForm, clockShell);
 
     this.container.replaceChildren(root);
 
@@ -210,15 +211,16 @@ export class ClockApp {
     this.searchForm.classList.toggle("is-hidden", !search.enabled);
     this.searchInput.placeholder = search.placeholder;
 
-    const pinnedReference = this.pinnedSection && !this.pinnedSection.classList.contains("is-hidden") ? this.pinnedSection : this.clockContainer;
+    const clock = this.clockContainer;
+    const pinned = this.pinnedSection;
 
     if (search.position === "top") {
-      if (pinnedReference && this.searchForm.nextSibling !== pinnedReference) {
-        this.root.insertBefore(this.searchForm, pinnedReference);
+      if (clock && this.searchForm.nextSibling !== clock) {
+        this.root.insertBefore(this.searchForm, clock);
       }
-    } else if (this.tagline) {
-      if (this.searchForm.nextSibling !== this.tagline) {
-        this.root.insertBefore(this.searchForm, this.tagline);
+    } else if (pinned) {
+      if (this.searchForm.nextSibling !== pinned) {
+        this.root.insertBefore(this.searchForm, pinned);
       }
     }
   }
