@@ -7,7 +7,7 @@ export type SearchEngine = "google" | "bing" | "duckduckgo" | "brave";
 export type SearchPosition = "top" | "bottom";
 
 export type PresetName =
-  | "monochrome"
+  | "material"
   | "nord"
   | "catppuccin"
   | "tokyo-night"
@@ -15,6 +15,9 @@ export type PresetName =
   | "rose-pine"
   | "pitch-black"
   | "everforest"
+  | "sunset-haze"
+  | "ocean-breeze"
+  | "neon-dream"
   | "custom";
 
 export type TimeFormat = "12h" | "24h";
@@ -40,6 +43,7 @@ export type Settings = {
     type: BackgroundType;
     color: string;
     imageUrl: string;
+    imageData?: string;
     blur: number;
   };
   clock: {

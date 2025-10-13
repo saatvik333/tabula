@@ -78,6 +78,13 @@
               <input type="url" id="backgroundImage" name="backgroundImage" placeholder="https://example.com/wallpaper.jpg" class="field__control" />
             </label>
 
+            <div class="field" data-background="image">
+              <span class="field__label">Upload image</span>
+              <input type="file" id="backgroundImageUpload" name="backgroundImageUpload" class="field__control field__control--file" accept="image/*" />
+              <p class="field__hint" id="backgroundImageStatus" data-tone="muted">No image selected</p>
+              <button type="button" id="backgroundImageClear" class="button button--ghost">Remove uploaded image</button>
+            </div>
+
             <label class="field">
               <span class="field__label">Blur</span>
               <div class="field__range">

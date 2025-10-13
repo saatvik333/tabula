@@ -68,6 +68,28 @@ describe("mergeWithDefaults", () => {
     expect(result.search.placeholder).toBe("Find...");
   });
 
+  it("accepts valid background uploads and rejects invalid data", () => {
+    const valid = mergeWithDefaults({
+      background: {
+        type: "image",
+        imageUrl: "https://example.com/wallpaper.jpg",
+        imageData: "data:image/png;base64,Zm9v",
+      },
+    });
+
+    expect(valid.background.type).toBe("image");
+    expect(valid.background.imageData).toBe("data:image/png;base64,Zm9v");
+
+    const invalid = mergeWithDefaults({
+      background: {
+        type: "image",
+        imageData: "not-a-data-url",
+      },
+    });
+
+    expect(invalid.background.imageData).toBeUndefined();
+  });
+
   it("coerces time format and preserves defaults when invalid", () => {
     const result = mergeWithDefaults({
       clock: {
@@ -127,6 +149,6 @@ describe("mergeWithDefaults", () => {
       preset: "unknown",
     });
 
-    expect(result.preset).toBe("monochrome");
+    expect(result.preset).toBe("material");
   });
 });

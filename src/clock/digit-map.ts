@@ -101,4 +101,18 @@ export const getRotationForCell = (digit: string, index: number): Rotation => {
   return ROTATIONS[symbol];
 };
 
+export type CellConfig = {
+  rotation: Rotation;
+  active: boolean;
+};
+
+export const getCellConfig = (digit: string, index: number): CellConfig => {
+  const layout = DIGIT_LAYOUT[digit];
+  const symbol = layout?.[index] ?? " ";
+  return {
+    rotation: ROTATIONS[symbol],
+    active: symbol !== " ",
+  };
+};
+
 export const DIGIT_SIZE = 24;

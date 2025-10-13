@@ -150,38 +150,40 @@ body[data-background-type="color"]::after {
 }
 
 .tabula-controls {
-  width: 100%;
-  display: flex;
-  justify-content: flex-end;
+  position: fixed;
+  bottom: clamp(1rem, 5vw, 2.5rem);
+  right: clamp(1rem, 6vw, 2.75rem);
+  z-index: 50;
+  pointer-events: none;
 }
 
 .tabula-settings-button {
+  pointer-events: auto;
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-  border: none;
-  background: rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.18);
+  justify-content: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.1));
   color: var(--md-on-surface);
-  padding: 0.55rem 1.25rem;
-  border-radius: var(--tabula-radius-full);
-  font-size: 0.95rem;
-  font-weight: var(--tabula-weight-medium);
+  box-shadow: 0 24px 44px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.5);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
   cursor: pointer;
-  transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
+  transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease, border 180ms ease;
 }
 
 .tabula-settings-button:hover {
-  transform: translateY(-1px);
-  background: rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.28);
-  box-shadow: 0 14px 34px rgba(var(--tabula-background-color-rgb, 12, 12, 12), 0.35);
+  transform: translateY(-4px);
+  border-color: rgba(255, 255, 255, 0.36);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.16));
+  box-shadow: 0 32px 60px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.6);
 }
 
 .tabula-settings-button .material-symbols-outlined {
-  font-size: 20px;
-  line-height: 1;
-}
-
-.tabula-settings-button__label {
+  font-size: 22px;
   line-height: 1;
 }
 
@@ -255,9 +257,22 @@ body[data-background-type="color"]::after {
   background: rgba(var(--tabula-hand-color-rgb, 255, 255, 255), 0.9);
   border-radius: 999px;
   transform-origin: center left;
-  translate: 0 -50%;
-  transition: rotate 180ms ease-out;
+  transform: translateY(-50%) rotate(var(--hand-angle, 135deg));
+  transition: transform 260ms cubic-bezier(0.26, 0.68, 0.48, 1);
+  will-change: transform;
   box-shadow: 0 0 10px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.35);
+}
+
+.cell--inactive .hand {
+  background: rgba(var(--tabula-hand-color-rgb, 255, 255, 255), 0.28);
+  opacity: 0.55;
+  box-shadow: 0 0 6px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.18);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hand {
+    transition: none;
+  }
 }
 
 .dot {
@@ -315,20 +330,33 @@ body[data-background-type="color"]::after {
   align-items: center;
   justify-content: center;
   gap: 0.35rem;
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.22);
   padding: 0.55rem 1.3rem;
   border-radius: var(--tabula-radius-full);
   font-size: 0.95rem;
   font-weight: var(--tabula-weight-medium);
-  background: rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.22);
+  background: linear-gradient(
+    135deg,
+    rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.35),
+    rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.18)
+  );
   color: var(--md-on-surface);
   cursor: pointer;
-  transition: transform 160ms ease, box-shadow 160ms ease;
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  box-shadow: 0 18px 44px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.45);
+  transition: transform 160ms ease, box-shadow 160ms ease, border 160ms ease, background 160ms ease;
 }
 
 .tabula-search__button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 12px 24px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.32);
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.36);
+  background: linear-gradient(
+    135deg,
+    rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.45),
+    rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.24)
+  );
+  box-shadow: 0 26px 56px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.55);
 }
 
 .tabula-search__button .material-symbols-outlined {
@@ -365,14 +393,6 @@ body[data-background-type="color"]::after {
 
 .tabula-pinned.is-hidden {
   display: none;
-}
-
-.tabula-pinned__heading {
-  margin: 0;
-  font-size: 0.85rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--md-on-surface-variant);
 }
 
 .tabula-pinned__list {
@@ -455,6 +475,30 @@ body[data-background-type="color"]::after {
 
   .tabula-tagline {
     font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 720px) {
+  .tabula-controls {
+    bottom: 1.25rem;
+    right: 1.25rem;
+  }
+
+  .tabula-settings-button {
+    width: 3rem;
+    height: 3rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .tabula-controls {
+    bottom: 1rem;
+    right: 1rem;
+  }
+
+  .tabula-settings-button {
+    width: 2.7rem;
+    height: 2.7rem;
   }
 }
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { DIGIT_SIZE, getRotationForCell } from "$src/clock/digit-map";
+import { DIGIT_SIZE, getRotationForCell, getCellConfig } from "$src/clock/digit-map";
 
 describe("digit map", () => {
   it("returns 24 cells per digit", () => {
@@ -15,5 +15,11 @@ describe("digit map", () => {
     expect(getRotationForCell("0", 1)).toEqual([0, 180]);
     expect(getRotationForCell("1", 0)).toEqual([0, 90]);
     expect(getRotationForCell("1", 3)).toEqual([135, 135]);
+  });
+
+  it("marks blank cells as inactive", () => {
+    const config = getCellConfig("1", 3);
+    expect(config.rotation).toEqual([135, 135]);
+    expect(config.active).toBe(false);
   });
 });

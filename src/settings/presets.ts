@@ -20,7 +20,7 @@ const createPalette = (
 ): Palette => ({ background, face, rim, hand, accent });
 
 const PRESETS: Record<Exclude<PresetName, "custom">, PresetDefinition> = {
-  monochrome: {
+  material: {
     light: createPalette("#f3f4f6", "#ffffff", "#d1d5db", "#111827", "#6b7280"),
     dark: createPalette("#111827", "#1f2937", "#374151", "#f3f4f6", "#9ca3af"),
     background: { color: "#111111", blur: 24 },
@@ -54,10 +54,25 @@ const PRESETS: Record<Exclude<PresetName, "custom">, PresetDefinition> = {
     light: createPalette("#f1f0e8", "#e5e2d9", "#c8c3b8", "#314147", "#8ba089"),
     dark: createPalette("#2f3833", "#3b443d", "#475147", "#d3c6aa", "#a7c080"),
   },
+  "sunset-haze": {
+    light: createPalette("#fde6e3", "#fad4d0", "#f6a8a0", "#3b2f4d", "#f97316"),
+    dark: createPalette("#2b1a27", "#3c2234", "#e06444", "#fde5d8", "#ff8a65"),
+    background: { color: "#2b1a27", blur: 18 },
+  },
+  "ocean-breeze": {
+    light: createPalette("#e0f7fa", "#b2ebf2", "#4dd0e1", "#004d61", "#00bcd4"),
+    dark: createPalette("#06263d", "#0b3550", "#1a7a9a", "#d1f4ff", "#26c6da"),
+    background: { color: "#041a2c", blur: 22 },
+  },
+  "neon-dream": {
+    light: createPalette("#f4f3ff", "#ede9fe", "#c4b5fd", "#1f1a3f", "#8b5cf6"),
+    dark: createPalette("#050014", "#16112b", "#f472b6", "#e0e7ff", "#f472b6"),
+    background: { color: "#050014", blur: 28 },
+  },
 };
 
 export const presetNames: PresetName[] = [
-  "monochrome",
+  "material",
   "nord",
   "catppuccin",
   "tokyo-night",
@@ -65,6 +80,9 @@ export const presetNames: PresetName[] = [
   "rose-pine",
   "pitch-black",
   "everforest",
+  "sunset-haze",
+  "ocean-breeze",
+  "neon-dream",
   "custom",
 ];
 

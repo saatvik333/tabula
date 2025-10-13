@@ -5,8 +5,11 @@ import { getActivePalette } from "$src/settings/theme";
 const formatPixels = (value: number): string => `${value}px`;
 
 const formatBackgroundImage = (settings: Settings): string => {
-  const { type, imageUrl } = settings.background;
+  const { type, imageUrl, imageData } = settings.background;
   if (type !== "image") return "none";
+  if (imageData && imageData.trim().length > 0) {
+    return `url(${imageData})`;
+  }
   const trimmed = imageUrl.trim();
   if (!trimmed) return "none";
   return `url(${trimmed})`;

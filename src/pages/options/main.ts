@@ -41,6 +41,9 @@ const backgroundTypeColor = getElement<HTMLInputElement>("backgroundTypeColor");
 const backgroundTypeImage = getElement<HTMLInputElement>("backgroundTypeImage");
 const backgroundColorInput = getElement<HTMLInputElement>("backgroundColor");
 const backgroundImageInput = getElement<HTMLInputElement>("backgroundImage");
+const backgroundImageUpload = getElement<HTMLInputElement>("backgroundImageUpload");
+const backgroundImageStatus = getElement<HTMLParagraphElement>("backgroundImageStatus");
+const backgroundImageClear = getElement<HTMLButtonElement>("backgroundImageClear");
 const backgroundBlurRange = getElement<HTMLInputElement>("backgroundBlur");
 const backgroundBlurValue = getElement<HTMLOutputElement>("backgroundBlurValue");
 
@@ -88,6 +91,27 @@ let isApplyingPreset = false;
 let presetButtons: HTMLButtonElement[] = [];
 
 const MAX_PINNED_TABS = 12;
+const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
+
+type UploadMeta = {
+  name: string;
+  size: number;
+} | null;
+
+let uploadedImageMeta: UploadMeta = null;
+
+const formatBytes = (size: number): string => {
+  if (size < 1024) return `${size} B`;
+  if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
+  return `${(size / (1024 * 1024)).toFixed(2)} MB`;
+};
+
+const estimateDataUrlBytes = (dataUrl: string): number => {
+  const parts = dataUrl.split(",");
+  if (parts.length < 2) return 0;
+  const base64 = parts[1]?.replace(/=+$/, "") ?? "";
+  return Math.floor((base64.length * 3) / 4);
+};
 
 const generatePinnedId = (): string => {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -125,6 +149,30 @@ const updateRangeOutputs = () => {
   handWidthValue.value = `${state.clock.handWidth.toFixed(1)}px`;
   dotSizeValue.value = `${Math.round(state.clock.dotSize)}px`;
   backgroundBlurValue.value = `${Math.round(state.background.blur)}px`;
+};
+
+const updateBackgroundImageStatus = () => {
+  if (state.background.imageData) {
+    const bytes = estimateDataUrlBytes(state.background.imageData);
+    if (!uploadedImageMeta && bytes > 0) {
+      uploadedImageMeta = {
+        name: "Custom image",
+        size: bytes,
+      };
+    }
+
+    const label = uploadedImageMeta
+      ? `${uploadedImageMeta.name} • ${formatBytes(uploadedImageMeta.size)}`
+      : "Custom image in use";
+    backgroundImageStatus.textContent = label;
+    backgroundImageStatus.dataset["tone"] = "active";
+    backgroundImageClear.disabled = false;
+  } else {
+    backgroundImageStatus.textContent = "No image selected";
+    backgroundImageStatus.dataset["tone"] = "muted";
+    backgroundImageClear.disabled = true;
+    uploadedImageMeta = null;
+  }
 };
 
 const updateSearchFieldState = (enabled: boolean) => {
@@ -365,7 +413,11 @@ const syncForm = (settings: Settings) => {
   backgroundTypeImage.checked = backgroundType === "image";
   backgroundColorInput.value = state.background.color;
   backgroundImageInput.value = state.background.imageUrl;
+  backgroundImageUpload.value = "";
   backgroundBlurRange.value = state.background.blur.toString();
+  document.body.dataset["backgroundType"] = backgroundType;
+  uploadedImageMeta = state.background.imageData ? uploadedImageMeta : null;
+  updateBackgroundImageStatus();
 
   clockScaleRange.value = state.clock.scale.toString();
   rimWidthRange.value = state.clock.rimWidth.toString();
@@ -471,6 +523,58 @@ backgroundImageInput.addEventListener("input", () => {
     markPresetActive(state.preset);
   }
   schedule(applyPreview);
+});
+
+backgroundImageUpload.addEventListener("change", () => {
+  const [file] = backgroundImageUpload.files ?? [];
+  if (!file) return;
+
+  if (file.size > MAX_IMAGE_BYTES) {
+    backgroundImageUpload.value = "";
+    setStatus(`Choose an image under ${formatBytes(MAX_IMAGE_BYTES)}`, "error");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.addEventListener("load", () => {
+    const result = reader.result;
+    if (typeof result !== "string") {
+      setStatus("Unsupported image encoding", "error");
+      return;
+    }
+
+    state.background.imageData = result;
+    state.background.type = "image";
+    backgroundTypeImage.checked = true;
+    document.body.dataset["backgroundType"] = "image";
+    uploadedImageMeta = { name: file.name, size: file.size };
+    updateBackgroundImageStatus();
+    if (!isApplyingPreset) {
+      state.preset = "custom";
+      markPresetActive(state.preset);
+    }
+    schedule(applyPreview);
+    setStatus(`Custom background image "${file.name}" added`, "success");
+    backgroundImageUpload.value = "";
+  });
+  reader.addEventListener("error", () => {
+    backgroundImageUpload.value = "";
+    setStatus("Could not read the selected file", "error");
+  });
+  reader.readAsDataURL(file);
+});
+
+backgroundImageClear.addEventListener("click", () => {
+  state.background.imageData = undefined;
+  uploadedImageMeta = null;
+  updateBackgroundImageStatus();
+  backgroundImageUpload.value = "";
+  if (!isApplyingPreset) {
+    state.preset = "custom";
+    markPresetActive(state.preset);
+  }
+  schedule(applyPreview);
+  setStatus("Removed uploaded image", "success");
 });
 
 backgroundBlurRange.addEventListener("input", () => {

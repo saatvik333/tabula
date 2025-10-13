@@ -1,16 +1,22 @@
-import { DIGIT_SIZE, getRotationForCell } from "$src/clock/digit-map";
+import { DIGIT_SIZE, getCellConfig } from "$src/clock/digit-map";
 import { createElement } from "$src/core/dom";
 
 const createHand = (): HTMLElement => {
   const hand = createElement("div", { className: "hand" });
-  hand.style.rotate = "135deg";
+  hand.dataset.angle = "135deg";
+  hand.style.setProperty("--hand-angle", "135deg");
   return hand;
 };
 
 const createDot = (): HTMLElement => createElement("div", { className: "dot" });
 
 const updateHand = (hand: HTMLElement, rotation: number): void => {
-  hand.style.rotate = `${rotation}deg`;
+  const angle = `${rotation}deg`;
+  if (hand.dataset.angle === angle) {
+    return;
+  }
+  hand.dataset.angle = angle;
+  hand.style.setProperty("--hand-angle", angle);
 };
 
 export type DigitView = {
@@ -43,7 +49,8 @@ export const createDigit = (): DigitView => {
           throw new Error(`Missing cell for index ${index}`);
         }
 
-        const [first, second] = getRotationForCell(value, index);
+        const { rotation, active } = getCellConfig(value, index);
+        const [first, second] = rotation;
         const children = cell.children;
         const firstHand = children.item(0) as HTMLElement | null;
         const secondHand = children.item(1) as HTMLElement | null;
@@ -54,6 +61,7 @@ export const createDigit = (): DigitView => {
 
         updateHand(firstHand, first);
         updateHand(secondHand, second);
+        cell.classList.toggle("cell--inactive", !active);
       }
     },
   };

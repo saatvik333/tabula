@@ -69,7 +69,7 @@ const coercePreset = (value: unknown): PresetName => {
   if (isPresetName(value)) {
     return value;
   }
-  return "monochrome";
+  return "material";
 };
 
 const coerceTimeFormat = (value: unknown, fallback: TimeFormat): TimeFormat => {
@@ -137,7 +137,7 @@ const sanitizePinnedTabs = (value: unknown, fallback: PinnedTab[]): PinnedTab[] 
   }
   return result;
 };
-const MONOCHROME_LIGHT: Palette = {
+const MATERIAL_LIGHT: Palette = {
   background: "#f3f4f6",
   face: "#ffffff",
   rim: "#d1d5db",
@@ -145,7 +145,7 @@ const MONOCHROME_LIGHT: Palette = {
   accent: "#6b7280",
 };
 
-const MONOCHROME_DARK: Palette = {
+const MATERIAL_DARK: Palette = {
   background: "#111827",
   face: "#1f2937",
   rim: "#374151",
@@ -153,8 +153,8 @@ const MONOCHROME_DARK: Palette = {
   accent: "#9ca3af",
 };
 
-export const DEFAULT_PALETTE_LIGHT: Palette = MONOCHROME_LIGHT;
-export const DEFAULT_PALETTE_DARK: Palette = MONOCHROME_DARK;
+export const DEFAULT_PALETTE_LIGHT: Palette = MATERIAL_LIGHT;
+export const DEFAULT_PALETTE_DARK: Palette = MATERIAL_DARK;
  
 const BASE_DEFAULT_SETTINGS: Settings = {
   themeMode: "system",
@@ -162,6 +162,7 @@ const BASE_DEFAULT_SETTINGS: Settings = {
     type: "color",
     color: "#111111",
     imageUrl: "",
+    imageData: undefined,
     blur: 24,
   },
   clock: {
@@ -172,10 +173,10 @@ const BASE_DEFAULT_SETTINGS: Settings = {
     format: "24h",
   },
   palettes: {
-    light: MONOCHROME_LIGHT,
-    dark: MONOCHROME_DARK,
+    light: MATERIAL_LIGHT,
+    dark: MATERIAL_DARK,
   },
-  preset: "monochrome",
+  preset: "material",
   tagline: DEFAULT_TAGLINE,
   pinnedTabs: [],
   search: {
@@ -186,7 +187,7 @@ const BASE_DEFAULT_SETTINGS: Settings = {
   },
 };
 
-export const DEFAULT_SETTINGS: Settings = applyPresetToSettings("monochrome", BASE_DEFAULT_SETTINGS);
+export const DEFAULT_SETTINGS: Settings = applyPresetToSettings("material", BASE_DEFAULT_SETTINGS);
 
 const mergeClock = (
   value: Partial<Settings["clock"]> | undefined,
@@ -206,6 +207,10 @@ const mergeBackground = (
   type: coerceBackgroundType(value?.type),
   color: isHexColor(value?.color) ? value!.color : fallback.color,
   imageUrl: sanitizeString(value?.imageUrl, ""),
+  imageData:
+    typeof value?.imageData === "string" && value.imageData.trim().startsWith("data:image/")
+      ? value.imageData.trim()
+      : undefined,
   blur: clamp(Number(value?.blur), fallback.blur, 0, 40),
 });
 

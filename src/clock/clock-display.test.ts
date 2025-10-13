@@ -5,7 +5,7 @@ import { createClockDisplay } from "$src/clock/clock-display";
 const extractHandRotation = (cell: Element, index: number): string => {
   const hand = cell.children.item(index) as HTMLElement | null;
   if (!hand) throw new Error("Missing hand element");
-  return hand.style.rotate;
+  return hand.dataset.angle ?? hand.style.getPropertyValue("--hand-angle");
 };
 
 describe("clock display", () => {
@@ -39,5 +39,33 @@ describe("clock display", () => {
       expect(extractHandRotation(secondHourCell, 0)).toBe("0deg");
       expect(extractHandRotation(secondHourCell, 1)).toBe("90deg");
     }
+  });
+
+  it("can toggle seconds visibility", () => {
+    const display = createClockDisplay();
+
+    display.render({ hours: "08", minutes: "15", seconds: "42" });
+    display.setSecondsVisible(false);
+
+    const fields = display.element.querySelectorAll(".time-field");
+    expect(fields).toHaveLength(2);
+
+    display.setSecondsVisible(true);
+    const allFields = display.element.querySelectorAll(".time-field");
+    expect(allFields).toHaveLength(3);
+  });
+
+  it("applies inactive styling to empty cells", () => {
+    const display = createClockDisplay();
+    display.render({ hours: "11", minutes: "11", seconds: "11" });
+
+    const firstDigit = display.element.querySelector(".digit");
+    expect(firstDigit).toBeTruthy();
+
+    const blankCell = firstDigit ? (firstDigit.children.item(3) as HTMLElement | null) : null;
+    const activeCell = firstDigit ? (firstDigit.children.item(0) as HTMLElement | null) : null;
+
+    expect(blankCell?.classList.contains("cell--inactive")).toBe(true);
+    expect(activeCell?.classList.contains("cell--inactive")).toBe(false);
   });
 });

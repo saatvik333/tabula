@@ -28,6 +28,7 @@ const createField = (): FieldView => {
 export type ClockDisplay = {
   element: HTMLElement;
   render: (time: Time) => void;
+  setSecondsVisible: (visible: boolean) => void;
 };
 
 export const createClockDisplay = (): ClockDisplay => {
@@ -41,13 +42,42 @@ export const createClockDisplay = (): ClockDisplay => {
   element.append(fields.hours.element, fields.minutes.element, fields.seconds.element);
 
   const ensureTwoDigits = (value: string): string => value.padStart(2, "0");
+  let secondsVisible = true;
+  let lastRendered: Time | null = null;
 
   return {
     element,
     render: (time: Time) => {
       fields.hours.update(ensureTwoDigits(time.hours));
       fields.minutes.update(ensureTwoDigits(time.minutes));
-      fields.seconds.update(ensureTwoDigits(time.seconds));
+      if (secondsVisible) {
+        fields.seconds.update(ensureTwoDigits(time.seconds));
+      }
+      lastRendered = time;
+    },
+    setSecondsVisible: (visible: boolean) => {
+      if (visible === secondsVisible) {
+        return;
+      }
+
+      secondsVisible = visible;
+
+      if (visible) {
+        const minutesElement = fields.minutes.element;
+        const reference = minutesElement.nextSibling;
+        if (reference) {
+          element.insertBefore(fields.seconds.element, reference);
+        } else {
+          element.append(fields.seconds.element);
+        }
+        fields.seconds.element.hidden = false;
+        if (lastRendered) {
+          fields.seconds.update(ensureTwoDigits(lastRendered.seconds));
+        }
+      } else {
+        fields.seconds.element.hidden = true;
+        fields.seconds.element.remove();
+      }
     },
   };
 };

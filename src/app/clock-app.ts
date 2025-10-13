@@ -101,11 +101,9 @@ export class ClockApp {
     const controls = createElement("div", { className: "tabula-controls" });
     const settingsButton = createElement<HTMLButtonElement>("button", { className: "tabula-settings-button" });
     settingsButton.type = "button";
-    settingsButton.innerHTML = `
-      <span class="material-symbols-outlined" aria-hidden="true">tune</span>
-      <span class="tabula-settings-button__label">Customize</span>
-    `;
+    settingsButton.innerHTML = `<span class="material-symbols-outlined" aria-hidden="true">settings</span>`;
     settingsButton.setAttribute("aria-label", "Open Tabula settings");
+    settingsButton.title = "Customize Tabula";
     settingsButton.addEventListener("click", () => this.openOptions());
 
     controls.append(settingsButton);
@@ -121,10 +119,8 @@ export class ClockApp {
 
     const pinnedSection = createElement("div", { className: "tabula-pinned" });
     pinnedSection.classList.add("is-hidden");
-    const pinnedHeading = createElement("p", { className: "tabula-pinned__heading" });
-    pinnedHeading.textContent = "Pinned";
     const pinnedList = createElement("div", { className: "tabula-pinned__list" });
-    pinnedSection.append(pinnedHeading, pinnedList);
+    pinnedSection.append(pinnedList);
 
     const tagline = createElement("p", { className: "tabula-tagline" });
     tagline.textContent = "Your space, no noise";
