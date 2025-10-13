@@ -39,6 +39,8 @@
   --tabula-face-color-rgb: 31, 41, 55;
   --tabula-rim-color-rgb: 55, 65, 81;
   --tabula-hand-color-rgb: 243, 244, 246;
+  --tabula-widget-offset: clamp(1.2rem, 5vw, 3.2rem);
+  --tabula-widget-offset-side: clamp(1.2rem, 6vw, 4rem);
 }
 
 :root {
@@ -94,10 +96,6 @@ body::before {
   transition: filter 200ms ease, opacity 200ms ease;
 }
 
-body[data-background-type="color"]::before {
-  opacity: 0;
-}
-
 body::after {
   content: "";
   position: fixed;
@@ -109,15 +107,6 @@ body::after {
   );
   mix-blend-mode: soft-light;
   pointer-events: none;
-}
-
-body[data-background-type="color"]::after {
-  background: linear-gradient(
-    160deg,
-    rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.18),
-    rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.45)
-  );
-  mix-blend-mode: normal;
 }
 
 :root[data-theme="light"] body::after {
@@ -151,18 +140,51 @@ body[data-background-type="color"]::after {
 
 .tabula-widgets {
   position: fixed;
-  top: clamp(1.2rem, 5vw, 3.2rem);
-  right: clamp(1.2rem, 6vw, 4rem);
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
   width: min(320px, 30vw);
+  gap: 1rem;
   z-index: 20;
   pointer-events: none;
 }
 
 .tabula-widgets.is-hidden {
   display: none;
+}
+
+.tabula-widgets[data-placement="top-right"] {
+  top: var(--tabula-widget-offset);
+  right: var(--tabula-widget-offset-side);
+  bottom: auto;
+  left: auto;
+  align-items: flex-end;
+  flex-direction: column;
+}
+
+.tabula-widgets[data-placement="top-left"] {
+  top: var(--tabula-widget-offset);
+  left: var(--tabula-widget-offset-side);
+  bottom: auto;
+  right: auto;
+  align-items: flex-start;
+  flex-direction: column;
+}
+
+.tabula-widgets[data-placement="bottom-right"] {
+  bottom: var(--tabula-widget-offset);
+  right: var(--tabula-widget-offset-side);
+  top: auto;
+  left: auto;
+  align-items: flex-end;
+  flex-direction: column-reverse;
+}
+
+.tabula-widgets[data-placement="bottom-left"] {
+  bottom: var(--tabula-widget-offset);
+  left: var(--tabula-widget-offset-side);
+  top: auto;
+  right: auto;
+  align-items: flex-start;
+  flex-direction: column-reverse;
 }
 
 .tabula-widget {
@@ -269,6 +291,12 @@ body[data-background-type="color"]::after {
     width: min(100%, 420px);
     margin-top: 1.5rem;
     align-self: stretch;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    flex-direction: column;
+    align-items: stretch;
     pointer-events: auto;
   }
 }

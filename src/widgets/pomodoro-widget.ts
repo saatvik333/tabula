@@ -12,6 +12,13 @@ type PomodoroState = {
 };
 
 const STORAGE_KEY = "tabula:pomodoro-state";
+const CHANNEL_NAME = "tabula:pomodoro-broadcast";
+
+type PomodoroBroadcastMessage = {
+  type: "state";
+  state: PomodoroState;
+  source: string;
+};
 
 const MODE_LABELS: Record<PomodoroMode, string> = {
   focus: "Focus",
@@ -66,6 +73,26 @@ class PomodoroWidget {
 
   private intervalId: number | null = null;
 
+  private readonly instanceId = Math.random().toString(36).slice(2);
+
+  private channel: BroadcastChannel | null = null;
+
+  private readonly handleStorage = (event: StorageEvent): void => {
+    if (event.key !== STORAGE_KEY || !event.newValue) return;
+    try {
+      const parsed = JSON.parse(event.newValue) as PomodoroState;
+      this.syncExternalState(parsed);
+    } catch (error) {
+      console.warn("Pomodoro widget storage sync failed", error);
+    }
+  };
+
+  private readonly handleChannel = (event: MessageEvent<PomodoroBroadcastMessage>): void => {
+    const payload = event.data;
+    if (!payload || payload.type !== "state" || payload.source === this.instanceId) return;
+    this.syncExternalState(payload.state);
+  };
+
   readonly element: HTMLElement;
 
   private readonly modeEl: HTMLElement;
@@ -105,17 +132,35 @@ class PomodoroWidget {
     this.state = this.restoreState();
     this.render();
     this.applyRunningState();
+    if (!this.settings.enabled) {
+      this.element.hidden = true;
+      this.element.style.display = "none";
+    }
+
+    if (typeof BroadcastChannel !== "undefined") {
+      try {
+        this.channel = new BroadcastChannel(CHANNEL_NAME);
+        this.channel.addEventListener("message", this.handleChannel);
+      } catch (error) {
+        console.warn("Pomodoro widget broadcast channel unavailable", error);
+        this.channel = null;
+      }
+    }
+
+    window.addEventListener("storage", this.handleStorage);
   }
 
   update(settings: PomodoroWidgetSettings): void {
     this.settings = settings;
     if (!settings.enabled) {
       this.element.hidden = true;
+      this.element.style.display = "none";
       this.stop();
       return;
     }
 
     this.element.hidden = false;
+    this.element.style.display = "";
 
     const durations = this.getDurations();
     const currentDuration = durations[this.state.mode];
@@ -123,66 +168,129 @@ class PomodoroWidget {
       this.state.remainingMs = currentDuration;
     }
 
+    if (this.state.running) {
+      this.ensureInterval();
+    } else {
+      this.stop();
+    }
+
     this.render();
     this.applyRunningState();
   }
 
+  private syncExternalState(external: PomodoroState): void {
+    const next = this.normalizeStateFromSource(external);
+    const wasRunning = this.state.running;
+    this.state = next;
+
+    if (!this.settings.enabled) {
+      this.stop();
+      this.render();
+      this.applyRunningState();
+      return;
+    }
+
+    if (this.state.running) {
+      this.ensureInterval();
+    } else {
+      this.stop();
+    }
+
+    this.applyRunningState();
+    this.render();
+  }
+
   destroy(): void {
     this.stop();
-  }
-
-  private restoreState(): PomodoroState {
-    const stored = loadState();
-    const durations = this.getDurations();
-    if (stored) {
-      const mode = stored.mode ?? "focus";
-      const remainingMs = Math.min(stored.remainingMs ?? durations[mode], durations[mode]);
-      const running = Boolean(stored.running);
-      const cyclesCompleted = Number.isFinite(stored.cyclesCompleted) ? stored.cyclesCompleted : 0;
-      const lastUpdated = Number.isFinite(stored.lastUpdated) ? stored.lastUpdated : Date.now();
-
-      const state: PomodoroState = {
-        mode,
-        remainingMs,
-        running,
-        cyclesCompleted,
-        lastUpdated,
-      };
-
-      if (running) {
-        this.applyElapsedTime(state);
+    window.removeEventListener("storage", this.handleStorage);
+    if (this.channel) {
+      this.channel.removeEventListener("message", this.handleChannel);
+      try {
+        this.channel.close();
+      } catch (error) {
+        console.warn("Pomodoro widget broadcast channel close failed", error);
       }
-
-      return state;
-    }
-
-    return {
-      mode: "focus",
-      remainingMs: durations.focus,
-      running: false,
-      cyclesCompleted: 0,
-      lastUpdated: Date.now(),
-    };
-  }
-
-  private applyElapsedTime(state: PomodoroState): void {
-    const elapsed = Date.now() - state.lastUpdated;
-    if (elapsed <= 0) return;
-    state.remainingMs = Math.max(0, state.remainingMs - elapsed);
-    if (state.remainingMs === 0) {
-      this.advanceState(state);
+      this.channel = null;
     }
   }
 
-  private getDurations(): Record<PomodoroMode, number> {
-    return {
-      focus: minutesToMs(this.settings.focusMinutes),
-      "short-break": minutesToMs(this.settings.breakMinutes),
-      "long-break": minutesToMs(this.settings.longBreakMinutes),
-    };
+  private ensureInterval(): void {
+    if (this.intervalId !== null) return;
+    this.intervalId = window.setInterval(() => this.tick(), 1000);
   }
 
-  private advanceState(state: PomodoroState): void {
+  private broadcastState(state: PomodoroState): void {
+    if (!this.channel) return;
+    try {
+      const message: PomodoroBroadcastMessage = { type: "state", state, source: this.instanceId };
+      this.channel.postMessage(message);
+    } catch (error) {
+      console.warn("Pomodoro widget broadcast failed", error);
+    }
+  }
+
+  private persistState(state: PomodoroState): void {
+    saveState(state);
+    this.broadcastState(state);
+  }
+
+  private normalizeStateFromSource(source: PomodoroState | null): PomodoroState {
+    const durations = this.getDurations();
+    if (!source) {
+      return {
+        mode: "focus",
+        remainingMs: durations.focus,
+        running: false,
+        cyclesCompleted: 0,
+        lastUpdated: Date.now(),
+      };
+    }
+
+    const mode: PomodoroMode = source.mode === "short-break" || source.mode === "long-break" ? source.mode : "focus";
+    const cyclesCompleted = Number.isFinite(source.cyclesCompleted) ? Math.max(0, Math.floor(source.cyclesCompleted)) : 0;
+    const running = Boolean(source.running);
+    const remainingMsRaw = Number.isFinite(source.remainingMs) ? Math.max(0, source.remainingMs) : durations[mode];
+    const lastUpdated = Number.isFinite(source.lastUpdated) ? source.lastUpdated : Date.now();
+
+    const state: PomodoroState = {
+      mode,
+      remainingMs: Math.min(remainingMsRaw, durations[mode]),
+      running,
+      cyclesCompleted,
+      lastUpdated,
+    };
+
+    if (state.running) {
+      this.fastForward(state, Date.now() - state.lastUpdated);
+    } else {
+      if (state.remainingMs === 0 || state.remainingMs > durations[state.mode]) {
+        state.remainingMs = durations[state.mode];
+      }
+      state.lastUpdated = Date.now();
+    }
+
+    return state;
+  }
+
+  private fastForward(state: PomodoroState, elapsedMs: number): void {
+    if (elapsedMs <= 0) return;
+    let remaining = elapsedMs;
+    if (state.remainingMs <= 0) {
+      this.transitionToNextPhase(state, { updateTimestamp: false, keepRunning: true });
+    }
+    while (remaining >= state.remainingMs) {
+      remaining -= state.remainingMs;
+      this.transitionToNextPhase(state, { updateTimestamp: false, keepRunning: true });
+    }
+    state.remainingMs = Math.max(0, state.remainingMs - remaining);
+    state.lastUpdated = Date.now();
+  }
+
+  private transitionToNextPhase(
+    state: PomodoroState,
+    options: { keepRunning?: boolean; updateTimestamp?: boolean } = {},
+  ): void {
+    const { keepRunning = true, updateTimestamp = true } = options;
     if (state.mode === "focus") {
       state.cyclesCompleted += 1;
       const useLongBreak = state.cyclesCompleted % this.settings.cyclesBeforeLongBreak === 0;
@@ -193,10 +301,30 @@ class PomodoroWidget {
 
     const durations = this.getDurations();
     state.remainingMs = durations[state.mode];
-    state.lastUpdated = Date.now();
-    state.running = true;
-    saveState(state);
-    this.render();
+    if (updateTimestamp) {
+      state.lastUpdated = Date.now();
+    }
+    state.running = keepRunning;
+  }
+
+  private restoreState(): PomodoroState {
+    return this.normalizeStateFromSource(loadState());
+  }
+
+  private getDurations(): Record<PomodoroMode, number> {
+    return {
+      focus: minutesToMs(this.settings.focusMinutes),
+      "short-break": minutesToMs(this.settings.breakMinutes),
+      "long-break": minutesToMs(this.settings.longBreakMinutes),
+    };
+  }
+
+  private advanceState(state: PomodoroState, persist = true): void {
+    this.transitionToNextPhase(state);
+    if (persist) {
+      this.persistState(state);
+      this.render();
+    }
   }
 
   private tick(): void {
@@ -209,7 +337,7 @@ class PomodoroWidget {
       this.advanceState(this.state);
       this.notifyModeChange();
     } else {
-      saveState(this.state);
+      this.persistState(this.state);
       this.render();
     }
   }
@@ -226,8 +354,8 @@ class PomodoroWidget {
     if (this.intervalId !== null) return;
     this.state.running = true;
     this.state.lastUpdated = Date.now();
-    this.intervalId = window.setInterval(() => this.tick(), 1000);
-    saveState(this.state);
+    this.ensureInterval();
+    this.persistState(this.state);
     this.render();
     this.applyRunningState();
   }
@@ -235,7 +363,7 @@ class PomodoroWidget {
   private pause(): void {
     this.stop();
     this.state.running = false;
-    saveState(this.state);
+    this.persistState(this.state);
     this.render();
     this.applyRunningState();
   }
@@ -257,24 +385,15 @@ class PomodoroWidget {
       lastUpdated: Date.now(),
     };
     this.stop();
-    saveState(this.state);
+    this.persistState(this.state);
     this.render();
     this.applyRunningState();
   }
 
   private skip(): void {
     this.stop();
-    this.state.running = false;
-    if (this.state.mode === "focus") {
-      this.state.cyclesCompleted += 1;
-      const useLongBreak = this.state.cyclesCompleted % this.settings.cyclesBeforeLongBreak === 0;
-      this.state.mode = useLongBreak ? "long-break" : "short-break";
-    } else {
-      this.state.mode = "focus";
-    }
-    this.state.remainingMs = this.getDurations()[this.state.mode];
-    this.state.lastUpdated = Date.now();
-    saveState(this.state);
+    this.transitionToNextPhase(this.state, { keepRunning: false });
+    this.persistState(this.state);
     this.render();
     this.applyRunningState();
   }

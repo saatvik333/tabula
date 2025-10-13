@@ -53,20 +53,12 @@ body::before {
   transform: scale(1.02);
 }
 
-body[data-background-type="color"]::before {
-  opacity: 0;
-}
-
 body::after {
   content: "";
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.35);
   pointer-events: none;
-}
-
-body[data-background-type="color"]::after {
-  background: linear-gradient(160deg, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.45));
 }
 
 :root[data-theme="light"] body::after {
@@ -360,6 +352,10 @@ body[data-background-type="color"]::after {
   gap: 1rem;
 }
 
+.field--wrap {
+  flex-wrap: wrap;
+}
+
 .field__label {
   font-size: 0.95rem;
   font-weight: 600;
@@ -579,13 +575,6 @@ body[data-background-type="color"]::after {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.08));
 }
 
-body[data-background-type="color"] [data-background="image"] {
-  display: none;
-}
-
-body[data-background-type="image"] [data-background="color"] {
-  display: none;
-}
 
 @media (max-width: 720px) {
   .settings {

@@ -3,7 +3,6 @@ import { applySettingsToDocument } from "$src/settings/apply";
 import type {
   Settings,
   ThemeMode,
-  BackgroundType,
   SearchEngine,
   SearchPosition,
   PresetName,
@@ -38,9 +37,6 @@ const taglineInput = getElement<HTMLInputElement>("taglineInput");
 const timeFormat24Input = getElement<HTMLInputElement>("timeFormat24");
 const timeFormat12Input = getElement<HTMLInputElement>("timeFormat12");
 
-const backgroundTypeColor = getElement<HTMLInputElement>("backgroundTypeColor");
-const backgroundTypeImage = getElement<HTMLInputElement>("backgroundTypeImage");
-const backgroundColorInput = getElement<HTMLInputElement>("backgroundColor");
 const backgroundImageInput = getElement<HTMLInputElement>("backgroundImage");
 const backgroundImageUpload = getElement<HTMLInputElement>("backgroundImageUpload");
 const backgroundImageStatus = getElement<HTMLParagraphElement>("backgroundImageStatus");
@@ -83,6 +79,9 @@ const pomodoroFocusInput = getElement<HTMLInputElement>("pomodoroFocus");
 const pomodoroBreakInput = getElement<HTMLInputElement>("pomodoroBreak");
 const pomodoroLongBreakInput = getElement<HTMLInputElement>("pomodoroLongBreak");
 const pomodoroCyclesInput = getElement<HTMLInputElement>("pomodoroCycles");
+const widgetsPlacementRadios = Array.from(
+  document.querySelectorAll<HTMLInputElement>('input[name="widgetsPlacement"]'),
+);
 const presetContainer = getElement<HTMLDivElement>("presetChips");
 const pinnedListContainer = getElement<HTMLDivElement>("pinnedList");
 const pinnedEmptyState = getElement<HTMLParagraphElement>("pinnedEmpty");
@@ -150,7 +149,6 @@ let state: Settings = clone(DEFAULT_SETTINGS);
 const applyPreview = () => {
   const theme = resolveTheme(state.themeMode, getSystemPrefersDark());
   applySettingsToDocument(document, state, theme);
-  document.body.dataset["backgroundType"] = state.background.type;
 };
 
 const updateRangeOutputs = () => {
@@ -452,14 +450,9 @@ const syncForm = (settings: Settings) => {
     timeFormat24Input.checked = true;
   }
 
-  const backgroundType = state.background.type;
-  backgroundTypeColor.checked = backgroundType === "color";
-  backgroundTypeImage.checked = backgroundType === "image";
-  backgroundColorInput.value = state.background.color;
   backgroundImageInput.value = state.background.imageUrl;
   backgroundImageUpload.value = "";
   backgroundBlurRange.value = state.background.blur.toString();
-  document.body.dataset["backgroundType"] = backgroundType;
   uploadedImageMeta = state.background.imageData ? uploadedImageMeta : null;
   updateBackgroundImageStatus();
 
@@ -501,6 +494,10 @@ const syncForm = (settings: Settings) => {
   pomodoroCyclesInput.value = state.widgets.pomodoro.cyclesBeforeLongBreak.toString();
   updatePomodoroFieldState(state.widgets.pomodoro.enabled);
 
+  widgetsPlacementRadios.forEach((radio) => {
+    radio.checked = radio.value === state.widgets.placement;
+  });
+
   updateRangeOutputs();
   updateSearchFieldState(state.search.enabled);
   renderPinnedList();
@@ -517,18 +514,6 @@ const handleThemeModeChange = () => {
   schedule(() => {
     applyPreview();
     setStatus("Preview updated");
-  });
-};
-
-const handleBackgroundTypeChange = (type: BackgroundType) => {
-  state.background.type = type;
-  document.body.dataset["backgroundType"] = type;
-  if (!isApplyingPreset) {
-    state.preset = "custom";
-    markPresetActive(state.preset);
-  }
-  schedule(() => {
-    applyPreview();
   });
 };
 
@@ -560,18 +545,6 @@ timeFormat12Input.addEventListener("change", () => {
   }
 });
 
-backgroundTypeColor.addEventListener("change", () => handleBackgroundTypeChange("color"));
-backgroundTypeImage.addEventListener("change", () => handleBackgroundTypeChange("image"));
-
-backgroundColorInput.addEventListener("input", () => {
-  state.background.color = backgroundColorInput.value;
-  if (!isApplyingPreset) {
-    state.preset = "custom";
-    markPresetActive(state.preset);
-  }
-  schedule(applyPreview);
-});
-
 backgroundImageInput.addEventListener("input", () => {
   state.background.imageUrl = backgroundImageInput.value.trim();
   if (!isApplyingPreset) {
@@ -601,8 +574,6 @@ backgroundImageUpload.addEventListener("change", () => {
 
     state.background.imageData = result;
     state.background.type = "image";
-    backgroundTypeImage.checked = true;
-    document.body.dataset["backgroundType"] = "image";
     uploadedImageMeta = { name: file.name, size: file.size };
     updateBackgroundImageStatus();
     if (!isApplyingPreset) {
@@ -778,6 +749,14 @@ pomodoroLongBreakInput.addEventListener("input", () => {
 
 pomodoroCyclesInput.addEventListener("input", () => {
   updatePomodoroDuration("cyclesBeforeLongBreak", pomodoroCyclesInput, 1, 8);
+});
+
+widgetsPlacementRadios.forEach((radio) => {
+  radio.addEventListener("change", () => {
+    if (!radio.checked) return;
+    state.widgets.placement = radio.value as Settings["widgets"]["placement"];
+    schedule(() => setStatus("Widget placement updated"));
+  });
 });
 
 pinnedAddButton.addEventListener("click", () => {

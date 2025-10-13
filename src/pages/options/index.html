@@ -53,32 +53,15 @@
         <section class="panel">
           <header class="panel__header">
             <h2>Background</h2>
-            <p>Use a solid colour or bring your own image with adjustable blur.</p>
+            <p>Bring your own image with adjustable blur, or stick with a preset.</p>
           </header>
           <div class="panel__grid panel__grid--split">
-            <fieldset class="field field--inline">
-              <legend class="field__label">Background type</legend>
-              <label class="choice">
-                <input type="radio" name="backgroundType" id="backgroundTypeColor" value="color" />
-                <span>Colour</span>
-              </label>
-              <label class="choice">
-                <input type="radio" name="backgroundType" id="backgroundTypeImage" value="image" />
-                <span>Image</span>
-              </label>
-            </fieldset>
-
-            <label class="field" data-background="color">
-              <span class="field__label">Background colour</span>
-              <input type="color" id="backgroundColor" name="backgroundColor" class="field__control" />
-            </label>
-
-            <label class="field" data-background="image">
+            <label class="field">
               <span class="field__label">Image URL</span>
               <input type="url" id="backgroundImage" name="backgroundImage" placeholder="https://example.com/wallpaper.jpg" class="field__control" />
             </label>
 
-            <div class="field" data-background="image">
+            <div class="field">
               <span class="field__label">Upload image</span>
               <input type="file" id="backgroundImageUpload" name="backgroundImageUpload" class="field__control field__control--file" accept="image/*" />
               <p class="field__hint" id="backgroundImageStatus" data-tone="muted">No image selected</p>
@@ -279,6 +262,25 @@
               <span class="field__label">Focus sessions before long break</span>
               <input type="number" id="pomodoroCycles" name="pomodoroCycles" class="field__control" min="1" max="8" step="1" />
             </label>
+            <fieldset class="field field--inline field--wrap">
+              <legend class="field__label">Placement</legend>
+              <label class="choice">
+                <input type="radio" name="widgetsPlacement" id="widgetsTopRight" value="top-right" />
+                <span>Top right</span>
+              </label>
+              <label class="choice">
+                <input type="radio" name="widgetsPlacement" id="widgetsTopLeft" value="top-left" />
+                <span>Top left</span>
+              </label>
+              <label class="choice">
+                <input type="radio" name="widgetsPlacement" id="widgetsBottomRight" value="bottom-right" />
+                <span>Bottom right</span>
+              </label>
+              <label class="choice">
+                <input type="radio" name="widgetsPlacement" id="widgetsBottomLeft" value="bottom-left" />
+                <span>Bottom left</span>
+              </label>
+            </fieldset>
           </div>
         </section>
 

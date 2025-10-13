@@ -96,7 +96,7 @@ export const applySettingsToDocument = (
   root.style.setProperty("--tabula-background-mode", settings.background.type);
 
   if (doc.body) {
-    doc.body.dataset["backgroundType"] = settings.background.type;
     doc.body.dataset["theme"] = theme;
+    doc.body.dataset["widgetPlacement"] = settings.widgets.placement;
   }
 };

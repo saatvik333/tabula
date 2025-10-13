@@ -144,18 +144,21 @@ class WeatherWidget {
 
     this.element.append(header, this.temperatureEl, this.apparentEl, this.statusEl);
     this.element.hidden = true;
+    this.element.style.display = "none";
   }
 
   update(settings: WeatherWidgetSettings): void {
     this.settings = settings;
     if (!settings.enabled) {
       this.element.hidden = true;
+      this.element.style.display = "none";
       this.clearRefreshTimer();
       return;
     }
 
-    const location = settings.location.trim();
     this.element.hidden = false;
+    this.element.style.display = "";
+    const location = settings.location.trim();
 
     if (!location) {
       this.showStatus("Set a location in settings to see local weather.");

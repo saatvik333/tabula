@@ -13,6 +13,7 @@ import type {
   WeatherWidgetSettings,
   PomodoroWidgetSettings,
   TemperatureUnit,
+  WidgetPlacement,
 } from "$src/settings/schema";
 import { applyPresetToSettings, isPresetName } from "$src/settings/presets";
 
@@ -32,10 +33,10 @@ const coerceThemeMode = (value: unknown): ThemeMode => {
 };
 
 const coerceBackgroundType = (value: unknown): BackgroundType => {
-  if (value === "color" || value === "image") {
+  if (value === "image") {
     return value;
   }
-  return "color";
+  return "image";
 };
 
 const coerceSearchEngine = (value: unknown): SearchEngine => {
@@ -78,6 +79,13 @@ const coercePreset = (value: unknown): PresetName => {
 
 const coerceTemperatureUnit = (value: unknown, fallback: TemperatureUnit): TemperatureUnit => {
   if (value === "metric" || value === "imperial") {
+    return value;
+  }
+  return fallback;
+};
+
+const coerceWidgetPlacement = (value: unknown, fallback: WidgetPlacement): WidgetPlacement => {
+  if (value === "top-right" || value === "top-left" || value === "bottom-right" || value === "bottom-left") {
     return value;
   }
   return fallback;
@@ -188,6 +196,7 @@ const mergeWidgets = (
   value: Partial<WidgetsSettings> | undefined,
   fallback: WidgetsSettings,
 ): WidgetsSettings => ({
+  placement: coerceWidgetPlacement(value?.placement, fallback.placement),
   weather: sanitizeWeather(value?.weather, fallback.weather),
   pomodoro: sanitizePomodoro(value?.pomodoro, fallback.pomodoro),
 });
@@ -213,7 +222,7 @@ export const DEFAULT_PALETTE_DARK: Palette = MATERIAL_DARK;
 const BASE_DEFAULT_SETTINGS: Settings = {
   themeMode: "system",
   background: {
-    type: "color",
+    type: "image",
     color: "#111111",
     imageUrl: "",
     imageData: undefined,
@@ -240,6 +249,7 @@ const BASE_DEFAULT_SETTINGS: Settings = {
     position: "top",
   },
   widgets: {
+    placement: "top-right",
     weather: {
       enabled: true,
       location: "New York, NY",

@@ -1,6 +1,6 @@
 export type ThemeMode = "system" | "light" | "dark";
 
-export type BackgroundType = "color" | "image";
+export type BackgroundType = "image";
 
 export type SearchEngine = "google" | "bing" | "duckduckgo" | "brave";
 
@@ -23,6 +23,8 @@ export type PresetName =
 export type TimeFormat = "12h" | "24h";
 
 export type TemperatureUnit = "metric" | "imperial";
+
+export type WidgetPlacement = "top-right" | "top-left" | "bottom-right" | "bottom-left";
 
 export type PinnedTab = {
   id: string;
@@ -54,6 +56,7 @@ export type PomodoroWidgetSettings = {
 };
 
 export type WidgetsSettings = {
+  placement: WidgetPlacement;
   weather: WeatherWidgetSettings;
   pomodoro: PomodoroWidgetSettings;
 };

@@ -114,6 +114,7 @@ describe("mergeWithDefaults", () => {
     expect(result.widgets.pomodoro.breakMinutes).toBe(1);
     expect(result.widgets.pomodoro.longBreakMinutes).toBe(60);
     expect(result.widgets.pomodoro.cyclesBeforeLongBreak).toBe(8);
+    expect(result.widgets.placement).toBe(DEFAULT_SETTINGS.widgets.placement);
   });
 
   it("coerces time format and preserves defaults when invalid", () => {

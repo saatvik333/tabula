@@ -144,6 +144,7 @@ export class ClockApp {
     tagline.textContent = "Your space, no noise";
 
     const widgetsContainer = createElement("aside", { className: "tabula-widgets" });
+    widgetsContainer.dataset["placement"] = "top-right";
     const weatherWidget = createWeatherWidget();
     const pomodoroWidget = createPomodoroWidget();
     widgetsContainer.append(weatherWidget.element, pomodoroWidget.element);
@@ -358,6 +359,7 @@ export class ClockApp {
     this.weatherWidget.update(settings.widgets.weather);
     this.pomodoroWidget.update(settings.widgets.pomodoro);
 
+    this.widgetsContainer.dataset["placement"] = settings.widgets.placement;
     const allDisabled = !settings.widgets.weather.enabled && !settings.widgets.pomodoro.enabled;
     this.widgetsContainer.classList.toggle("is-hidden", allDisabled);
   }
