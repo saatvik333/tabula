@@ -245,36 +245,40 @@ body::after {
 
 .tabula-widget__button {
   flex: 1;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.28);
   border-radius: var(--tabula-radius-full);
-  background: linear-gradient(135deg, rgba(var(--tabula-face-color-rgb, 255, 255, 255), 0.28), rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.14));
+  background-color: rgba(var(--tabula-face-color-rgb, 255, 255, 255), 0.24);
   color: var(--md-on-surface);
   font-size: 0.85rem;
   font-weight: var(--tabula-weight-medium);
   padding: 0.45rem 0.8rem;
   cursor: pointer;
-  transition: transform 140ms ease, background 140ms ease, border 140ms ease;
+  transition: transform 140ms ease, background-color 140ms ease, border 140ms ease, box-shadow 140ms ease;
 }
 
 .tabula-widget__button:hover {
   transform: translateY(-1px);
   border-color: rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.45);
+  background-color: rgba(var(--tabula-face-color-rgb, 255, 255, 255), 0.32);
+  box-shadow: 0 10px 22px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.35);
 }
 
 .tabula-widget__button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
+  box-shadow: none;
 }
 
 .tabula-widget__button--primary {
-  border-color: rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.55);
-  background: linear-gradient(135deg, rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.6), rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.32));
+  border-color: transparent;
+  background-color: var(--md-primary);
   color: var(--md-on-primary);
 }
 
 .tabula-widget__button--primary.is-active {
-  background: linear-gradient(135deg, rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.75), rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.4));
+  background-color: var(--md-primary);
+  box-shadow: 0 12px 30px rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.35);
 }
 
 .tabula-widget--weather {
@@ -336,19 +340,19 @@ body::after {
   height: 3.25rem;
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.22);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.1));
+  background-color: rgba(var(--tabula-face-color-rgb, 255, 255, 255), 0.28);
   color: var(--md-on-surface);
   box-shadow: 0 24px 44px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.5);
   backdrop-filter: blur(24px) saturate(160%);
   -webkit-backdrop-filter: blur(24px) saturate(160%);
   cursor: pointer;
-  transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease, border 180ms ease;
+  transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease, border 180ms ease;
 }
 
 .tabula-settings-button:hover {
   transform: translateY(-4px);
   border-color: rgba(255, 255, 255, 0.36);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.16));
+  background-color: rgba(var(--tabula-face-color-rgb, 255, 255, 255), 0.38);
   box-shadow: 0 32px 60px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.6);
 }
 
@@ -505,27 +509,19 @@ body::after {
   border-radius: var(--tabula-radius-full);
   font-size: 0.95rem;
   font-weight: var(--tabula-weight-medium);
-  background: linear-gradient(
-    135deg,
-    rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.35),
-    rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.18)
-  );
-  color: var(--md-on-surface);
+  background-color: var(--md-primary);
+  color: var(--md-on-primary);
   cursor: pointer;
   backdrop-filter: blur(18px) saturate(160%);
   -webkit-backdrop-filter: blur(18px) saturate(160%);
   box-shadow: 0 18px 44px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.45);
-  transition: transform 160ms ease, box-shadow 160ms ease, border 160ms ease, background 160ms ease;
+  transition: transform 160ms ease, box-shadow 160ms ease, border 160ms ease, background-color 160ms ease;
 }
 
 .tabula-search__button:hover {
   transform: translateY(-2px);
   border-color: rgba(255, 255, 255, 0.36);
-  background: linear-gradient(
-    135deg,
-    rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.45),
-    rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.24)
-  );
+  background-color: var(--md-primary);
   box-shadow: 0 26px 56px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.55);
 }
 

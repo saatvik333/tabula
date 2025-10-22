@@ -1,120 +1,106 @@
 import { createElement } from "$src/core/dom";
 import type { TemperatureUnit, WeatherWidgetSettings } from "$src/settings/schema";
 
-type GeoResult = {
-  latitude: number;
-  longitude: number;
-  name: string;
-  country?: string;
-};
-
 type WeatherSnapshot = {
   temperatureC: number;
-  apparentTemperatureC: number;
-  conditionCode: number;
+  temperatureF: number;
+  feelsLikeC: number;
+  feelsLikeF: number;
+  conditionText: string;
 };
 
-const GEOCODE_ENDPOINT = "https://geocoding-api.open-meteo.com/v1/search";
-const WEATHER_ENDPOINT = "https://api.open-meteo.com/v1/forecast";
+type WeatherApiResponse = {
+  location?: {
+    name?: string;
+    region?: string;
+    country?: string;
+  };
+  current?: {
+    temp_c?: number;
+    temp_f?: number;
+    feelslike_c?: number;
+    feelslike_f?: number;
+    condition?: {
+      text?: string;
+    };
+  };
+};
+
+const WEATHER_API_KEY = "c921752e6e4a4d68b04162048252210";
+const WEATHER_ENDPOINT = "https://api.weatherapi.com/v1/current.json";
 const REFRESH_INTERVAL_MS = 15 * 60 * 1000;
 
-const WEATHER_CODES: Record<number, { label: string; icon: string }> = {
-  0: { label: "Clear sky", icon: "☀️" },
-  1: { label: "Mainly clear", icon: "🌤️" },
-  2: { label: "Partly cloudy", icon: "⛅" },
-  3: { label: "Overcast", icon: "☁️" },
-  45: { label: "Foggy", icon: "🌫️" },
-  48: { label: "Rime fog", icon: "🌫️" },
-  51: { label: "Light drizzle", icon: "🌦️" },
-  53: { label: "Drizzle", icon: "🌦️" },
-  55: { label: "Heavy drizzle", icon: "🌧️" },
-  56: { label: "Freezing drizzle", icon: "🥶" },
-  57: { label: "Freezing drizzle", icon: "🥶" },
-  61: { label: "Light rain", icon: "🌦️" },
-  63: { label: "Rain", icon: "🌧️" },
-  65: { label: "Heavy rain", icon: "🌧️" },
-  66: { label: "Freezing rain", icon: "🥶" },
-  67: { label: "Freezing rain", icon: "🥶" },
-  71: { label: "Light snow", icon: "🌨️" },
-  73: { label: "Snow", icon: "🌨️" },
-  75: { label: "Heavy snow", icon: "❄️" },
-  77: { label: "Snow grains", icon: "❄️" },
-  80: { label: "Light showers", icon: "🌦️" },
-  81: { label: "Rain showers", icon: "🌧️" },
-  82: { label: "Heavy showers", icon: "🌧️" },
-  85: { label: "Snow showers", icon: "🌨️" },
-  86: { label: "Heavy snow showers", icon: "❄️" },
-  95: { label: "Thunderstorm", icon: "⛈️" },
-  96: { label: "Thunderstorm & hail", icon: "⛈️" },
-  99: { label: "Thunderstorm & hail", icon: "⛈️" },
-};
-
-const convertTemperature = (valueC: number, unit: TemperatureUnit): { value: number; suffix: string } => {
+const convertTemperature = (snapshot: WeatherSnapshot, unit: TemperatureUnit): { value: number; suffix: string } => {
   if (unit === "imperial") {
-    return { value: Math.round((valueC * 9) / 5 + 32), suffix: "°F" };
+    return { value: Math.round(snapshot.temperatureF), suffix: "°F" };
   }
-  return { value: Math.round(valueC), suffix: "°C" };
+  return { value: Math.round(snapshot.temperatureC), suffix: "°C" };
 };
 
-const formatLocationLabel = ({ name, country }: GeoResult): string => {
-  if (country) return `${name}, ${country}`;
-  return name;
+const convertFeelsLike = (snapshot: WeatherSnapshot, unit: TemperatureUnit): { value: number; suffix: string } => {
+  if (unit === "imperial") {
+    return { value: Math.round(snapshot.feelsLikeF), suffix: "°F" };
+  }
+  return { value: Math.round(snapshot.feelsLikeC), suffix: "°C" };
 };
 
-const geocodeLocation = async (query: string, signal?: AbortSignal): Promise<GeoResult | null> => {
-  const url = `${GEOCODE_ENDPOINT}?name=${encodeURIComponent(query)}&count=1&language=en&format=json`;
-  const response = await fetch(url, { signal });
-  if (!response.ok) return null;
-  const payload = (await response.json()) as { results?: Array<{ name: string; latitude: number; longitude: number; country?: string }> };
-  const result = payload.results?.[0];
-  if (!result) return null;
-  return {
-    latitude: result.latitude,
-    longitude: result.longitude,
-    name: result.name,
-    country: result.country,
-  };
+const formatLocationLabel = (payload: WeatherApiResponse): string => {
+  const location = payload.location;
+  if (!location) return "Unknown location";
+  const parts = [location.name, location.region, location.country].filter((part) => part && part.trim().length > 0) as string[];
+  if (parts.length === 0) return "Unknown location";
+  return parts.join(", ");
+};
+
+const pickConditionIcon = (text: string): string => {
+  const value = text.toLowerCase();
+  if (value.includes("thunder")) return "⛈️";
+  if (value.includes("snow") || value.includes("sleet") || value.includes("ice")) return "❄️";
+  if (value.includes("rain") || value.includes("drizzle") || value.includes("shower")) return "🌧️";
+  if (value.includes("fog") || value.includes("mist") || value.includes("haze") || value.includes("smoke")) return "🌫️";
+  if (value.includes("overcast")) return "☁️";
+  if (value.includes("cloud")) return "☁️";
+  if (value.includes("clear") || value.includes("sun")) return "☀️";
+  return "🌡️";
 };
 
 const fetchWeatherSnapshot = async (
-  coords: GeoResult,
+  location: string,
   signal?: AbortSignal,
 ): Promise<{ locationLabel: string; snapshot: WeatherSnapshot } | null> => {
-  const params = new URLSearchParams({
-    latitude: coords.latitude.toString(),
-    longitude: coords.longitude.toString(),
-    current: "temperature_2m,apparent_temperature,weather_code",
-    forecast_days: "1",
-    timezone: "auto",
-  });
-
+  const params = new URLSearchParams({ key: WEATHER_API_KEY, q: location, aqi: "no" });
   const response = await fetch(`${WEATHER_ENDPOINT}?${params.toString()}`, { signal });
   if (!response.ok) return null;
-  const payload = (await response.json()) as {
-    current?: {
-      temperature_2m?: number;
-      apparent_temperature?: number;
-      weather_code?: number;
-    };
-  };
 
+  const payload = (await response.json()) as WeatherApiResponse;
   if (!payload.current) return null;
 
-  const temperatureC = payload.current.temperature_2m ?? NaN;
-  if (!Number.isFinite(temperatureC)) return null;
+  const temperatureC = payload.current.temp_c ?? Number.NaN;
+  const temperatureF = payload.current.temp_f ?? Number.NaN;
+  const feelsLikeC = payload.current.feelslike_c ?? Number.NaN;
+  const feelsLikeF = payload.current.feelslike_f ?? Number.NaN;
+
+  if (
+    !Number.isFinite(temperatureC) ||
+    !Number.isFinite(temperatureF) ||
+    !Number.isFinite(feelsLikeC) ||
+    !Number.isFinite(feelsLikeF)
+  ) {
+    return null;
+  }
+
+  const conditionText = payload.current.condition?.text?.trim() || "Conditions unavailable";
 
   return {
-    locationLabel: formatLocationLabel(coords),
+    locationLabel: formatLocationLabel(payload),
     snapshot: {
       temperatureC,
-      apparentTemperatureC: payload.current.apparent_temperature ?? temperatureC,
-      conditionCode: payload.current.weather_code ?? 0,
+      temperatureF,
+      feelsLikeC,
+      feelsLikeF,
+      conditionText,
     },
   };
-};
-
-const resolveCondition = (code: number): { label: string; icon: string } => {
-  return WEATHER_CODES[code] ?? { label: "Conditions unavailable", icon: "？" };
 };
 
 class WeatherWidget {
@@ -182,18 +168,10 @@ class WeatherWidget {
     const cleanup = () => controller.abort();
 
     try {
-      const geo = await geocodeLocation(location, controller.signal);
-      if (!geo) {
-        this.showStatus("Couldn't locate that place.");
-        this.displayPlaceholder();
-        this.clearRefreshTimer();
-        return;
-      }
-
-      const result = await fetchWeatherSnapshot(geo, controller.signal);
+      const result = await fetchWeatherSnapshot(location, controller.signal);
       if (!result) {
         this.showStatus("Weather data temporarily unavailable.");
-        this.displayPlaceholder(formatLocationLabel(geo));
+        this.displayPlaceholder(location);
         this.clearRefreshTimer();
         return;
       }
@@ -208,7 +186,7 @@ class WeatherWidget {
       if ((error as Error).name === "AbortError") return;
       console.warn("Weather widget error", error);
       this.showStatus("Unable to reach the weather service.");
-      this.displayPlaceholder();
+      this.displayPlaceholder(location);
       this.clearRefreshTimer();
     } finally {
       cleanup();
@@ -217,12 +195,12 @@ class WeatherWidget {
 
   private renderSnapshot(locationLabel: string, snapshot: WeatherSnapshot): void {
     const { unit } = this.settings;
-    const condition = resolveCondition(snapshot.conditionCode);
-    const temperature = convertTemperature(snapshot.temperatureC, unit);
-    const apparent = convertTemperature(snapshot.apparentTemperatureC, unit);
+    const temperature = convertTemperature(snapshot, unit);
+    const apparent = convertFeelsLike(snapshot, unit);
+    const icon = pickConditionIcon(snapshot.conditionText);
 
     this.titleEl.textContent = locationLabel;
-    this.conditionEl.textContent = `${condition.icon} ${condition.label}`;
+    this.conditionEl.textContent = `${icon} ${snapshot.conditionText}`;
     this.temperatureEl.textContent = `${temperature.value}${temperature.suffix}`;
     this.apparentEl.textContent = `Feels like ${apparent.value}${apparent.suffix}`;
     this.showStatus("Updated just now");

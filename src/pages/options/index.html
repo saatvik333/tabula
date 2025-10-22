@@ -55,26 +55,31 @@
             <h2>Background</h2>
             <p>Bring your own image with adjustable blur, or stick with a preset.</p>
           </header>
-          <div class="panel__grid panel__grid--split">
-            <label class="field">
-              <span class="field__label">Image URL</span>
-              <input type="url" id="backgroundImage" name="backgroundImage" placeholder="https://example.com/wallpaper.jpg" class="field__control" />
-            </label>
+          <div class="background-section">
+            <div class="background-section__inputs">
+              <label class="field">
+                <span class="field__label">Image URL</span>
+                <input type="url" id="backgroundImage" name="backgroundImage" placeholder="https://example.com/wallpaper.jpg" class="field__control" />
+              </label>
 
-            <div class="field">
-              <span class="field__label">Upload image</span>
-              <input type="file" id="backgroundImageUpload" name="backgroundImageUpload" class="field__control field__control--file" accept="image/*" />
-              <p class="field__hint" id="backgroundImageStatus" data-tone="muted">No image selected</p>
-              <button type="button" id="backgroundImageClear" class="button button--ghost">Remove uploaded image</button>
+              <div class="field background-section__upload">
+                <span class="field__label">Upload image</span>
+                <input type="file" id="backgroundImageUpload" name="backgroundImageUpload" class="field__control field__control--file" accept="image/*" />
+                <p class="field__hint" id="backgroundImageStatus" data-tone="muted">No image selected</p>
+                <button type="button" id="backgroundImageClear" class="button button--ghost">Remove uploaded image</button>
+              </div>
             </div>
 
-            <label class="field">
-              <span class="field__label">Blur</span>
-              <div class="field__range">
-                <input type="range" id="backgroundBlur" name="backgroundBlur" min="0" max="40" step="1" />
-                <output id="backgroundBlurValue" for="backgroundBlur">0px</output>
-              </div>
-            </label>
+            <div class="background-section__controls">
+              <label class="field">
+                <span class="field__label">Blur</span>
+                <div class="field__range">
+                  <input type="range" id="backgroundBlur" name="backgroundBlur" min="0" max="40" step="1" />
+                  <output id="backgroundBlurValue" for="backgroundBlur">0px</output>
+                </div>
+              </label>
+              <p class="background-section__hint">Higher blur softens busy images and keeps the clock readable.</p>
+            </div>
           </div>
         </section>
 
@@ -188,9 +193,14 @@
             <p>Toggle the optional search bar and choose your preferred engine.</p>
           </header>
           <div class="panel__grid">
-            <label class="field field--inline">
-              <input type="checkbox" id="searchEnabled" name="searchEnabled" />
-              <span class="field__label">Show search bar</span>
+            <label class="field field--toggle">
+              <span class="field__text">Show search bar</span>
+              <span class="toggle">
+                <input type="checkbox" id="searchEnabled" name="searchEnabled" class="toggle__input" />
+                <span class="toggle__track" aria-hidden="true">
+                  <span class="toggle__thumb"></span>
+                </span>
+              </span>
             </label>
             <label class="field">
               <span class="field__label">Search engine</span>
@@ -225,10 +235,15 @@
             <p>Curate at-a-glance cards like weather snapshots and a Pomodoro timer.</p>
           </header>
           <div class="panel__grid panel__grid--widgets">
-            <fieldset class="field field--inline">
-              <input type="checkbox" id="weatherEnabled" name="weatherEnabled" />
-              <span class="field__label">Show weather widget</span>
-            </fieldset>
+            <label class="field field--toggle">
+              <span class="field__text">Show weather widget</span>
+              <span class="toggle">
+                <input type="checkbox" id="weatherEnabled" name="weatherEnabled" class="toggle__input" />
+                <span class="toggle__track" aria-hidden="true">
+                  <span class="toggle__thumb"></span>
+                </span>
+              </span>
+            </label>
             <label class="field" data-widget="weather">
               <span class="field__label">Location</span>
               <input type="text" id="weatherLocation" name="weatherLocation" class="field__control" placeholder="City, Country" />
@@ -240,12 +255,17 @@
                 <option value="imperial">Fahrenheit</option>
               </select>
             </label>
-            <p class="field__hint" id="weatherStatus">Weather data provided by Open-Meteo.</p>
+            <p class="field__hint" id="weatherStatus">Weather data provided by WeatherAPI.com.</p>
 
-            <fieldset class="field field--inline">
-              <input type="checkbox" id="pomodoroEnabled" name="pomodoroEnabled" />
-              <span class="field__label">Enable Pomodoro timer</span>
-            </fieldset>
+            <label class="field field--toggle">
+              <span class="field__text">Enable Pomodoro timer</span>
+              <span class="toggle">
+                <input type="checkbox" id="pomodoroEnabled" name="pomodoroEnabled" class="toggle__input" />
+                <span class="toggle__track" aria-hidden="true">
+                  <span class="toggle__thumb"></span>
+                </span>
+              </span>
+            </label>
             <label class="field" data-widget="pomodoro">
               <span class="field__label">Focus length (minutes)</span>
               <input type="number" id="pomodoroFocus" name="pomodoroFocus" class="field__control" min="5" max="90" step="1" />

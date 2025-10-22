@@ -5,10 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run clean && vite build && npm run copy:static",
-    "copy:static": "mkdir -p dist && mv dist/src/pages/newtab/index.html dist/newtab.html && mv dist/src/pages/options/index.html dist/options.html && rm -rf dist/src && cp manifest.json dist/manifest.json && cp -r src/assets/icons dist/icons",
+    "build": "node scripts/build.mjs",
     "preview": "vite preview",
-    "clean": "rm -rf dist",
+    "clean": "node scripts/clean.mjs",
     "test": "vitest --run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",

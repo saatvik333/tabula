@@ -189,7 +189,7 @@ const updateSearchFieldState = (enabled: boolean) => {
   });
 };
 
-const WEATHER_HINT_DEFAULT = "Weather data provided by Open-Meteo.";
+const WEATHER_HINT_DEFAULT = "Weather data provided by WeatherAPI.com.";
 
 const markWidgetFields = (elements: HTMLElement[], enabled: boolean) => {
   elements.forEach((element) => {
