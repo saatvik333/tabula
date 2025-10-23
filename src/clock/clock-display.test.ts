@@ -5,7 +5,7 @@ import { createClockDisplay } from "$src/clock/clock-display";
 const extractHandRotation = (cell: Element, index: number): string => {
   const hand = cell.children.item(index) as HTMLElement | null;
   if (!hand) throw new Error("Missing hand element");
-  return hand.dataset.angle ?? hand.style.getPropertyValue("--hand-angle");
+  return hand.dataset["angle"] ?? hand.style.getPropertyValue("--hand-angle");
 };
 
 describe("clock display", () => {

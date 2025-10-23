@@ -13,7 +13,8 @@ import type {
   WeatherWidgetSettings,
   PomodoroWidgetSettings,
   TemperatureUnit,
-  WidgetPlacement,
+  WidgetLayoutEntry,
+  WidgetId,
 } from "$src/settings/schema";
 import { applyPresetToSettings, isPresetName } from "$src/settings/presets";
 
@@ -84,18 +85,48 @@ const coerceTemperatureUnit = (value: unknown, fallback: TemperatureUnit): Tempe
   return fallback;
 };
 
-const coerceWidgetPlacement = (value: unknown, fallback: WidgetPlacement): WidgetPlacement => {
-  if (value === "top-right" || value === "top-left" || value === "bottom-right" || value === "bottom-left") {
-    return value;
-  }
-  return fallback;
-};
-
 const coerceTimeFormat = (value: unknown, fallback: TimeFormat): TimeFormat => {
   if (value === "12h" || value === "24h") {
     return value;
   }
   return fallback;
+};
+
+const KNOWN_WIDGET_IDS: readonly WidgetId[] = ["weather", "pomodoro"];
+
+const sanitizeWidgetLayout = (
+  value: unknown,
+  fallback: WidgetLayoutEntry[],
+): WidgetLayoutEntry[] => {
+  if (!Array.isArray(value)) {
+    return fallback.map((entry) => ({ ...entry }));
+  }
+
+  const seen = new Set<WidgetId>();
+  const result: WidgetLayoutEntry[] = [];
+  const fallbackMap = new Map<WidgetId, WidgetLayoutEntry>(fallback.map((entry) => [entry.id, entry]));
+
+  for (const raw of value) {
+    if (!raw || typeof raw !== "object") continue;
+    const candidate = raw as Partial<WidgetLayoutEntry> & { id?: string };
+    if (typeof candidate.id !== "string") continue;
+    const id = candidate.id as WidgetId;
+    if (!KNOWN_WIDGET_IDS.includes(id)) continue;
+    if (seen.has(id)) continue;
+    const x = Number(candidate.x);
+    const y = Number(candidate.y);
+    if (!Number.isFinite(x) || !Number.isFinite(y)) continue;
+    seen.add(id);
+    result.push({ id, x, y });
+  }
+
+  for (const id of KNOWN_WIDGET_IDS) {
+    if (seen.has(id)) continue;
+    const fallbackEntry = fallbackMap.get(id) ?? { id, x: 0, y: 0 };
+    result.push({ id, x: fallbackEntry.x, y: fallbackEntry.y });
+  }
+
+  return result;
 };
 
 const DEFAULT_TAGLINE = "Your space, no noise";
@@ -196,7 +227,7 @@ const mergeWidgets = (
   value: Partial<WidgetsSettings> | undefined,
   fallback: WidgetsSettings,
 ): WidgetsSettings => ({
-  placement: coerceWidgetPlacement(value?.placement, fallback.placement),
+  layout: sanitizeWidgetLayout(value?.layout, fallback.layout),
   weather: sanitizeWeather(value?.weather, fallback.weather),
   pomodoro: sanitizePomodoro(value?.pomodoro, fallback.pomodoro),
 });
@@ -216,16 +247,20 @@ const MATERIAL_DARK: Palette = {
   accent: "#9ca3af",
 };
 
+const DEFAULT_WIDGET_LAYOUT: WidgetLayoutEntry[] = [
+  { id: "weather", x: 0, y: 0 },
+  { id: "pomodoro", x: 0, y: 260 },
+];
+
 export const DEFAULT_PALETTE_LIGHT: Palette = MATERIAL_LIGHT;
 export const DEFAULT_PALETTE_DARK: Palette = MATERIAL_DARK;
- 
+
 const BASE_DEFAULT_SETTINGS: Settings = {
   themeMode: "system",
   background: {
     type: "image",
     color: "#111111",
     imageUrl: "",
-    imageData: undefined,
     blur: 24,
   },
   clock: {
@@ -249,7 +284,7 @@ const BASE_DEFAULT_SETTINGS: Settings = {
     position: "top",
   },
   widgets: {
-    placement: "top-right",
+    layout: DEFAULT_WIDGET_LAYOUT.map((entry) => ({ ...entry })),
     weather: {
       enabled: true,
       location: "New York, NY",
@@ -281,16 +316,25 @@ const mergeClock = (
 const mergeBackground = (
   value: Partial<Settings["background"]> | undefined,
   fallback: Settings["background"],
-): Settings["background"] => ({
-  type: coerceBackgroundType(value?.type),
-  color: isHexColor(value?.color) ? value!.color : fallback.color,
-  imageUrl: sanitizeString(value?.imageUrl, ""),
-  imageData:
+): Settings["background"] => {
+  const sanitizedImageData =
     typeof value?.imageData === "string" && value.imageData.trim().startsWith("data:image/")
       ? value.imageData.trim()
-      : undefined,
-  blur: clamp(Number(value?.blur), fallback.blur, 0, 40),
-});
+      : fallback.imageData;
+
+  const background: Settings["background"] = {
+    type: coerceBackgroundType(value?.type),
+    color: isHexColor(value?.color) ? value!.color : fallback.color,
+    imageUrl: sanitizeString(value?.imageUrl, ""),
+    blur: clamp(Number(value?.blur), fallback.blur, 0, 40),
+  };
+
+  if (typeof sanitizedImageData === "string" && sanitizedImageData.trim().length > 0) {
+    background.imageData = sanitizedImageData;
+  }
+
+  return background;
+};
 
 const mergeSearch = (
   value: Partial<Settings["search"]> | undefined,

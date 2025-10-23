@@ -24,7 +24,13 @@ export type TimeFormat = "12h" | "24h";
 
 export type TemperatureUnit = "metric" | "imperial";
 
-export type WidgetPlacement = "top-right" | "top-left" | "bottom-right" | "bottom-left";
+export type WidgetId = "weather" | "pomodoro";
+
+export type WidgetLayoutEntry = {
+  id: WidgetId;
+  x: number;
+  y: number;
+};
 
 export type PinnedTab = {
   id: string;
@@ -56,7 +62,7 @@ export type PomodoroWidgetSettings = {
 };
 
 export type WidgetsSettings = {
-  placement: WidgetPlacement;
+  layout: WidgetLayoutEntry[];
   weather: WeatherWidgetSettings;
   pomodoro: PomodoroWidgetSettings;
 };
@@ -93,6 +99,23 @@ export type Settings = {
   widgets: WidgetsSettings;
 };
 
-export type PartialSettings = Partial<Settings>;
+type BackgroundSettings = Settings["background"];
+type ClockSettings = Settings["clock"];
+type SearchSettings = Settings["search"];
+
+export type PartialSettings = Partial<Omit<Settings, "background" | "clock" | "search" | "widgets" | "palettes">> & {
+  background?: Partial<BackgroundSettings>;
+  clock?: Partial<ClockSettings>;
+  search?: Partial<SearchSettings>;
+  palettes?: {
+    light?: Partial<Palette>;
+    dark?: Partial<Palette>;
+  };
+  widgets?: Partial<WidgetsSettings> & {
+    layout?: WidgetLayoutEntry[];
+    weather?: Partial<WeatherWidgetSettings>;
+    pomodoro?: Partial<PomodoroWidgetSettings>;
+  };
+};
 
 export const SETTINGS_STORAGE_KEY = "tabula:settings";

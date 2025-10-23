@@ -79,9 +79,6 @@ const pomodoroFocusInput = getElement<HTMLInputElement>("pomodoroFocus");
 const pomodoroBreakInput = getElement<HTMLInputElement>("pomodoroBreak");
 const pomodoroLongBreakInput = getElement<HTMLInputElement>("pomodoroLongBreak");
 const pomodoroCyclesInput = getElement<HTMLInputElement>("pomodoroCycles");
-const widgetsPlacementRadios = Array.from(
-  document.querySelectorAll<HTMLInputElement>('input[name="widgetsPlacement"]'),
-);
 const presetContainer = getElement<HTMLDivElement>("presetChips");
 const pinnedListContainer = getElement<HTMLDivElement>("pinnedList");
 const pinnedEmptyState = getElement<HTMLParagraphElement>("pinnedEmpty");
@@ -494,10 +491,6 @@ const syncForm = (settings: Settings) => {
   pomodoroCyclesInput.value = state.widgets.pomodoro.cyclesBeforeLongBreak.toString();
   updatePomodoroFieldState(state.widgets.pomodoro.enabled);
 
-  widgetsPlacementRadios.forEach((radio) => {
-    radio.checked = radio.value === state.widgets.placement;
-  });
-
   updateRangeOutputs();
   updateSearchFieldState(state.search.enabled);
   renderPinnedList();
@@ -592,7 +585,7 @@ backgroundImageUpload.addEventListener("change", () => {
 });
 
 backgroundImageClear.addEventListener("click", () => {
-  state.background.imageData = undefined;
+  delete state.background.imageData;
   uploadedImageMeta = null;
   updateBackgroundImageStatus();
   backgroundImageUpload.value = "";
@@ -726,9 +719,11 @@ pomodoroEnabledInput.addEventListener("change", () => {
   schedule(() => setStatus("Pomodoro widget preference updated"));
 });
 
-const updatePomodoroDuration = (key: keyof Settings["widgets"]["pomodoro"], input: HTMLInputElement, min: number, max: number) => {
+type PomodoroDurationKey = "focusMinutes" | "breakMinutes" | "longBreakMinutes" | "cyclesBeforeLongBreak";
+
+const updatePomodoroDuration = (key: PomodoroDurationKey, input: HTMLInputElement, min: number, max: number) => {
   const raw = Number(input.value);
-  const fallback = state.widgets.pomodoro[key] as number;
+  const fallback = state.widgets.pomodoro[key];
   const next = Number.isFinite(raw) ? Math.min(max, Math.max(min, raw)) : fallback;
   state.widgets.pomodoro[key] = next;
   input.value = next.toString();
@@ -749,14 +744,6 @@ pomodoroLongBreakInput.addEventListener("input", () => {
 
 pomodoroCyclesInput.addEventListener("input", () => {
   updatePomodoroDuration("cyclesBeforeLongBreak", pomodoroCyclesInput, 1, 8);
-});
-
-widgetsPlacementRadios.forEach((radio) => {
-  radio.addEventListener("change", () => {
-    if (!radio.checked) return;
-    state.widgets.placement = radio.value as Settings["widgets"]["placement"];
-    schedule(() => setStatus("Widget placement updated"));
-  });
 });
 
 pinnedAddButton.addEventListener("click", () => {

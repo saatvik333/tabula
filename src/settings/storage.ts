@@ -167,6 +167,19 @@ const combineWithCurrent = (current: Settings, partial: PartialSettings): Partia
     ...current.search,
     ...(partial.search ?? {}),
   },
+  widgets: {
+    layout: partial.widgets?.layout
+      ? partial.widgets.layout.map((entry) => ({ ...entry }))
+      : current.widgets.layout.map((entry) => ({ ...entry })),
+    weather: {
+      ...current.widgets.weather,
+      ...(partial.widgets?.weather ?? {}),
+    },
+    pomodoro: {
+      ...current.widgets.pomodoro,
+      ...(partial.widgets?.pomodoro ?? {}),
+    },
+  },
   palettes: {
     light: {
       ...current.palettes.light,

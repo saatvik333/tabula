@@ -114,7 +114,26 @@ describe("mergeWithDefaults", () => {
     expect(result.widgets.pomodoro.breakMinutes).toBe(1);
     expect(result.widgets.pomodoro.longBreakMinutes).toBe(60);
     expect(result.widgets.pomodoro.cyclesBeforeLongBreak).toBe(8);
-    expect(result.widgets.placement).toBe(DEFAULT_SETTINGS.widgets.placement);
+    expect(result.widgets.layout).toHaveLength(DEFAULT_SETTINGS.widgets.layout.length);
+  });
+
+  it("sanitises widget layout entries", () => {
+    const result = mergeWithDefaults({
+      widgets: {
+        layout: [
+          { id: "weather", x: 120, y: 200 },
+          // invalid entry should be ignored
+          { id: "pomodoro", x: Number.NaN, y: 100 },
+        ] as any,
+      },
+    });
+
+    const layout = result.widgets.layout;
+    expect(layout).toHaveLength(2);
+    const weather = layout.find((entry) => entry.id === "weather");
+    expect(weather).toMatchObject({ x: 120, y: 200 });
+    const defaultPomodoro = DEFAULT_SETTINGS.widgets.layout.find((entry) => entry.id === "pomodoro");
+    expect(layout.find((entry) => entry.id === "pomodoro")).toEqual(defaultPomodoro);
   });
 
   it("coerces time format and preserves defaults when invalid", () => {

@@ -97,6 +97,5 @@ export const applySettingsToDocument = (
 
   if (doc.body) {
     doc.body.dataset["theme"] = theme;
-    doc.body.dataset["widgetPlacement"] = settings.widgets.placement;
   }
 };

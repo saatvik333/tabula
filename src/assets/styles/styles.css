@@ -140,54 +140,19 @@ body::after {
 
 .tabula-widgets {
   position: fixed;
-  display: flex;
-  width: min(320px, 30vw);
-  gap: 1rem;
-  z-index: 20;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
+  z-index: 20;
 }
 
 .tabula-widgets.is-hidden {
   display: none;
 }
 
-.tabula-widgets[data-placement="top-right"] {
-  top: var(--tabula-widget-offset);
-  right: var(--tabula-widget-offset-side);
-  bottom: auto;
-  left: auto;
-  align-items: flex-end;
-  flex-direction: column;
-}
-
-.tabula-widgets[data-placement="top-left"] {
-  top: var(--tabula-widget-offset);
-  left: var(--tabula-widget-offset-side);
-  bottom: auto;
-  right: auto;
-  align-items: flex-start;
-  flex-direction: column;
-}
-
-.tabula-widgets[data-placement="bottom-right"] {
-  bottom: var(--tabula-widget-offset);
-  right: var(--tabula-widget-offset-side);
-  top: auto;
-  left: auto;
-  align-items: flex-end;
-  flex-direction: column-reverse;
-}
-
-.tabula-widgets[data-placement="bottom-left"] {
-  bottom: var(--tabula-widget-offset);
-  left: var(--tabula-widget-offset-side);
-  top: auto;
-  right: auto;
-  align-items: flex-start;
-  flex-direction: column-reverse;
-}
-
 .tabula-widget {
+  position: absolute;
   pointer-events: auto;
   border-radius: var(--tabula-radius-xl);
   padding: 1.1rem 1.35rem;
@@ -200,8 +165,20 @@ body::after {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
-  width: 100%;
-  min-width: clamp(240px, 28vw, 320px);
+  width: clamp(240px, 32vw, 360px);
+  min-width: clamp(220px, 32vw, 360px);
+  cursor: grab;
+  touch-action: none;
+  transition: border 160ms ease, background-color 160ms ease, box-shadow 160ms ease, transform 140ms ease;
+}
+
+.tabula-widget.is-dragging {
+  cursor: grabbing;
+  box-shadow: 0 32px 72px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.55);
+  border-color: rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.6);
+  transform: scale(1.02);
+  transition: none;
+  z-index: 50;
 }
 
 .tabula-widget__header {
@@ -284,6 +261,9 @@ body::after {
 
 .tabula-widget__button--primary:hover {
   color: var(--md-on-primary);
+  background-color: var(--md-primary);
+  border-color: rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.6);
+  box-shadow: 0 16px 36px rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.38);
 }
 
 .tabula-widget--weather {
@@ -295,22 +275,9 @@ body::after {
 }
 
 @media (max-width: 900px) {
-  .tabula-widgets {
-    position: static;
-    width: min(100%, 420px);
-    margin-top: 1.5rem;
-    align-self: stretch;
-    top: auto;
-    right: auto;
-    bottom: auto;
-    left: auto;
-    flex-direction: column;
-    align-items: stretch;
-    pointer-events: auto;
-  }
-
   .tabula-widget {
-    min-width: auto;
+    width: clamp(220px, 70vw, 340px);
+    min-width: clamp(200px, 70vw, 340px);
   }
 }
 

@@ -69,7 +69,8 @@ const fetchWeatherSnapshot = async (
   signal?: AbortSignal,
 ): Promise<{ locationLabel: string; snapshot: WeatherSnapshot } | null> => {
   const params = new URLSearchParams({ key: WEATHER_API_KEY, q: location, aqi: "no" });
-  const response = await fetch(`${WEATHER_ENDPOINT}?${params.toString()}`, { signal });
+  const init: RequestInit = signal ? { signal } : {};
+  const response = await fetch(`${WEATHER_ENDPOINT}?${params.toString()}`, init);
   if (!response.ok) return null;
 
   const payload = (await response.json()) as WeatherApiResponse;

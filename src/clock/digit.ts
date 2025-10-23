@@ -3,7 +3,7 @@ import { createElement } from "$src/core/dom";
 
 const createHand = (): HTMLElement => {
   const hand = createElement("div", { className: "hand" });
-  hand.dataset.angle = "135deg";
+  hand.dataset["angle"] = "135deg";
   hand.style.setProperty("--hand-angle", "135deg");
   return hand;
 };
@@ -12,10 +12,10 @@ const createDot = (): HTMLElement => createElement("div", { className: "dot" });
 
 const updateHand = (hand: HTMLElement, rotation: number): void => {
   const angle = `${rotation}deg`;
-  if (hand.dataset.angle === angle) {
+  if (hand.dataset["angle"] === angle) {
     return;
   }
-  hand.dataset.angle = angle;
+  hand.dataset["angle"] = angle;
   hand.style.setProperty("--hand-angle", angle);
 };
 

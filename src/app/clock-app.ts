@@ -3,8 +3,8 @@ import { createElement } from "$src/core/dom";
 import { startAlignedSecondTicker, type StopTicker } from "$src/core/ticker";
 import { formatTimeForDisplay, getCurrentTime, timesEqual, type Meridiem, type Time } from "$src/core/time";
 import { applySettingsToDocument } from "$src/settings/apply";
-import type { PinnedTab, SearchEngine, Settings } from "$src/settings/schema";
-import { loadSettings, subscribeToSettings } from "$src/settings/storage";
+import type { PinnedTab, SearchEngine, Settings, WidgetId, WidgetLayoutEntry } from "$src/settings/schema";
+import { loadSettings, subscribeToSettings, updateSettings } from "$src/settings/storage";
 import { getSystemPrefersDark, resolveTheme, watchSystemTheme, type ThemeVariant } from "$src/settings/theme";
 import { createWeatherWidget, type WeatherWidgetController } from "$src/widgets/weather-widget";
 import { createPomodoroWidget, type PomodoroWidgetController } from "$src/widgets/pomodoro-widget";
@@ -19,6 +19,8 @@ const SEARCH_ENGINES: Record<SearchEngine, (query: string) => string> = {
   duckduckgo: (query) => `https://duckduckgo.com/?q=${encodeURIComponent(query)}`,
   brave: (query) => `https://search.brave.com/search?q=${encodeURIComponent(query)}`,
 };
+
+const WIDGET_IDS: WidgetId[] = ["weather", "pomodoro"];
 
 export class ClockApp {
   private readonly timeSource: TimeSource;
@@ -63,6 +65,59 @@ export class ClockApp {
 
   private pomodoroWidget: PomodoroWidgetController | null = null;
 
+  private widgetElements: Partial<Record<WidgetId, HTMLElement>> = {};
+
+  private widgetLayout = new Map<WidgetId, { x: number; y: number }>();
+
+  private activeDrag: {
+    id: WidgetId;
+    element: HTMLElement;
+    pointerId: number;
+    startX: number;
+    startY: number;
+    originX: number;
+    originY: number;
+  } | null = null;
+
+  private readonly handlePointerMove = (event: PointerEvent): void => {
+    if (!this.activeDrag || event.pointerId !== this.activeDrag.pointerId) {
+      return;
+    }
+
+    const deltaX = event.clientX - this.activeDrag.startX;
+    const deltaY = event.clientY - this.activeDrag.startY;
+    const nextX = this.activeDrag.originX + deltaX;
+    const nextY = this.activeDrag.originY + deltaY;
+    this.applyWidgetPosition(this.activeDrag.id, this.activeDrag.element, nextX, nextY, { updateLayout: true });
+  };
+
+  private readonly handlePointerUp = (event: PointerEvent): void => {
+    if (!this.activeDrag || event.pointerId !== this.activeDrag.pointerId) {
+      return;
+    }
+
+    const { element, pointerId, id } = this.activeDrag;
+    const coords = this.widgetLayout.get(id);
+    if (coords) {
+      this.applyWidgetPosition(id, element, coords.x, coords.y, { updateLayout: true });
+    }
+    element.releasePointerCapture(pointerId);
+    element.classList.remove("is-dragging");
+    window.removeEventListener("pointermove", this.handlePointerMove);
+    window.removeEventListener("pointerup", this.handlePointerUp);
+    window.removeEventListener("pointercancel", this.handlePointerUp);
+
+    this.activeDrag = null;
+    void this.persistWidgetLayout();
+  };
+
+  private readonly handleWindowResize = (): void => {
+    if (!this.settings) {
+      return;
+    }
+    this.reapplyWidgetLayout();
+  };
+
   constructor(
     private readonly container: HTMLElement,
     timeSource: TimeSource = getCurrentTime,
@@ -76,6 +131,7 @@ export class ClockApp {
     this.buildLayout();
     this.render(true);
     this.stopTicker = this.tickerFactory(() => this.render());
+    window.addEventListener("resize", this.handleWindowResize);
 
     this.unsubscribeSettings = subscribeToSettings((settings) => {
       this.onSettingsChanged(settings);
@@ -88,6 +144,16 @@ export class ClockApp {
     if (this.stopTicker) {
       this.stopTicker();
       this.stopTicker = null;
+    }
+
+    window.removeEventListener("resize", this.handleWindowResize);
+
+    if (this.activeDrag) {
+      this.activeDrag.element.classList.remove("is-dragging");
+      this.activeDrag = null;
+      window.removeEventListener("pointermove", this.handlePointerMove);
+      window.removeEventListener("pointerup", this.handlePointerUp);
+      window.removeEventListener("pointercancel", this.handlePointerUp);
     }
 
     if (this.unsubscribeSettings) {
@@ -144,9 +210,10 @@ export class ClockApp {
     tagline.textContent = "Your space, no noise";
 
     const widgetsContainer = createElement("aside", { className: "tabula-widgets" });
-    widgetsContainer.dataset["placement"] = "top-right";
     const weatherWidget = createWeatherWidget();
     const pomodoroWidget = createPomodoroWidget();
+    this.prepareWidget(weatherWidget.element, "weather");
+    this.prepareWidget(pomodoroWidget.element, "pomodoro");
     widgetsContainer.append(weatherWidget.element, pomodoroWidget.element);
 
     root.append(controls, clockShell, pinnedSection, tagline);
@@ -165,6 +232,8 @@ export class ClockApp {
     this.widgetsContainer = widgetsContainer;
     this.weatherWidget = weatherWidget;
     this.pomodoroWidget = pomodoroWidget;
+
+    this.initializeDefaultWidgetLayout();
   }
 
   private createSearchForm(): HTMLFormElement {
@@ -199,8 +268,236 @@ export class ClockApp {
     return form;
   }
 
+  private prepareWidget(element: HTMLElement, id: WidgetId): void {
+    element.dataset["widgetId"] = id;
+    this.widgetElements[id] = element;
+    element.addEventListener("pointerdown", (event) => this.beginWidgetDrag(id, element, event));
+  }
+
+  private initializeDefaultWidgetLayout(): void {
+    const padding = Math.max(24, Math.min(48, window.innerWidth * 0.06));
+    let cursorY = padding;
+
+    for (const id of WIDGET_IDS) {
+      const element = this.widgetElements[id];
+      if (!element) {
+        continue;
+      }
+
+      const { width, height } = this.getWidgetDimensions(element);
+      const x = Math.max(padding, window.innerWidth - width - padding);
+      const y = cursorY;
+      cursorY = y + height + 20;
+
+      this.widgetLayout.set(id, { x, y });
+      this.applyWidgetPosition(id, element, x, y, { updateLayout: true });
+    }
+  }
+
+  private getWidgetDimensions(element: HTMLElement | null | undefined): { width: number; height: number } {
+    if (!element) {
+      return { width: 300, height: 200 };
+    }
+    const rect = element.getBoundingClientRect();
+    const width = rect.width || element.offsetWidth || 300;
+    const height = rect.height || element.offsetHeight || 200;
+    return { width, height };
+  }
+
+  private getLayoutBounds(): { left: number; right: number; top: number; bottom: number } {
+    return {
+      left: 0,
+      right: window.innerWidth,
+      top: 0,
+      bottom: window.innerHeight,
+    };
+  }
+
+  private beginWidgetDrag(id: WidgetId, element: HTMLElement, event: PointerEvent): void {
+    if (event.pointerType === "mouse" && event.button !== 0) {
+      return;
+    }
+
+    const target = event.target as HTMLElement | null;
+    if (target?.closest("button, a, input, select, textarea")) {
+      return;
+    }
+
+    this.ensureLayoutEntries();
+
+    const entry = this.widgetLayout.get(id) ?? this.computePositionFromElement(element);
+    const { x, y } = entry;
+    if (!this.widgetLayout.has(id)) {
+      this.widgetLayout.set(id, { x, y });
+    }
+
+    this.activeDrag = {
+      id,
+      element,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      originX: x,
+      originY: y,
+    };
+
+    element.classList.add("is-dragging");
+    element.setPointerCapture(event.pointerId);
+    window.addEventListener("pointermove", this.handlePointerMove);
+    window.addEventListener("pointerup", this.handlePointerUp);
+    window.addEventListener("pointercancel", this.handlePointerUp);
+    event.preventDefault();
+  }
+
+  private computePositionFromElement(element: HTMLElement): { x: number; y: number } {
+    const rect = element.getBoundingClientRect();
+    return this.clampPosition(element, rect.left, rect.top);
+  }
+
+  private clampPosition(element: HTMLElement, x: number, y: number): { x: number; y: number } {
+    const bounds = this.getLayoutBounds();
+    const padding = 16;
+    const measured = element.getBoundingClientRect();
+    const width = element.offsetWidth || measured.width || 280;
+    const height = element.offsetHeight || measured.height || 180;
+    const minX = bounds.left + padding;
+    const maxX = bounds.right - width - padding;
+    const minY = bounds.top + padding;
+    const maxY = bounds.bottom - height - padding;
+    const clampedX = Math.min(maxX, Math.max(minX, x));
+    const clampedY = Math.min(maxY, Math.max(minY, y));
+    return { x: clampedX, y: clampedY };
+  }
+
+  private applyWidgetPosition(
+    id: WidgetId,
+    element: HTMLElement,
+    x: number,
+    y: number,
+    options: { updateLayout?: boolean } = {},
+  ): void {
+    const { updateLayout = false } = options;
+    const { x: clampedX, y: clampedY } = this.clampPosition(element, x, y);
+    element.style.left = `${Math.round(clampedX)}px`;
+    element.style.top = `${Math.round(clampedY)}px`;
+    element.style.right = "";
+    element.style.bottom = "";
+    element.style.transform = "";
+    if (updateLayout) {
+      this.widgetLayout.set(id, { x: Math.round(clampedX), y: Math.round(clampedY) });
+    }
+  }
+
+  private loadWidgetLayout(layout: WidgetLayoutEntry[]): void {
+    this.widgetLayout.clear();
+    layout.forEach((entry) => {
+      this.widgetLayout.set(entry.id, { x: entry.x, y: entry.y });
+    });
+    this.ensureLayoutEntries();
+  }
+
+  private ensureLayoutEntries(): void {
+    const bounds = this.getLayoutBounds();
+    const padding = Math.max(24, Math.min(48, window.innerWidth * 0.06));
+    let cursorY = bounds.top + padding;
+
+    for (const id of WIDGET_IDS) {
+      const element = this.widgetElements[id] ?? null;
+      const { width, height } = this.getWidgetDimensions(element);
+
+      if (this.widgetLayout.has(id)) {
+        const existing = this.widgetLayout.get(id)!;
+        const needsDefault =
+          !Number.isFinite(existing.x) ||
+          !Number.isFinite(existing.y);
+
+        if (needsDefault) {
+          const defaultX = Math.max(bounds.left + padding, bounds.right - width - padding);
+          const defaultY = cursorY;
+          cursorY = defaultY + height + 20;
+          this.widgetLayout.set(id, { x: defaultX, y: defaultY });
+        } else {
+          const clamped = element ? this.clampPosition(element, existing.x, existing.y) : existing;
+          this.widgetLayout.set(id, clamped);
+          cursorY = Math.max(cursorY, clamped.y + height + 20);
+        }
+        continue;
+      }
+
+      const x = Math.max(bounds.left + padding, bounds.right - width - padding);
+      const y = cursorY;
+      cursorY = y + height + 20;
+      this.widgetLayout.set(id, { x, y });
+    }
+  }
+
+  private reapplyWidgetLayout(): void {
+    this.ensureLayoutEntries();
+    this.applyWidgetLayout();
+  }
+
+  private serializeWidgetLayout(): WidgetLayoutEntry[] {
+    const result: WidgetLayoutEntry[] = [];
+    for (const id of WIDGET_IDS) {
+      const coords = this.widgetLayout.get(id);
+      if (!coords) {
+        continue;
+      }
+      result.push({ id, x: Math.round(coords.x), y: Math.round(coords.y) });
+    }
+    return result;
+  }
+
+  private async persistWidgetLayout(): Promise<void> {
+    if (!this.settings) {
+      return;
+    }
+
+    const layout = this.serializeWidgetLayout();
+    const widgets = {
+      ...this.settings.widgets,
+      layout,
+    };
+
+    this.settings = {
+      ...this.settings,
+      widgets,
+    };
+
+    try {
+      await updateSettings({
+        widgets: {
+          layout,
+          weather: widgets.weather,
+          pomodoro: widgets.pomodoro,
+        },
+      });
+    } catch (error) {
+      console.warn("Failed to persist widget layout", error);
+    }
+  }
+
+  private applyWidgetLayout(): void {
+    if (!this.settings) {
+      return;
+    }
+    this.ensureLayoutEntries();
+    for (const id of WIDGET_IDS) {
+      const element = this.widgetElements[id];
+      if (!element) {
+        continue;
+      }
+      const coords = this.widgetLayout.get(id);
+      if (!coords) {
+        continue;
+      }
+      this.applyWidgetPosition(id, element, coords.x, coords.y, { updateLayout: true });
+    }
+  }
+
   private onSettingsChanged(settings: Settings): void {
     this.settings = settings;
+    this.loadWidgetLayout(settings.widgets.layout);
     this.configureSystemWatcher(settings.themeMode);
     this.refreshTheme();
     this.updateSearch(settings);
@@ -356,11 +653,13 @@ export class ClockApp {
   private updateWidgets(settings: Settings): void {
     if (!this.widgetsContainer || !this.weatherWidget || !this.pomodoroWidget) return;
 
-    this.weatherWidget.update(settings.widgets.weather);
-    this.pomodoroWidget.update(settings.widgets.pomodoro);
+    const { widgets } = settings;
+    this.weatherWidget.update(widgets.weather);
+    this.pomodoroWidget.update(widgets.pomodoro);
 
-    this.widgetsContainer.dataset["placement"] = settings.widgets.placement;
-    const allDisabled = !settings.widgets.weather.enabled && !settings.widgets.pomodoro.enabled;
+    this.applyWidgetLayout();
+
+    const allDisabled = !widgets.weather.enabled && !widgets.pomodoro.enabled;
     this.widgetsContainer.classList.toggle("is-hidden", allDisabled);
   }
 }

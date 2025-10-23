@@ -180,7 +180,6 @@ class PomodoroWidget {
 
   private syncExternalState(external: PomodoroState): void {
     const next = this.normalizeStateFromSource(external);
-    const wasRunning = this.state.running;
     this.state = next;
 
     if (!this.settings.enabled) {
