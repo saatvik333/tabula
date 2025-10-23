@@ -232,12 +232,13 @@ body::after {
   font-weight: var(--tabula-weight-medium);
   text-transform: capitalize;
   cursor: pointer;
-  transition: transform 140ms ease, background 140ms ease, border 140ms ease;
+  transition: background-color 160ms ease, border 160ms ease, box-shadow 160ms ease, color 160ms ease;
 }
 
 .preset-chip:hover {
-  transform: translateY(-1px);
   border-color: var(--md-primary);
+  background: color-mix(in srgb, var(--md-surface) 70%, var(--md-primary) 8%);
+  box-shadow: 0 10px 24px rgba(4, 18, 33, 0.25);
 }
 
 .preset-chip.is-active {
@@ -381,13 +382,13 @@ body::after {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background 160ms ease, border 160ms ease, transform 160ms ease;
+  transition: background-color 160ms ease, border 160ms ease, box-shadow 160ms ease;
 }
 
 .pinned-item__action:hover:not(:disabled) {
-  background: rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.18);
-  border-color: rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.4);
-  transform: translateY(-1px);
+  background-color: rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.16);
+  border-color: rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.38);
+  box-shadow: 0 8px 20px rgba(4, 18, 33, 0.2);
 }
 
 .pinned-item__action:disabled {
@@ -549,12 +550,13 @@ body::after {
   background-color: rgba(255, 255, 255, 0.12);
   color: var(--md-on-surface);
   cursor: pointer;
-  transition: transform 140ms ease, border 140ms ease;
+  transition: border 140ms ease, background-color 140ms ease, box-shadow 140ms ease;
 }
 
 .field__control--file::file-selector-button:hover {
-  transform: translateY(-1px);
   border-color: rgba(255, 255, 255, 0.35);
+  background-color: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 20px rgba(4, 18, 33, 0.2);
 }
 
 .field__hint {
@@ -679,24 +681,21 @@ body::after {
   backdrop-filter: blur(12px) saturate(140%);
   -webkit-backdrop-filter: blur(12px) saturate(140%);
   box-shadow: none;
-  transition: transform 140ms ease, border 140ms ease, background-color 140ms ease, box-shadow 140ms ease;
+  transition: border 160ms ease, background-color 160ms ease, box-shadow 160ms ease, color 160ms ease;
 }
 
 .button:hover {
-  transform: translateY(-2px);
   border-color: rgba(255, 255, 255, 0.4);
   background-color: rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.42);
-  box-shadow: 0 12px 28px rgba(4, 18, 33, 0.28);
+  box-shadow: 0 16px 32px rgba(4, 18, 33, 0.24);
 }
 
 .button:disabled {
   opacity: 0.55;
   cursor: not-allowed;
-  transform: none;
 }
 
 .button:disabled:hover {
-  transform: none;
   background-color: rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.32);
   border-color: rgba(255, 255, 255, 0.24);
   box-shadow: none;
@@ -710,7 +709,7 @@ body::after {
 
 .button--primary:hover {
   background-color: var(--md-primary);
-  box-shadow: 0 16px 36px rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.38);
+  box-shadow: 0 18px 40px rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.32);
 }
 
 .button--ghost {
@@ -721,6 +720,7 @@ body::after {
 .button--ghost:hover {
   border-color: rgba(255, 255, 255, 0.38);
   background-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 12px 26px rgba(4, 18, 33, 0.2);
 }
 
 

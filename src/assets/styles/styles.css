@@ -200,6 +200,8 @@ body::after {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
+  width: 100%;
+  min-width: clamp(240px, 28vw, 320px);
 }
 
 .tabula-widget__header {
@@ -253,14 +255,13 @@ body::after {
   font-weight: var(--tabula-weight-medium);
   padding: 0.45rem 0.8rem;
   cursor: pointer;
-  transition: transform 140ms ease, background-color 140ms ease, border 140ms ease, box-shadow 140ms ease;
+  transition: background-color 160ms ease, border 160ms ease, box-shadow 160ms ease, color 160ms ease;
 }
 
 .tabula-widget__button:hover {
-  transform: translateY(-1px);
   border-color: rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.45);
   background-color: rgba(var(--tabula-face-color-rgb, 255, 255, 255), 0.32);
-  box-shadow: 0 10px 22px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.35);
+  box-shadow: 0 14px 28px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.3);
 }
 
 .tabula-widget__button:disabled {
@@ -279,6 +280,10 @@ body::after {
 .tabula-widget__button--primary.is-active {
   background-color: var(--md-primary);
   box-shadow: 0 12px 30px rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.35);
+}
+
+.tabula-widget__button--primary:hover {
+  color: var(--md-on-primary);
 }
 
 .tabula-widget--weather {
@@ -302,6 +307,10 @@ body::after {
     flex-direction: column;
     align-items: stretch;
     pointer-events: auto;
+  }
+
+  .tabula-widget {
+    min-width: auto;
   }
 }
 
@@ -346,14 +355,13 @@ body::after {
   backdrop-filter: blur(24px) saturate(160%);
   -webkit-backdrop-filter: blur(24px) saturate(160%);
   cursor: pointer;
-  transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease, border 180ms ease;
+  transition: box-shadow 200ms ease, background-color 200ms ease, border 200ms ease, color 200ms ease;
 }
 
 .tabula-settings-button:hover {
-  transform: translateY(-4px);
   border-color: rgba(255, 255, 255, 0.36);
   background-color: rgba(var(--tabula-face-color-rgb, 255, 255, 255), 0.38);
-  box-shadow: 0 32px 60px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.6);
+  box-shadow: 0 30px 60px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.5);
 }
 
 .tabula-settings-button .material-symbols-outlined {
@@ -515,14 +523,13 @@ body::after {
   backdrop-filter: blur(18px) saturate(160%);
   -webkit-backdrop-filter: blur(18px) saturate(160%);
   box-shadow: 0 18px 44px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.45);
-  transition: transform 160ms ease, box-shadow 160ms ease, border 160ms ease, background-color 160ms ease;
+  transition: box-shadow 180ms ease, border 180ms ease, background-color 180ms ease, color 180ms ease;
 }
 
 .tabula-search__button:hover {
-  transform: translateY(-2px);
   border-color: rgba(255, 255, 255, 0.36);
   background-color: var(--md-primary);
-  box-shadow: 0 26px 56px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.55);
+  box-shadow: 0 24px 52px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.5);
 }
 
 .tabula-search__button .material-symbols-outlined {
@@ -565,6 +572,8 @@ body::after {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+  align-content: flex-start;
+  align-items: stretch;
   gap: 1rem;
   width: min(100%, 720px);
 }
@@ -587,19 +596,19 @@ body::after {
   box-shadow: none;
   backdrop-filter: blur(18px) saturate(150%);
   -webkit-backdrop-filter: blur(18px) saturate(150%);
-  transition: transform 180ms ease, border 180ms ease, background 180ms ease;
-  flex: 0 0 clamp(170px, 22vw, 200px);
-  max-width: clamp(170px, 22vw, 200px);
+  transition: border 200ms ease, background 200ms ease, box-shadow 200ms ease;
+  flex: 1 1 clamp(180px, 27vw, 220px);
+  max-width: clamp(220px, 30vw, 240px);
 }
 
 .tabula-pinned__item:hover {
-  transform: translateY(-4px);
   border-color: rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.45);
   background: linear-gradient(
     135deg,
     rgba(var(--tabula-face-color-rgb, 255, 255, 255), 0.48),
     rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.2)
   );
+  box-shadow: 0 24px 50px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.42);
 }
 
 .tabula-pinned__icon {
