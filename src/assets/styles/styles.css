@@ -169,7 +169,8 @@ body::after {
   min-width: clamp(220px, 32vw, 360px);
   cursor: grab;
   touch-action: none;
-  transition: border 160ms ease, background-color 160ms ease, box-shadow 160ms ease, transform 140ms ease;
+  transition: opacity 180ms ease, border 160ms ease, background-color 160ms ease, box-shadow 160ms ease, transform 140ms ease;
+  opacity: 1;
 }
 
 .tabula-widget.is-dragging {
@@ -179,6 +180,12 @@ body::after {
   transform: scale(1.02);
   transition: none;
   z-index: 50;
+}
+
+.tabula-widget--initial {
+  opacity: 0;
+  pointer-events: none;
+  transition: none !important;
 }
 
 .tabula-widget__header {

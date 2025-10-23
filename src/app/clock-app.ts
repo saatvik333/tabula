@@ -4,7 +4,12 @@ import { startAlignedSecondTicker, type StopTicker } from "$src/core/ticker";
 import { formatTimeForDisplay, getCurrentTime, timesEqual, type Meridiem, type Time } from "$src/core/time";
 import { applySettingsToDocument } from "$src/settings/apply";
 import type { PinnedTab, SearchEngine, Settings, WidgetId, WidgetLayoutEntry } from "$src/settings/schema";
-import { loadSettings, subscribeToSettings, updateSettings } from "$src/settings/storage";
+import {
+  getCachedSettingsSnapshot,
+  loadSettings,
+  subscribeToSettings,
+  updateSettings,
+} from "$src/settings/storage";
 import { getSystemPrefersDark, resolveTheme, watchSystemTheme, type ThemeVariant } from "$src/settings/theme";
 import { createWeatherWidget, type WeatherWidgetController } from "$src/widgets/weather-widget";
 import { createPomodoroWidget, type PomodoroWidgetController } from "$src/widgets/pomodoro-widget";
@@ -129,6 +134,7 @@ export class ClockApp {
 
   start(): void {
     this.buildLayout();
+    this.hydrateFromCache();
     this.render(true);
     this.stopTicker = this.tickerFactory(() => this.render());
     window.addEventListener("resize", this.handleWindowResize);
@@ -271,6 +277,7 @@ export class ClockApp {
   private prepareWidget(element: HTMLElement, id: WidgetId): void {
     element.dataset["widgetId"] = id;
     this.widgetElements[id] = element;
+    element.classList.add("tabula-widget--initial");
     element.addEventListener("pointerdown", (event) => this.beginWidgetDrag(id, element, event));
   }
 
@@ -385,6 +392,11 @@ export class ClockApp {
     element.style.transform = "";
     if (updateLayout) {
       this.widgetLayout.set(id, { x: Math.round(clampedX), y: Math.round(clampedY) });
+    }
+    if (element.classList.contains("tabula-widget--initial") && this.settings) {
+      requestAnimationFrame(() => {
+        element.classList.remove("tabula-widget--initial");
+      });
     }
   }
 
@@ -661,5 +673,14 @@ export class ClockApp {
 
     const allDisabled = !widgets.weather.enabled && !widgets.pomodoro.enabled;
     this.widgetsContainer.classList.toggle("is-hidden", allDisabled);
+  }
+
+  private hydrateFromCache(): void {
+    try {
+      const snapshot = getCachedSettingsSnapshot();
+      this.onSettingsChanged(snapshot);
+    } catch (error) {
+      console.warn("Failed to hydrate settings snapshot", error);
+    }
   }
 }

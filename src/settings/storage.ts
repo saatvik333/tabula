@@ -150,6 +150,15 @@ export const loadSettings = async (): Promise<Settings> => {
   return fallback;
 };
 
+export const getCachedSettingsSnapshot = (): Settings => {
+  if (cachedSettings) {
+    return cachedSettings;
+  }
+  const snapshot = readFromLocalStorage();
+  cachedSettings = snapshot;
+  return snapshot;
+};
+
 const combineWithCurrent = (current: Settings, partial: PartialSettings): Partial<Settings> => ({
   ...current,
   ...partial,
