@@ -1,3 +1,5 @@
+@import "./tokens.css";
+
 :root {
   color-scheme: light dark;
   --md-surface: #0f172a;
@@ -25,14 +27,6 @@
   --tabula-base-field-gap: 1.35rem;
   --tabula-cell-gap: 0.25rem;
   --tabula-search-max: 640px;
-  --tabula-font-family: "Roboto", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --tabula-weight-regular: 400;
-  --tabula-weight-medium: 500;
-  --tabula-weight-semibold: 600;
-  --tabula-radius-full: 999px;
-  --tabula-radius-xl: 32px;
-  --tabula-radius-lg: 24px;
-  --tabula-radius-md: 18px;
   --tabula-gap-card: clamp(1.5rem, 4vw, 3rem);
   --tabula-accent-color-rgb: 56, 189, 248;
   --tabula-background-color-rgb: 17, 23, 39;
@@ -52,18 +46,6 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-}
-
-.visually-hidden {
-  position: absolute !important;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
 }
 
 body {
@@ -166,17 +148,10 @@ body::after {
 .tabula-widget {
   position: absolute;
   pointer-events: auto;
-  border-radius: var(--tabula-radius-xl);
-  padding: 1.1rem 1.35rem;
-  background: linear-gradient(135deg, rgba(var(--tabula-face-color-rgb, 255, 255, 255), 0.42), rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.18));
-  border: 1px solid rgba(var(--tabula-rim-color-rgb, 148, 163, 184), 0.32);
-  backdrop-filter: blur(22px) saturate(160%);
-  -webkit-backdrop-filter: blur(22px) saturate(160%);
-  color: var(--md-on-surface);
-  box-shadow: none;
+  padding: 1.15rem 1.4rem;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0.75rem;
   width: clamp(240px, 32vw, 360px);
   min-width: clamp(220px, 32vw, 360px);
   cursor: grab;
@@ -187,7 +162,7 @@ body::after {
 
 .tabula-widget.is-dragging {
   cursor: grabbing;
-  box-shadow: 0 32px 72px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.55);
+  box-shadow: var(--tabula-shadow-lg);
   border-color: rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.6);
   transform: scale(1.02);
   transition: none;
@@ -241,48 +216,8 @@ body::after {
   margin-top: 0.3rem;
 }
 
-.tabula-widget__button {
+.tabula-widget__actions .tabula-button {
   flex: 1;
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  border-radius: var(--tabula-radius-full);
-  background-color: rgba(var(--tabula-face-color-rgb, 255, 255, 255), 0.24);
-  color: var(--md-on-surface);
-  font-size: 0.85rem;
-  font-weight: var(--tabula-weight-medium);
-  padding: 0.45rem 0.8rem;
-  cursor: pointer;
-  transition: background-color 160ms ease, border 160ms ease, box-shadow 160ms ease, color 160ms ease;
-}
-
-.tabula-widget__button:hover {
-  border-color: rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.45);
-  background-color: rgba(var(--tabula-face-color-rgb, 255, 255, 255), 0.32);
-  box-shadow: 0 14px 28px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.3);
-}
-
-.tabula-widget__button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-.tabula-widget__button--primary {
-  border-color: transparent;
-  background-color: var(--md-primary);
-  color: var(--md-on-primary);
-}
-
-.tabula-widget__button--primary.is-active {
-  background-color: var(--md-primary);
-  box-shadow: 0 12px 30px rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.35);
-}
-
-.tabula-widget__button--primary:hover {
-  color: var(--md-on-primary);
-  background-color: var(--md-primary);
-  border-color: rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.6);
-  box-shadow: 0 16px 36px rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.38);
 }
 
 .tabula-widget--weather {
@@ -311,11 +246,7 @@ body::after {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  padding: 0.6rem 0.8rem;
-  border-radius: var(--tabula-radius-lg);
-  background: linear-gradient(135deg, rgba(var(--tabula-face-color-rgb, 255, 255, 255), 0.36), rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.22));
-  border: 1px solid rgba(var(--tabula-rim-color-rgb, 148, 163, 184), 0.28);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  padding: 0.65rem 0.85rem;
 }
 
 .tasks-list__text {
@@ -325,27 +256,7 @@ body::after {
   overflow-wrap: anywhere;
 }
 
-.tabula-widget__icon-button {
-  width: 2.35rem;
-  height: 2.35rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--tabula-radius-full);
-  border: 1px solid rgba(var(--tabula-rim-color-rgb, 148, 163, 184), 0.38);
-  background-color: rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.18);
-  color: var(--md-on-surface);
-  cursor: pointer;
-  transition: border 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
-}
-
-.tabula-widget__icon-button:hover {
-  border-color: rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.55);
-  background-color: rgba(var(--tabula-face-color-rgb, 255, 255, 255), 0.32);
-  box-shadow: 0 12px 24px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.25);
-}
-
-.tabula-widget__icon-button .material-symbols-outlined {
+.tasks-list__remove .material-symbols-outlined {
   font-size: 18px;
 }
 
@@ -363,31 +274,12 @@ body::after {
 
 .tasks-form__input {
   flex: 1;
-  border-radius: var(--tabula-radius-full);
-  border: 1px solid rgba(var(--tabula-rim-color-rgb, 148, 163, 184), 0.32);
-  background-color: rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.16);
-  color: var(--md-on-surface);
-  padding: 0.5rem 0.9rem;
-  font-size: 0.85rem;
-  transition: border 160ms ease, background-color 160ms ease;
-}
-
-.tasks-form__input:focus {
-  outline: none;
-  border-color: rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.6);
-  background-color: rgba(var(--tabula-face-color-rgb, 255, 255, 255), 0.28);
+  font-size: 0.88rem;
 }
 
 .tasks-form__button {
   flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
   gap: 0.35rem;
-  padding: 0.48rem 1.05rem;
-}
-
-.tasks-form__button .material-symbols-outlined {
-  font-size: 18px;
 }
 
 .tasks-form__button-label {
@@ -412,10 +304,11 @@ body::after {
 
   .tabula-widget__actions {
     flex-wrap: wrap;
+    gap: 0.4rem;
   }
 
-  .tabula-widget__button {
-    flex: 1 1 calc(50% - 0.5rem);
+  .tabula-widget__actions .tabula-button {
+    flex: 1 1 calc(50% - 0.4rem);
   }
 }
 
@@ -429,26 +322,6 @@ body::after {
 
 .tabula-settings-button {
   pointer-events: auto;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 3.25rem;
-  height: 3.25rem;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  background-color: rgba(var(--tabula-face-color-rgb, 255, 255, 255), 0.28);
-  color: var(--md-on-surface);
-  box-shadow: 0 24px 44px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.5);
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
-  cursor: pointer;
-  transition: box-shadow 200ms ease, background-color 200ms ease, border 200ms ease, color 200ms ease;
-}
-
-.tabula-settings-button:hover {
-  border-color: rgba(255, 255, 255, 0.36);
-  background-color: rgba(var(--tabula-face-color-rgb, 255, 255, 255), 0.38);
-  box-shadow: 0 30px 60px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.5);
 }
 
 .tabula-settings-button .material-symbols-outlined {
@@ -562,15 +435,6 @@ body::after {
   gap: 0.65rem;
   padding: 0.9rem 1.1rem;
   border-radius: var(--tabula-radius-full);
-  background: linear-gradient(
-    135deg,
-    rgba(var(--tabula-face-color-rgb, 255, 255, 255), 0.5),
-    rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.18)
-  );
-  border: 1px solid rgba(var(--tabula-rim-color-rgb, 148, 163, 184), 0.4);
-  box-shadow: 0 18px 48px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.38);
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
   transition: opacity 160ms ease, transform 160ms ease;
 }
 
@@ -599,24 +463,10 @@ body::after {
   align-items: center;
   justify-content: center;
   gap: 0.35rem;
-  border: 1px solid rgba(255, 255, 255, 0.22);
   padding: 0.55rem 1.3rem;
   border-radius: var(--tabula-radius-full);
   font-size: 0.95rem;
   font-weight: var(--tabula-weight-medium);
-  background-color: var(--md-primary);
-  color: var(--md-on-primary);
-  cursor: pointer;
-  backdrop-filter: blur(18px) saturate(160%);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
-  box-shadow: 0 18px 44px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.45);
-  transition: box-shadow 180ms ease, border 180ms ease, background-color 180ms ease, color 180ms ease;
-}
-
-.tabula-search__button:hover {
-  border-color: rgba(255, 255, 255, 0.36);
-  background-color: var(--md-primary);
-  box-shadow: 0 24px 52px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.5);
 }
 
 .tabula-search__button .material-symbols-outlined {
@@ -672,30 +522,21 @@ body::after {
   flex-direction: column;
   align-items: center;
   gap: 0.65rem;
-  padding: 0.9rem 1rem;
+  padding: 0.95rem 1.1rem;
   border-radius: var(--tabula-radius-lg);
-  border: 1px solid rgba(var(--tabula-rim-color-rgb, 148, 163, 184), 0.3);
-  background: linear-gradient(
-    135deg,
-    rgba(var(--tabula-face-color-rgb, 255, 255, 255), 0.4),
-    rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.16)
-  );
-  box-shadow: none;
-  backdrop-filter: blur(18px) saturate(150%);
-  -webkit-backdrop-filter: blur(18px) saturate(150%);
-  transition: border 200ms ease, background 200ms ease, box-shadow 200ms ease;
+  transition: border var(--tabula-transition-duration) var(--tabula-transition-timing),
+    background var(--tabula-transition-duration) var(--tabula-transition-timing),
+    box-shadow 220ms ease;
   flex: 1 1 clamp(180px, 27vw, 220px);
   max-width: clamp(220px, 30vw, 240px);
 }
 
-.tabula-pinned__item:hover {
-  border-color: rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.45);
-  background: linear-gradient(
-    135deg,
-    rgba(var(--tabula-face-color-rgb, 255, 255, 255), 0.48),
-    rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.2)
-  );
-  box-shadow: 0 24px 50px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.42);
+.tabula-pinned__item.tabula-card {
+  box-shadow: var(--tabula-shadow-md);
+}
+
+.tabula-pinned__item.tabula-card:hover {
+  box-shadow: var(--tabula-shadow-lg);
 }
 
 .tabula-pinned__icon {

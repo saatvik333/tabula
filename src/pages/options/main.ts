@@ -262,7 +262,7 @@ function renderPinnedList(): void {
 
     state.pinnedTabs.forEach((tab, index) => {
       const item = document.createElement("div");
-      item.className = "pinned-item";
+      item.className = "pinned-item tabula-card tabula-card--subtle";
       item.dataset["id"] = tab.id;
 
       const preview = document.createElement("div");
@@ -305,7 +305,7 @@ function renderPinnedList(): void {
       inputs.className = "pinned-item__inputs";
 
       const titleInput = document.createElement("input");
-      titleInput.className = "pinned-item__input";
+      titleInput.className = "pinned-item__input tabula-input";
       titleInput.value = tab.title;
       titleInput.placeholder = "Title";
       titleInput.setAttribute("aria-label", "Pinned tab title");
@@ -318,7 +318,7 @@ function renderPinnedList(): void {
       });
 
       const urlInput = document.createElement("input");
-      urlInput.className = "pinned-item__input";
+      urlInput.className = "pinned-item__input tabula-input";
       urlInput.type = "url";
       urlInput.value = tab.url;
       urlInput.placeholder = "https://example.com";
@@ -333,7 +333,7 @@ function renderPinnedList(): void {
       });
 
       const iconInput = document.createElement("input");
-      iconInput.className = "pinned-item__input";
+      iconInput.className = "pinned-item__input tabula-input";
       iconInput.type = "url";
       iconInput.value = tab.icon ?? "";
       iconInput.placeholder = "Icon URL";
@@ -359,7 +359,7 @@ function renderPinnedList(): void {
 
       const upButton = document.createElement("button");
       upButton.type = "button";
-      upButton.className = "pinned-item__action";
+      upButton.className = "pinned-item__action tabula-button tabula-button--icon";
       upButton.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">arrow_upward</span>';
       upButton.setAttribute("aria-label", "Move pinned tab up");
       upButton.disabled = index === 0;
@@ -369,7 +369,7 @@ function renderPinnedList(): void {
 
       const downButton = document.createElement("button");
       downButton.type = "button";
-      downButton.className = "pinned-item__action";
+      downButton.className = "pinned-item__action tabula-button tabula-button--icon";
       downButton.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">arrow_downward</span>';
       downButton.setAttribute("aria-label", "Move pinned tab down");
       downButton.disabled = index === state.pinnedTabs.length - 1;
@@ -379,7 +379,7 @@ function renderPinnedList(): void {
 
       const removeButton = document.createElement("button");
       removeButton.type = "button";
-      removeButton.className = "pinned-item__action pinned-item__action--remove";
+      removeButton.className = "pinned-item__action pinned-item__action--remove tabula-button tabula-button--icon";
       removeButton.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">delete</span>';
       removeButton.setAttribute("aria-label", "Remove pinned tab");
       removeButton.addEventListener("click", () => {

@@ -227,7 +227,9 @@ export class ClockApp {
     const root = createElement("div", { className: "tabula" });
     root.dataset["searchPosition"] = "top";
     const controls = createElement("div", { className: "tabula-controls" });
-    const settingsButton = createElement<HTMLButtonElement>("button", { className: "tabula-settings-button" });
+    const settingsButton = createElement<HTMLButtonElement>("button", {
+      className: "tabula-button tabula-button--fab tabula-button--ghost tabula-settings-button",
+    });
     settingsButton.type = "button";
     settingsButton.innerHTML = `<span class="material-symbols-outlined" aria-hidden="true">settings</span>`;
     settingsButton.setAttribute("aria-label", "Open Tabula settings");
@@ -286,16 +288,18 @@ export class ClockApp {
   }
 
   private createSearchForm(): HTMLFormElement {
-    const form = createElement<HTMLFormElement>("form", { className: "tabula-search" });
+    const form = createElement<HTMLFormElement>("form", { className: "tabula-search tabula-card tabula-card--subtle" });
     form.classList.add("is-hidden");
-    const input = createElement<HTMLInputElement>("input", { className: "tabula-search__input" });
+    const input = createElement<HTMLInputElement>("input", { className: "tabula-search__input tabula-input" });
     input.setAttribute("type", "search");
     input.setAttribute("name", "query");
     input.setAttribute("autocomplete", "off");
     input.setAttribute("spellcheck", "false");
     input.setAttribute("aria-label", "Search");
 
-    const button = createElement<HTMLButtonElement>("button", { className: "tabula-search__button" });
+    const button = createElement<HTMLButtonElement>("button", {
+      className: "tabula-search__button tabula-button tabula-button--primary",
+    });
     button.type = "submit";
     button.innerHTML = `
       <span class="material-symbols-outlined" aria-hidden="true">search</span>
@@ -627,7 +631,7 @@ export class ClockApp {
     const fragment = document.createDocumentFragment();
 
     tabs.forEach((tab) => {
-      const item = createElement<HTMLAnchorElement>("a", { className: "tabula-pinned__item" });
+      const item = createElement<HTMLAnchorElement>("a", { className: "tabula-pinned__item tabula-card tabula-card--subtle" });
       item.href = tab.url;
       item.target = "_blank";
       item.rel = "noreferrer noopener";

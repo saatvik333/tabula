@@ -30,7 +30,7 @@ class TasksWidget {
   private readonly addButton: HTMLButtonElement;
 
   constructor(private readonly options: TasksWidgetOptions) {
-    this.element = createElement("div", { className: "tabula-widget tabula-widget--tasks" });
+    this.element = createElement("div", { className: "tabula-card tabula-widget tabula-widget--tasks" });
 
     const header = createElement("div", { className: "tabula-widget__header" });
     const title = createElement("p", { className: "tabula-widget__title" });
@@ -45,14 +45,14 @@ class TasksWidget {
 
     const form = createElement("form", { className: "tasks-form" });
     this.inputEl = createElement<HTMLInputElement>("input", {
-      className: "tasks-form__input",
+      className: "tasks-form__input tabula-input",
     });
     this.inputEl.type = "text";
     this.inputEl.placeholder = "Add a task";
     this.inputEl.maxLength = 120;
 
     this.addButton = createElement<HTMLButtonElement>("button", {
-      className: "tasks-form__button tabula-widget__button tabula-widget__button--primary",
+      className: "tasks-form__button tabula-button tabula-button--primary",
     });
     this.addButton.type = "submit";
     this.addButton.innerHTML = `
@@ -96,12 +96,12 @@ class TasksWidget {
     } else {
       this.emptyEl.hidden = true;
       items.forEach((item) => {
-        const entry = createElement("li", { className: "tasks-list__item" });
+        const entry = createElement("li", { className: "tasks-list__item tabula-card" });
         const text = createElement("span", { className: "tasks-list__text" });
         text.textContent = item.text;
 
         const removeButton = createElement<HTMLButtonElement>("button", {
-          className: "tasks-list__remove tabula-widget__icon-button",
+          className: "tasks-list__remove tabula-button tabula-button--icon",
         });
         removeButton.type = "button";
         removeButton.setAttribute("aria-label", "Remove task");

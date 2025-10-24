@@ -103,16 +103,22 @@ class PomodoroWidget {
   private readonly skipButton: HTMLButtonElement;
 
   constructor() {
-    this.element = createElement("div", { className: "tabula-widget tabula-widget--pomodoro" });
+    this.element = createElement("div", { className: "tabula-card tabula-widget tabula-widget--pomodoro" });
 
     this.modeEl = createElement("p", { className: "tabula-widget__title" });
     this.timeEl = createElement("p", { className: "tabula-widget__value tabula-widget__value--xl" });
     this.statusEl = createElement("p", { className: "tabula-widget__status" });
 
     const actions = createElement("div", { className: "tabula-widget__actions" });
-    this.primaryButton = createElement<HTMLButtonElement>("button", { className: "tabula-widget__button tabula-widget__button--primary" });
-    this.secondaryButton = createElement<HTMLButtonElement>("button", { className: "tabula-widget__button" });
-    this.skipButton = createElement<HTMLButtonElement>("button", { className: "tabula-widget__button" });
+    this.primaryButton = createElement<HTMLButtonElement>("button", {
+      className: "tabula-button tabula-button--primary",
+    });
+    this.secondaryButton = createElement<HTMLButtonElement>("button", {
+      className: "tabula-button tabula-button--ghost",
+    });
+    this.skipButton = createElement<HTMLButtonElement>("button", {
+      className: "tabula-button tabula-button--ghost",
+    });
 
     this.primaryButton.type = "button";
     this.secondaryButton.type = "button";

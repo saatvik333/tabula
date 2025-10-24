@@ -1,3 +1,5 @@
+@import "./tokens.css";
+
 :root {
   color-scheme: light dark;
   --md-surface: #0f172a;
@@ -11,13 +13,6 @@
   --tabula-accent-color-rgb: 56, 189, 248;
   --tabula-background-image: none;
   --tabula-background-blur: 0px;
-  --tabula-font-family: "Roboto", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --tabula-weight-medium: 500;
-  --tabula-weight-semibold: 600;
-  --tabula-radius-lg: 28px;
-  --tabula-radius-md: 20px;
-  --tabula-radius-sm: 14px;
-  --tabula-radius-full: 999px;
   --tabula-field-gap: clamp(1rem, 2vw, 1.5rem);
   --tabula-panel-gap: clamp(1.5rem, 3vw, 2.25rem);
 }
@@ -98,19 +93,9 @@ body::after {
 
 .panel {
   padding: clamp(1.75rem, 3vw, 2.4rem);
-  border-radius: var(--tabula-radius-lg);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: none;
   display: flex;
   flex-direction: column;
   gap: clamp(1.25rem, 2vw, 1.75rem);
-}
-
-:root[data-theme="light"] .panel {
-  background: rgba(255, 255, 255, 0.82);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  box-shadow: none;
 }
 
 .panel__header h2 {
@@ -148,13 +133,9 @@ body::after {
 
 .background-section__upload {
   padding: 1.2rem 1.35rem;
-  border-radius: var(--tabula-radius-lg);
-  border: 1px solid var(--md-outline);
-  background: rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.24);
   gap: 0.75rem;
 }
-
-.background-section__upload .button {
+.background-section__upload .tabula-button {
   align-self: flex-start;
 }
 
@@ -162,9 +143,6 @@ body::after {
   display: grid;
   gap: 0.9rem;
   padding: 1.3rem 1.5rem;
-  border-radius: var(--tabula-radius-lg);
-  border: 1px solid var(--md-outline);
-  background: rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.2);
 }
 
 .background-section__controls .field {

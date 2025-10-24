@@ -118,7 +118,7 @@ class WeatherWidget {
   private readonly statusEl: HTMLElement;
 
   constructor() {
-    this.element = createElement("div", { className: "tabula-widget tabula-widget--weather" });
+    this.element = createElement("div", { className: "tabula-card tabula-widget tabula-widget--weather" });
 
     this.titleEl = createElement("p", { className: "tabula-widget__title" });
     this.conditionEl = createElement("p", { className: "tabula-widget__meta" });
