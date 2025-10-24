@@ -36,6 +36,7 @@ const themeModeSelect = getElement<HTMLSelectElement>("themeMode");
 const taglineInput = getElement<HTMLInputElement>("taglineInput");
 const timeFormat24Input = getElement<HTMLInputElement>("timeFormat24");
 const timeFormat12Input = getElement<HTMLInputElement>("timeFormat12");
+const showSecondsInput = getElement<HTMLInputElement>("showSeconds");
 
 const backgroundImageInput = getElement<HTMLInputElement>("backgroundImage");
 const backgroundImageUpload = getElement<HTMLInputElement>("backgroundImageUpload");
@@ -302,6 +303,7 @@ const syncForm = (settings: Settings) => {
   } else {
     timeFormat24Input.checked = true;
   }
+  showSecondsInput.checked = Boolean(state.clock.showSeconds);
 
   backgroundImageInput.value = state.background.imageUrl;
   backgroundImageUpload.value = "";
@@ -394,6 +396,11 @@ timeFormat12Input.addEventListener("change", () => {
   if (timeFormat12Input.checked) {
     setClockFormat("12h");
   }
+});
+
+showSecondsInput.addEventListener("change", () => {
+  state.clock.showSeconds = showSecondsInput.checked;
+  schedule(() => setStatus(`Seconds ${state.clock.showSeconds ? "shown" : "hidden"}`));
 });
 
 backgroundImageInput.addEventListener("input", () => {

@@ -834,6 +834,9 @@ export class ClockApp {
     this.updateSearch(settings);
     this.updateTagline(settings);
     this.updatePinnedTabs(settings);
+    if (this.display) {
+      this.display.setSecondsVisible(Boolean(settings.clock.showSeconds));
+    }
     this.updateWidgets(settings);
     this.render(true);
   }

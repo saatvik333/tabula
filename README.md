@@ -1,25 +1,46 @@
-# Tabula – Your Space, No Noise
+# Tabula
 
-Tabula replaces the browser new tab with an elegant "clock of clocks" experience that stays out of the way while keeping time, quick access, and personalization within immediate reach.
+A minimalist new tab extension for Firefox and Chromium-based browsers featuring a unique clock and productivity widgets.
 
-## Highlights at a Glance
-- **Clock-first design:** A modular analog/digital hybrid clock rendered entirely in TypeScript and CSS for crisp timing cues.
-- **Instant personalization:** Theme presets, palette overrides, pinned shortcuts, search bar placement, and clock styling—saved instantly via browser storage.
-- **Responsive and reliable:** Built with Vite + TypeScript + Vitest, ensuring fast iteration, extensible architecture, and test-backed stability.
+## Features
 
-## Getting Started
-1. Install dependencies
-   ```bash
-   npm install
-   ```
-2. Develop with live reload
-   ```bash
-   npm run dev
-   ```
-3. Build production assets
-   ```bash
-   npm run build
-   ```
-4. Load the `dist/` output as an unpacked extension in Chrome, Edge, or compatible Chromium browsers.
+- **Clock of clocks**: Clean 24-cell digit display with optional seconds
+- **Productivity widgets**: Tasks, pomodoro timer, and weather
+- **Customization**: Multiple themes, background images, and layout options
+- **Cross-browser**: Works on Firefox and all Chromium-based browsers (Chrome, Edge, Brave, etc.)
 
-For linting, tests, or deployment specifics, see `package.json` scripts.
+## Installation
+
+### Development
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server with hot reload
+npm run dev
+
+# Build for production
+npm run build
+```
+
+### Browser Installation
+
+**Chromium-based browsers**:
+1. Open `chrome://extensions` (or equivalent)
+2. Enable Developer mode
+3. Load unpacked → select `dist/` folder
+
+**Firefox**:
+1. Open `about:debugging`
+2. Load Temporary Add-on → select `dist/manifest.json`
+
+## Usage
+
+- **New Tab**: Displays clock and enabled widgets
+- **Options Page**: Configure themes, layout, background, search, and widgets
+- **Widget Positioning**: Drag widgets to position; they maintain placement on window resize
+
+## License
+
+MIT

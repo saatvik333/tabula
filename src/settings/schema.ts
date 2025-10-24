@@ -99,6 +99,7 @@ export type Settings = {
     handWidth: number;
     dotSize: number;
     format: TimeFormat;
+    showSeconds: boolean;
   };
   palettes: {
     light: Palette;

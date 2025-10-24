@@ -381,6 +381,7 @@ const BASE_DEFAULT_SETTINGS: Settings = {
     handWidth: 5,
     dotSize: 8,
     format: "24h",
+    showSeconds: true,
   },
   palettes: {
     light: MATERIAL_LIGHT,
@@ -432,6 +433,7 @@ const mergeClock = (
   handWidth: clamp(Number(value?.handWidth), fallback.handWidth, 2, 14),
   dotSize: clamp(Number(value?.dotSize), fallback.dotSize, 4, 24),
   format: coerceTimeFormat(value?.format, fallback.format),
+  showSeconds: sanitizeBoolean(value?.showSeconds, fallback.showSeconds),
 });
 
 const mergeBackground = (
