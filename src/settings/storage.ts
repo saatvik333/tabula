@@ -215,8 +215,18 @@ const combineWithCurrent = (current: Settings, partial: PartialSettings): Partia
   },
   widgets: {
     layout: partial.widgets?.layout
-      ? partial.widgets.layout.map((entry) => ({ ...entry }))
-      : current.widgets.layout.map((entry) => ({ ...entry })),
+      ? partial.widgets.layout.map((entry) => ({
+          id: entry.id,
+          x: entry.x,
+          y: entry.y,
+          ...(entry.anchor ? { anchor: { ...entry.anchor } } : {}),
+        }))
+      : current.widgets.layout.map((entry) => ({
+          id: entry.id,
+          x: entry.x,
+          y: entry.y,
+          ...(entry.anchor ? { anchor: { ...entry.anchor } } : {}),
+        })),
     weather: {
       ...current.widgets.weather,
       ...(partial.widgets?.weather ?? {}),

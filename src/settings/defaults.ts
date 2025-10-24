@@ -15,6 +15,7 @@ import type {
   TemperatureUnit,
   WidgetLayoutEntry,
   WidgetId,
+  WidgetAnchor,
   TaskItem,
 } from "$src/settings/schema";
 import { applyPresetToSettings, isPresetName } from "$src/settings/presets";
@@ -95,12 +96,67 @@ const coerceTimeFormat = (value: unknown, fallback: TimeFormat): TimeFormat => {
 
 const KNOWN_WIDGET_IDS: readonly WidgetId[] = ["weather", "pomodoro", "tasks"];
 
+const cloneAnchor = (anchor: WidgetAnchor | undefined): WidgetAnchor | undefined => {
+  if (!anchor) {
+    return undefined;
+  }
+
+  const cloned: WidgetAnchor = {};
+
+  if (anchor.horizontal === "left" || anchor.horizontal === "right") {
+    cloned.horizontal = anchor.horizontal;
+    if (typeof anchor.offsetX === "number" && Number.isFinite(anchor.offsetX) && anchor.offsetX >= 0) {
+      cloned.offsetX = Math.round(anchor.offsetX);
+    }
+  }
+
+  if (anchor.vertical === "top" || anchor.vertical === "bottom") {
+    cloned.vertical = anchor.vertical;
+    if (typeof anchor.offsetY === "number" && Number.isFinite(anchor.offsetY) && anchor.offsetY >= 0) {
+      cloned.offsetY = Math.round(anchor.offsetY);
+    }
+  }
+
+  return Object.keys(cloned).length ? cloned : undefined;
+};
+
+const sanitizeAnchor = (value: unknown): WidgetAnchor | undefined => {
+  if (!value || typeof value !== "object") {
+    return undefined;
+  }
+
+  const candidate = value as Partial<WidgetAnchor> & { offsetX?: unknown; offsetY?: unknown };
+  const anchor: WidgetAnchor = {};
+
+  if (candidate.horizontal === "left" || candidate.horizontal === "right") {
+    anchor.horizontal = candidate.horizontal;
+    const offsetX = Number(candidate.offsetX);
+    if (Number.isFinite(offsetX) && offsetX >= 0) {
+      anchor.offsetX = Math.round(offsetX);
+    }
+  }
+
+  if (candidate.vertical === "top" || candidate.vertical === "bottom") {
+    anchor.vertical = candidate.vertical;
+    const offsetY = Number(candidate.offsetY);
+    if (Number.isFinite(offsetY) && offsetY >= 0) {
+      anchor.offsetY = Math.round(offsetY);
+    }
+  }
+
+  if (!anchor.horizontal && !anchor.vertical) {
+    return undefined;
+  }
+
+  return anchor;
+};
+
 const sanitizeWidgetLayout = (
   value: unknown,
   fallback: WidgetLayoutEntry[],
 ): WidgetLayoutEntry[] => {
   if (!Array.isArray(value)) {
-    return fallback.map((entry) => ({ ...entry }));
+    return fallback.map((entry) => ({ ...entry, anchor: cloneAnchor(entry.anchor) }));
   }
 
   const seen = new Set<WidgetId>();
@@ -118,13 +174,15 @@ const sanitizeWidgetLayout = (
     const y = Number(candidate.y);
     if (!Number.isFinite(x) || !Number.isFinite(y)) continue;
     seen.add(id);
-    result.push({ id, x, y });
+    const anchor = sanitizeAnchor(candidate.anchor);
+    result.push(anchor ? { id, x, y, anchor } : { id, x, y });
   }
 
   for (const id of KNOWN_WIDGET_IDS) {
     if (seen.has(id)) continue;
     const fallbackEntry = fallbackMap.get(id) ?? { id, x: 0, y: 0 };
-    result.push({ id, x: fallbackEntry.x, y: fallbackEntry.y });
+    const anchor = cloneAnchor(fallbackEntry.anchor);
+    result.push(anchor ? { id, x: fallbackEntry.x, y: fallbackEntry.y, anchor } : { id, x: fallbackEntry.x, y: fallbackEntry.y });
   }
 
   return result;
@@ -291,9 +349,9 @@ const MATERIAL_DARK: Palette = {
 };
 
 const DEFAULT_WIDGET_LAYOUT: WidgetLayoutEntry[] = [
-  { id: "weather", x: 0, y: 0 },
-  { id: "pomodoro", x: 0, y: 260 },
-  { id: "tasks", x: 0, y: 520 },
+  { id: "weather", x: 0, y: 0, anchor: { horizontal: "left", vertical: "top", offsetX: 0, offsetY: 0 } },
+  { id: "pomodoro", x: 0, y: 260, anchor: { horizontal: "left", vertical: "top", offsetX: 0, offsetY: 260 } },
+  { id: "tasks", x: 0, y: 520, anchor: { horizontal: "left", vertical: "top", offsetX: 0, offsetY: 520 } },
 ];
 
 export const DEFAULT_PALETTE_LIGHT: Palette = MATERIAL_LIGHT;
@@ -328,7 +386,12 @@ const BASE_DEFAULT_SETTINGS: Settings = {
     position: "top",
   },
   widgets: {
-    layout: DEFAULT_WIDGET_LAYOUT.map((entry) => ({ ...entry })),
+    layout: DEFAULT_WIDGET_LAYOUT.map((entry) => ({
+      id: entry.id,
+      x: entry.x,
+      y: entry.y,
+      ...(entry.anchor ? { anchor: cloneAnchor(entry.anchor) } : {}),
+    })),
     weather: {
       enabled: true,
       location: "New York, NY",

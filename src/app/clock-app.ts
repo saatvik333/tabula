@@ -3,7 +3,15 @@ import { createElement } from "$src/core/dom";
 import { startAlignedSecondTicker, type StopTicker } from "$src/core/ticker";
 import { formatTimeForDisplay, getCurrentTime, timesEqual, type Meridiem, type Time } from "$src/core/time";
 import { applySettingsToDocument } from "$src/settings/apply";
-import type { PinnedTab, SearchEngine, Settings, TaskItem, WidgetId, WidgetLayoutEntry } from "$src/settings/schema";
+import type {
+  PinnedTab,
+  SearchEngine,
+  Settings,
+  TaskItem,
+  WidgetId,
+  WidgetAnchor,
+  WidgetLayoutEntry,
+} from "$src/settings/schema";
 import {
   getCachedSettingsSnapshot,
   loadSettings,
@@ -27,6 +35,14 @@ const SEARCH_ENGINES: Record<SearchEngine, (query: string) => string> = {
 };
 
 const WIDGET_IDS: WidgetId[] = ["weather", "pomodoro", "tasks"];
+
+type WidgetPosition = {
+  x: number;
+  y: number;
+  anchor?: WidgetAnchor;
+};
+
+const EDGE_ANCHOR_THRESHOLD = 32;
 
 export class ClockApp {
   private readonly timeSource: TimeSource;
@@ -74,7 +90,7 @@ export class ClockApp {
 
   private widgetElements: Partial<Record<WidgetId, HTMLElement>> = {};
 
-  private widgetLayout = new Map<WidgetId, { x: number; y: number }>();
+  private widgetLayout = new Map<WidgetId, WidgetPosition>();
 
   private activeDrag: {
     id: WidgetId;
@@ -343,8 +359,14 @@ export class ClockApp {
       const y = cursorY;
       cursorY = y + height + 20;
 
-      this.widgetLayout.set(id, { x, y });
-      this.applyWidgetPosition(id, element, x, y, { updateLayout: true });
+      const anchor: WidgetAnchor = {
+        horizontal: "right",
+        offsetX: Math.max(0, Math.round(window.innerWidth - (x + width))),
+        vertical: "top",
+        offsetY: Math.max(0, Math.round(y)),
+      };
+
+      this.applyWidgetPosition(id, element, x, y, { updateLayout: true, anchor });
     }
   }
 
@@ -379,11 +401,10 @@ export class ClockApp {
 
     this.ensureLayoutEntries();
 
-    const entry = this.widgetLayout.get(id) ?? this.computePositionFromElement(element);
-    const { x, y } = entry;
-    if (!this.widgetLayout.has(id)) {
-      this.widgetLayout.set(id, { x, y });
-    }
+    const existing = this.widgetLayout.get(id);
+    const origin = existing ? { x: existing.x, y: existing.y } : this.computePositionFromElement(element);
+    const { x, y } = origin;
+    this.widgetLayout.set(id, { x, y });
 
     this.activeDrag = {
       id,
@@ -403,9 +424,10 @@ export class ClockApp {
     event.preventDefault();
   }
 
-  private computePositionFromElement(element: HTMLElement): { x: number; y: number } {
+  private computePositionFromElement(element: HTMLElement): WidgetPosition {
     const rect = element.getBoundingClientRect();
-    return this.clampPosition(element, rect.left, rect.top);
+    const { x, y } = this.clampPosition(element, rect.left, rect.top);
+    return { x, y };
   }
 
   private clampPosition(element: HTMLElement, x: number, y: number): { x: number; y: number } {
@@ -423,22 +445,162 @@ export class ClockApp {
     return { x: clampedX, y: clampedY };
   }
 
+  private cloneAnchor(anchor?: WidgetAnchor | null): WidgetAnchor | undefined {
+    if (!anchor) {
+      return undefined;
+    }
+
+    const clone: WidgetAnchor = {};
+
+    if (anchor.horizontal === "left" || anchor.horizontal === "right") {
+      clone.horizontal = anchor.horizontal;
+      if (typeof anchor.offsetX === "number" && Number.isFinite(anchor.offsetX) && anchor.offsetX >= 0) {
+        clone.offsetX = Math.round(anchor.offsetX);
+      }
+    }
+
+    if (anchor.vertical === "top" || anchor.vertical === "bottom") {
+      clone.vertical = anchor.vertical;
+      if (typeof anchor.offsetY === "number" && Number.isFinite(anchor.offsetY) && anchor.offsetY >= 0) {
+        clone.offsetY = Math.round(anchor.offsetY);
+      }
+    }
+
+    return Object.keys(clone).length ? clone : undefined;
+  }
+
+  private resolveAnchoredCoordinates(
+    element: HTMLElement,
+    anchor: WidgetAnchor,
+    fallbackX: number,
+    fallbackY: number,
+  ): { x: number; y: number } {
+    const { width, height } = this.getWidgetDimensions(element);
+    let x = fallbackX;
+    let y = fallbackY;
+
+    if (anchor.horizontal === "right") {
+      const offset = typeof anchor.offsetX === "number" && Number.isFinite(anchor.offsetX)
+        ? anchor.offsetX
+        : Math.max(0, window.innerWidth - (fallbackX + width));
+      x = Math.max(0, window.innerWidth - width - offset);
+    } else if (anchor.horizontal === "left") {
+      const offset = typeof anchor.offsetX === "number" && Number.isFinite(anchor.offsetX)
+        ? anchor.offsetX
+        : fallbackX;
+      x = Math.max(0, offset);
+    }
+
+    if (anchor.vertical === "bottom") {
+      const offset = typeof anchor.offsetY === "number" && Number.isFinite(anchor.offsetY)
+        ? anchor.offsetY
+        : Math.max(0, window.innerHeight - (fallbackY + height));
+      y = Math.max(0, window.innerHeight - height - offset);
+    } else if (anchor.vertical === "top") {
+      const offset = typeof anchor.offsetY === "number" && Number.isFinite(anchor.offsetY)
+        ? anchor.offsetY
+        : fallbackY;
+      y = Math.max(0, offset);
+    }
+
+    return { x, y };
+  }
+
+  private setElementStyle(element: HTMLElement, position: WidgetPosition): void {
+    const { anchor } = position;
+    const { width, height } = this.getWidgetDimensions(element);
+
+    if (anchor?.horizontal === "right") {
+      const offset = typeof anchor.offsetX === "number" && Number.isFinite(anchor.offsetX)
+        ? anchor.offsetX
+        : Math.max(0, window.innerWidth - (position.x + width));
+      element.style.right = `${Math.round(Math.max(0, offset))}px`;
+      element.style.left = "";
+    } else {
+      element.style.left = `${Math.round(position.x)}px`;
+      element.style.right = "";
+    }
+
+    if (anchor?.vertical === "bottom") {
+      const offset = typeof anchor.offsetY === "number" && Number.isFinite(anchor.offsetY)
+        ? anchor.offsetY
+        : Math.max(0, window.innerHeight - (position.y + height));
+      element.style.bottom = `${Math.round(Math.max(0, offset))}px`;
+      element.style.top = "";
+    } else {
+      element.style.top = `${Math.round(position.y)}px`;
+      element.style.bottom = "";
+    }
+
+    element.style.transform = "";
+  }
+
+  private deriveAnchorFromPosition(element: HTMLElement, position: WidgetPosition): WidgetAnchor | undefined {
+    const { width, height } = this.getWidgetDimensions(element);
+    if (width <= 0 || height <= 0) {
+      return undefined;
+    }
+
+    const distanceLeft = Math.max(0, position.x);
+    const distanceRight = Math.max(0, window.innerWidth - (position.x + width));
+    const distanceTop = Math.max(0, position.y);
+    const distanceBottom = Math.max(0, window.innerHeight - (position.y + height));
+
+    let horizontal: WidgetAnchor["horizontal"];
+    if (distanceLeft <= EDGE_ANCHOR_THRESHOLD || distanceRight <= EDGE_ANCHOR_THRESHOLD) {
+      horizontal = distanceLeft <= distanceRight ? "left" : "right";
+    }
+
+    let vertical: WidgetAnchor["vertical"];
+    if (distanceTop <= EDGE_ANCHOR_THRESHOLD || distanceBottom <= EDGE_ANCHOR_THRESHOLD) {
+      vertical = distanceTop <= distanceBottom ? "top" : "bottom";
+    }
+
+    if (!horizontal && !vertical) {
+      return undefined;
+    }
+
+    const anchor: WidgetAnchor = {};
+    if (horizontal) {
+      anchor.horizontal = horizontal;
+      anchor.offsetX = Math.max(0, Math.round(horizontal === "left" ? distanceLeft : distanceRight));
+    }
+    if (vertical) {
+      anchor.vertical = vertical;
+      anchor.offsetY = Math.max(0, Math.round(vertical === "top" ? distanceTop : distanceBottom));
+    }
+
+    return anchor;
+  }
+
   private applyWidgetPosition(
     id: WidgetId,
     element: HTMLElement,
     x: number,
     y: number,
-    options: { updateLayout?: boolean } = {},
+    options: { updateLayout?: boolean; anchor?: WidgetAnchor | null } = {},
   ): void {
-    const { updateLayout = false } = options;
-    const { x: clampedX, y: clampedY } = this.clampPosition(element, x, y);
-    element.style.left = `${Math.round(clampedX)}px`;
-    element.style.top = `${Math.round(clampedY)}px`;
-    element.style.right = "";
-    element.style.bottom = "";
-    element.style.transform = "";
+    const { updateLayout = false, anchor = undefined } = options;
+    const usableAnchor = this.cloneAnchor(anchor ?? undefined);
+    const resolved = usableAnchor
+      ? this.resolveAnchoredCoordinates(element, usableAnchor, x, y)
+      : { x, y };
+
+    const { x: clampedX, y: clampedY } = this.clampPosition(element, resolved.x, resolved.y);
+    const position: WidgetPosition = {
+      x: Math.round(clampedX),
+      y: Math.round(clampedY),
+      ...(usableAnchor ? { anchor: usableAnchor } : {}),
+    };
+
+    this.setElementStyle(element, position);
+
     if (updateLayout) {
-      this.widgetLayout.set(id, { x: Math.round(clampedX), y: Math.round(clampedY) });
+      this.widgetLayout.set(id, {
+        x: position.x,
+        y: position.y,
+        ...(position.anchor ? { anchor: this.cloneAnchor(position.anchor) } : {}),
+      });
     }
     if (element.classList.contains("tabula-widget--initial") && this.settings) {
       requestAnimationFrame(() => {
@@ -450,7 +612,12 @@ export class ClockApp {
   private loadWidgetLayout(layout: WidgetLayoutEntry[]): void {
     this.widgetLayout.clear();
     layout.forEach((entry) => {
-      this.widgetLayout.set(entry.id, { x: entry.x, y: entry.y });
+      const anchor = this.cloneAnchor(entry.anchor);
+      this.widgetLayout.set(entry.id, {
+        x: entry.x,
+        y: entry.y,
+        ...(anchor ? { anchor } : {}),
+      });
     });
     this.ensureLayoutEntries();
   }
@@ -474,10 +641,23 @@ export class ClockApp {
           const defaultX = Math.max(bounds.left + padding, bounds.right - width - padding);
           const defaultY = cursorY;
           cursorY = defaultY + height + 20;
-          this.widgetLayout.set(id, { x: defaultX, y: defaultY });
+          const anchor: WidgetAnchor = {
+            horizontal: "right",
+            offsetX: Math.max(0, Math.round(bounds.right - (defaultX + width))),
+            vertical: "top",
+            offsetY: Math.max(0, Math.round(defaultY - bounds.top)),
+          };
+          this.widgetLayout.set(id, { x: defaultX, y: defaultY, anchor });
         } else {
-          const clamped = element ? this.clampPosition(element, existing.x, existing.y) : existing;
-          this.widgetLayout.set(id, clamped);
+          const resolved = existing.anchor && element
+            ? this.resolveAnchoredCoordinates(element, existing.anchor, existing.x, existing.y)
+            : { x: existing.x, y: existing.y };
+          const clamped = element ? this.clampPosition(element, resolved.x, resolved.y) : resolved;
+          this.widgetLayout.set(id, {
+            x: clamped.x,
+            y: clamped.y,
+            ...(existing.anchor ? { anchor: this.cloneAnchor(existing.anchor) } : {}),
+          });
           cursorY = Math.max(cursorY, clamped.y + height + 20);
         }
         continue;
@@ -486,7 +666,13 @@ export class ClockApp {
       const x = Math.max(bounds.left + padding, bounds.right - width - padding);
       const y = cursorY;
       cursorY = y + height + 20;
-      this.widgetLayout.set(id, { x, y });
+      const anchor: WidgetAnchor = {
+        horizontal: "right",
+        offsetX: Math.max(0, Math.round(bounds.right - (x + width))),
+        vertical: "top",
+        offsetY: Math.max(0, Math.round(y - bounds.top)),
+      };
+      this.widgetLayout.set(id, { x, y, anchor });
     }
   }
 
@@ -502,7 +688,16 @@ export class ClockApp {
       if (!coords) {
         continue;
       }
-      result.push({ id, x: Math.round(coords.x), y: Math.round(coords.y) });
+      const entry: WidgetLayoutEntry = {
+        id,
+        x: Math.round(coords.x),
+        y: Math.round(coords.y),
+      };
+      const anchor = this.cloneAnchor(coords.anchor);
+      if (anchor) {
+        entry.anchor = anchor;
+      }
+      result.push(entry);
     }
     return result;
   }
@@ -512,6 +707,25 @@ export class ClockApp {
       return;
     }
 
+    for (const id of WIDGET_IDS) {
+      const element = this.widgetElements[id];
+      const coords = this.widgetLayout.get(id);
+      if (!element || !coords) {
+        continue;
+      }
+      const anchor = this.deriveAnchorFromPosition(element, coords);
+      if (anchor) {
+        coords.anchor = this.cloneAnchor(anchor);
+      } else {
+        delete coords.anchor;
+      }
+      this.widgetLayout.set(id, {
+        x: coords.x,
+        y: coords.y,
+        ...(coords.anchor ? { anchor: this.cloneAnchor(coords.anchor) } : {}),
+      });
+    }
+
     const layout = this.serializeWidgetLayout();
 
     const currentLayout = this.settings.widgets.layout;
@@ -519,7 +733,25 @@ export class ClockApp {
       layout.length !== currentLayout.length ||
       layout.some((entry, index) => {
         const current = currentLayout[index];
-        return !current || current.id !== entry.id || current.x !== entry.x || current.y !== entry.y;
+        if (!current) {
+          return true;
+        }
+        if (current.id !== entry.id || current.x !== entry.x || current.y !== entry.y) {
+          return true;
+        }
+        const nextAnchor = entry.anchor ?? undefined;
+        const currentAnchor = current.anchor ?? undefined;
+        if (!currentAnchor && !nextAnchor) {
+          return false;
+        }
+        if (!currentAnchor || !nextAnchor) {
+          return true;
+        }
+        const sameHorizontal = currentAnchor.horizontal === nextAnchor.horizontal;
+        const sameVertical = currentAnchor.vertical === nextAnchor.vertical;
+        const sameOffsetX = Math.round(currentAnchor.offsetX ?? -1) === Math.round(nextAnchor.offsetX ?? -1);
+        const sameOffsetY = Math.round(currentAnchor.offsetY ?? -1) === Math.round(nextAnchor.offsetY ?? -1);
+        return !(sameHorizontal && sameVertical && sameOffsetX && sameOffsetY);
       });
 
     if (!layoutChanged) {
@@ -563,7 +795,10 @@ export class ClockApp {
       if (!coords) {
         continue;
       }
-      this.applyWidgetPosition(id, element, coords.x, coords.y, { updateLayout: true });
+      this.applyWidgetPosition(id, element, coords.x, coords.y, {
+        updateLayout: true,
+        anchor: this.cloneAnchor(coords.anchor),
+      });
     }
   }
 

@@ -31,10 +31,18 @@ export type TaskItem = {
 
 export type WidgetId = "weather" | "pomodoro" | "tasks";
 
+export type WidgetAnchor = {
+  horizontal?: "left" | "right";
+  vertical?: "top" | "bottom";
+  offsetX?: number;
+  offsetY?: number;
+};
+
 export type WidgetLayoutEntry = {
   id: WidgetId;
   x: number;
   y: number;
+  anchor?: WidgetAnchor;
 };
 
 export type PinnedTab = {
