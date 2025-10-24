@@ -122,7 +122,7 @@ describe("mergeWithDefaults", () => {
     expect(result.widgets.pomodoro.breakMinutes).toBe(1);
     expect(result.widgets.pomodoro.longBreakMinutes).toBe(60);
     expect(result.widgets.pomodoro.cyclesBeforeLongBreak).toBe(8);
-    expect(result.widgets.layout).toHaveLength(DEFAULT_SETTINGS.widgets.layout.length);
+    expect(result.widgets.layout).toEqual(DEFAULT_SETTINGS.widgets.layout);
     expect(result.widgets.tasks.enabled).toBe(false);
     expect(result.widgets.tasks.items).toHaveLength(1);
     expect(result.widgets.tasks.items[0]).toMatchObject({ id: "one", text: "First task" });
@@ -156,9 +156,56 @@ describe("mergeWithDefaults", () => {
     const layout = result.widgets.layout;
     expect(layout).toHaveLength(DEFAULT_SETTINGS.widgets.layout.length);
     const weather = layout.find((entry) => entry.id === "weather");
-    expect(weather).toMatchObject({ x: 120, y: 200 });
+    expect(weather?.x).toBe(120);
+    expect(weather?.y).toBe(200);
+    expect(weather?.anchor).toBeUndefined();
     const defaultPomodoro = DEFAULT_SETTINGS.widgets.layout.find((entry) => entry.id === "pomodoro");
     expect(layout.find((entry) => entry.id === "pomodoro")).toEqual(defaultPomodoro);
+  });
+
+  it("preserves valid widget anchors when provided", () => {
+    const result = mergeWithDefaults({
+      widgets: {
+        layout: [
+          {
+            id: "weather",
+            x: 50,
+            y: 40,
+            anchor: { horizontal: "left", vertical: "bottom", offsetX: 12.4, offsetY: 33.8 },
+          },
+          {
+            id: "pomodoro",
+            x: 620,
+            y: 300,
+            anchor: { horizontal: "right", offsetX: 64 },
+          },
+        ],
+      },
+    });
+
+    const layout = result.widgets.layout;
+    const weather = layout.find((entry) => entry.id === "weather");
+    expect(weather?.anchor).toEqual({ horizontal: "left", vertical: "bottom", offsetX: 12, offsetY: 34 });
+    const pomodoro = layout.find((entry) => entry.id === "pomodoro");
+    expect(pomodoro?.anchor).toEqual({ horizontal: "right", offsetX: 64 });
+  });
+
+  it("drops widget anchors that lack edge alignment", () => {
+    const result = mergeWithDefaults({
+      widgets: {
+        layout: [
+          {
+            id: "tasks",
+            x: 200,
+            y: 240,
+            anchor: { horizontal: "centre" as any, offsetX: -40 },
+          },
+        ],
+      },
+    });
+
+    const tasks = result.widgets.layout.find((entry) => entry.id === "tasks");
+    expect(tasks?.anchor).toBeUndefined();
   });
 
   it("coerces time format and preserves defaults when invalid", () => {

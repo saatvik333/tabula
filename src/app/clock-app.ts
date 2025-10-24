@@ -374,9 +374,9 @@ export class ClockApp {
     if (!element) {
       return { width: 300, height: 200 };
     }
-    const rect = element.getBoundingClientRect();
-    const width = rect.width || element.offsetWidth || 300;
-    const height = rect.height || element.offsetHeight || 200;
+    // Prefer offsetWidth/offsetHeight so CSS transforms (e.g., drag scale) don't skew measurements
+    const width = element.offsetWidth || element.getBoundingClientRect().width || 300;
+    const height = element.offsetHeight || element.getBoundingClientRect().height || 200;
     return { width, height };
   }
 
@@ -454,19 +454,37 @@ export class ClockApp {
 
     if (anchor.horizontal === "left" || anchor.horizontal === "right") {
       clone.horizontal = anchor.horizontal;
-      if (typeof anchor.offsetX === "number" && Number.isFinite(anchor.offsetX) && anchor.offsetX >= 0) {
-        clone.offsetX = Math.round(anchor.offsetX);
+      const offset = this.normaliseOffset(anchor.offsetX);
+      if (typeof offset === "number") {
+        clone.offsetX = offset;
       }
     }
 
     if (anchor.vertical === "top" || anchor.vertical === "bottom") {
       clone.vertical = anchor.vertical;
-      if (typeof anchor.offsetY === "number" && Number.isFinite(anchor.offsetY) && anchor.offsetY >= 0) {
-        clone.offsetY = Math.round(anchor.offsetY);
+      const offset = this.normaliseOffset(anchor.offsetY);
+      if (typeof offset === "number") {
+        clone.offsetY = offset;
       }
     }
 
     return Object.keys(clone).length ? clone : undefined;
+  }
+
+  private normaliseOffset(value: unknown): number | undefined {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric) || numeric < 0) {
+      return undefined;
+    }
+    return Math.round(numeric * 100) / 100;
+  }
+
+  private formatPx(value: number): string {
+    const normalised = Math.round(value * 100) / 100;
+    if (Math.abs(normalised % 1) < 0.01) {
+      return `${Math.round(normalised)}px`;
+    }
+    return `${normalised.toFixed(2)}px`;
   }
 
   private resolveAnchoredCoordinates(
@@ -511,24 +529,22 @@ export class ClockApp {
     const { width, height } = this.getWidgetDimensions(element);
 
     if (anchor?.horizontal === "right") {
-      const offset = typeof anchor.offsetX === "number" && Number.isFinite(anchor.offsetX)
-        ? anchor.offsetX
-        : Math.max(0, window.innerWidth - (position.x + width));
-      element.style.right = `${Math.round(Math.max(0, offset))}px`;
+      const fallbackOffset = Math.max(0, window.innerWidth - (position.x + width));
+      const offset = this.normaliseOffset(anchor.offsetX ?? fallbackOffset) ?? fallbackOffset;
+      element.style.right = this.formatPx(offset);
       element.style.left = "";
     } else {
-      element.style.left = `${Math.round(position.x)}px`;
+      element.style.left = this.formatPx(position.x);
       element.style.right = "";
     }
 
     if (anchor?.vertical === "bottom") {
-      const offset = typeof anchor.offsetY === "number" && Number.isFinite(anchor.offsetY)
-        ? anchor.offsetY
-        : Math.max(0, window.innerHeight - (position.y + height));
-      element.style.bottom = `${Math.round(Math.max(0, offset))}px`;
+      const fallbackOffset = Math.max(0, window.innerHeight - (position.y + height));
+      const offset = this.normaliseOffset(anchor.offsetY ?? fallbackOffset) ?? fallbackOffset;
+      element.style.bottom = this.formatPx(offset);
       element.style.top = "";
     } else {
-      element.style.top = `${Math.round(position.y)}px`;
+      element.style.top = this.formatPx(position.y);
       element.style.bottom = "";
     }
 
@@ -563,11 +579,17 @@ export class ClockApp {
     const anchor: WidgetAnchor = {};
     if (horizontal) {
       anchor.horizontal = horizontal;
-      anchor.offsetX = Math.max(0, Math.round(horizontal === "left" ? distanceLeft : distanceRight));
+      const offset = this.normaliseOffset(horizontal === "left" ? distanceLeft : distanceRight);
+      if (typeof offset === "number") {
+        anchor.offsetX = offset;
+      }
     }
     if (vertical) {
       anchor.vertical = vertical;
-      anchor.offsetY = Math.max(0, Math.round(vertical === "top" ? distanceTop : distanceBottom));
+      const offset = this.normaliseOffset(vertical === "top" ? distanceTop : distanceBottom);
+      if (typeof offset === "number") {
+        anchor.offsetY = offset;
+      }
     }
 
     return anchor;
@@ -586,10 +608,12 @@ export class ClockApp {
       ? this.resolveAnchoredCoordinates(element, usableAnchor, x, y)
       : { x, y };
 
-    const { x: clampedX, y: clampedY } = this.clampPosition(element, resolved.x, resolved.y);
+    const clampedFallback = this.clampPosition(element, resolved.x, resolved.y);
+    const clampedX = usableAnchor?.horizontal ? resolved.x : clampedFallback.x;
+    const clampedY = usableAnchor?.vertical ? resolved.y : clampedFallback.y;
     const position: WidgetPosition = {
-      x: Math.round(clampedX),
-      y: Math.round(clampedY),
+      x: usableAnchor?.horizontal ? clampedX : Math.round(clampedX),
+      y: usableAnchor?.vertical ? clampedY : Math.round(clampedY),
       ...(usableAnchor ? { anchor: usableAnchor } : {}),
     };
 

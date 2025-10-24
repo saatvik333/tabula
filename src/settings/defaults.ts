@@ -96,6 +96,14 @@ const coerceTimeFormat = (value: unknown, fallback: TimeFormat): TimeFormat => {
 
 const KNOWN_WIDGET_IDS: readonly WidgetId[] = ["weather", "pomodoro", "tasks"];
 
+const normaliseOffset = (value: unknown): number | undefined => {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric) || numeric < 0) {
+    return undefined;
+  }
+  return Math.round(numeric * 100) / 100;
+};
+
 const cloneAnchor = (anchor: WidgetAnchor | undefined): WidgetAnchor | undefined => {
   if (!anchor) {
     return undefined;
@@ -105,15 +113,17 @@ const cloneAnchor = (anchor: WidgetAnchor | undefined): WidgetAnchor | undefined
 
   if (anchor.horizontal === "left" || anchor.horizontal === "right") {
     cloned.horizontal = anchor.horizontal;
-    if (typeof anchor.offsetX === "number" && Number.isFinite(anchor.offsetX) && anchor.offsetX >= 0) {
-      cloned.offsetX = Math.round(anchor.offsetX);
+    const offset = normaliseOffset(anchor.offsetX);
+    if (typeof offset === "number") {
+      cloned.offsetX = offset;
     }
   }
 
   if (anchor.vertical === "top" || anchor.vertical === "bottom") {
     cloned.vertical = anchor.vertical;
-    if (typeof anchor.offsetY === "number" && Number.isFinite(anchor.offsetY) && anchor.offsetY >= 0) {
-      cloned.offsetY = Math.round(anchor.offsetY);
+    const offset = normaliseOffset(anchor.offsetY);
+    if (typeof offset === "number") {
+      cloned.offsetY = offset;
     }
   }
 
@@ -130,17 +140,17 @@ const sanitizeAnchor = (value: unknown): WidgetAnchor | undefined => {
 
   if (candidate.horizontal === "left" || candidate.horizontal === "right") {
     anchor.horizontal = candidate.horizontal;
-    const offsetX = Number(candidate.offsetX);
-    if (Number.isFinite(offsetX) && offsetX >= 0) {
-      anchor.offsetX = Math.round(offsetX);
+    const offsetX = normaliseOffset(candidate.offsetX);
+    if (typeof offsetX === "number") {
+      anchor.offsetX = offsetX;
     }
   }
 
   if (candidate.vertical === "top" || candidate.vertical === "bottom") {
     anchor.vertical = candidate.vertical;
-    const offsetY = Number(candidate.offsetY);
-    if (Number.isFinite(offsetY) && offsetY >= 0) {
-      anchor.offsetY = Math.round(offsetY);
+    const offsetY = normaliseOffset(candidate.offsetY);
+    if (typeof offsetY === "number") {
+      anchor.offsetY = offsetY;
     }
   }
 
@@ -349,9 +359,9 @@ const MATERIAL_DARK: Palette = {
 };
 
 const DEFAULT_WIDGET_LAYOUT: WidgetLayoutEntry[] = [
-  { id: "weather", x: 0, y: 0, anchor: { horizontal: "left", vertical: "top", offsetX: 0, offsetY: 0 } },
-  { id: "pomodoro", x: 0, y: 260, anchor: { horizontal: "left", vertical: "top", offsetX: 0, offsetY: 260 } },
-  { id: "tasks", x: 0, y: 520, anchor: { horizontal: "left", vertical: "top", offsetX: 0, offsetY: 520 } },
+  { id: "weather", x: 0, y: 0 },
+  { id: "pomodoro", x: 0, y: 260 },
+  { id: "tasks", x: 0, y: 520 },
 ];
 
 export const DEFAULT_PALETTE_LIGHT: Palette = MATERIAL_LIGHT;
