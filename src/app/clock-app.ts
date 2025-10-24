@@ -513,6 +513,19 @@ export class ClockApp {
     }
 
     const layout = this.serializeWidgetLayout();
+
+    const currentLayout = this.settings.widgets.layout;
+    const layoutChanged =
+      layout.length !== currentLayout.length ||
+      layout.some((entry, index) => {
+        const current = currentLayout[index];
+        return !current || current.id !== entry.id || current.x !== entry.x || current.y !== entry.y;
+      });
+
+    if (!layoutChanged) {
+      return;
+    }
+
     const widgets = {
       ...this.settings.widgets,
       layout,

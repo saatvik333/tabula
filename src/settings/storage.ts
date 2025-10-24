@@ -8,18 +8,26 @@ const listeners = new Set<Listener>();
 
 let cachedSettings: Settings | null = null;
 
+export const cloneSettings = (settings: Settings): Settings => {
+  if (typeof structuredClone === "function") {
+    return structuredClone(settings);
+  }
+  return JSON.parse(JSON.stringify(settings)) as Settings;
+};
+
 const extensionAPI: any =
   (typeof globalThis !== "undefined" && (globalThis as any).chrome) ??
   (typeof globalThis !== "undefined" && (globalThis as any).browser) ??
   null;
 
-const extensionStorage: any = extensionAPI?.storage?.sync ?? extensionAPI?.storage?.local ?? null;
+const syncStorage: any = extensionAPI?.storage?.sync ?? null;
+const localStorageArea: any = extensionAPI?.storage?.local ?? null;
 const extensionOnChanged: any = extensionAPI?.storage?.onChanged ?? null;
 
 const broadcastChannel: BroadcastChannel | null =
   typeof BroadcastChannel === "function" ? new BroadcastChannel("tabula:settings") : null;
 
-const hasExtensionStorage = (): boolean => !!extensionStorage;
+const hasExtensionStorage = (): boolean => !!(syncStorage || localStorageArea);
 
 const invokeGet = async (store: any, key: string): Promise<PartialSettings | undefined> => {
   if (!store) return undefined;
@@ -64,6 +72,25 @@ const invokeSet = async (store: any, key: string, value: Settings): Promise<void
   });
 };
 
+const invokeRemove = async (store: any, key: string): Promise<void> => {
+  if (!store?.remove) return;
+  const result = store.remove(key);
+  if (result && typeof result.then === "function") {
+    await result;
+    return;
+  }
+  await new Promise<void>((resolve, reject) => {
+    store.remove(key, () => {
+      const error = extensionAPI?.runtime?.lastError;
+      if (error) {
+        reject(error);
+        return;
+      }
+      resolve();
+    });
+  });
+};
+
 const localStorageAvailable = (): boolean =>
   typeof window !== "undefined" && typeof window.localStorage !== "undefined";
 
@@ -94,10 +121,11 @@ const writeToLocalStorage = (settings: Settings): void => {
 };
 
 const notify = (settings: Settings): void => {
-  cachedSettings = settings;
-  listeners.forEach((listener) => listener(settings));
+  const snapshot = cloneSettings(settings);
+  cachedSettings = snapshot;
+  listeners.forEach((listener) => listener(cloneSettings(snapshot)));
   try {
-    broadcastChannel?.postMessage(settings);
+    broadcastChannel?.postMessage(snapshot);
   } catch (error) {
     console.warn("Failed to broadcast settings", error);
   }
@@ -124,39 +152,48 @@ const ensureBroadcastListener = (listener: Listener): BroadcastChannel | null =>
   const channel = new BroadcastChannel("tabula:settings");
   channel.onmessage = (event) => {
     if (!event?.data) return;
-    listener(mergeWithDefaults(event.data as PartialSettings));
+    const merged = mergeWithDefaults(event.data as PartialSettings);
+    listener(cloneSettings(merged));
   };
   return channel;
 };
 
 export const loadSettings = async (): Promise<Settings> => {
   if (cachedSettings) {
-    return cachedSettings;
+    return cloneSettings(cachedSettings);
   }
 
   if (hasExtensionStorage()) {
-    try {
-      const raw = await invokeGet(extensionStorage, SETTINGS_STORAGE_KEY);
-      const merged = mergeWithDefaults(raw);
-      cachedSettings = merged;
-      return merged;
-    } catch (error) {
-      console.warn("Failed to read settings from extension storage", error);
+    const storesInPriority = [localStorageArea, syncStorage].filter(Boolean);
+    for (const store of storesInPriority) {
+      try {
+        const raw = await invokeGet(store, SETTINGS_STORAGE_KEY);
+        if (raw) {
+          const merged = mergeWithDefaults(raw);
+          const snapshot = cloneSettings(merged);
+          cachedSettings = snapshot;
+          return cloneSettings(snapshot);
+        }
+      } catch (error) {
+        console.warn("Failed to read settings from extension storage", error);
+      }
     }
   }
 
   const fallback = readFromLocalStorage();
-  cachedSettings = fallback;
-  return fallback;
+  const snapshot = cloneSettings(fallback);
+  cachedSettings = snapshot;
+  return cloneSettings(snapshot);
 };
 
 export const getCachedSettingsSnapshot = (): Settings => {
   if (cachedSettings) {
-    return cachedSettings;
+    return cloneSettings(cachedSettings);
   }
   const snapshot = readFromLocalStorage();
-  cachedSettings = snapshot;
-  return snapshot;
+  const clone = cloneSettings(snapshot);
+  cachedSettings = clone;
+  return cloneSettings(clone);
 };
 
 const combineWithCurrent = (current: Settings, partial: PartialSettings): Partial<Settings> => ({
@@ -209,14 +246,36 @@ const combineWithCurrent = (current: Settings, partial: PartialSettings): Partia
 });
 
 const persist = async (settings: Settings): Promise<void> => {
-  if (hasExtensionStorage()) {
+  let persisted = false;
+
+  if (syncStorage) {
     try {
-      await invokeSet(extensionStorage, SETTINGS_STORAGE_KEY, settings);
-      return;
+      await invokeSet(syncStorage, SETTINGS_STORAGE_KEY, settings);
+      persisted = true;
     } catch (error) {
-      console.warn("Failed to persist settings to extension storage", error);
+      console.warn("Failed to persist settings to sync storage", error);
+      try {
+        await invokeRemove(syncStorage, SETTINGS_STORAGE_KEY);
+      } catch (removeError) {
+        console.warn("Failed to clear stale sync settings", removeError);
+      }
     }
   }
+
+  if (!persisted && localStorageArea) {
+    try {
+      await invokeSet(localStorageArea, SETTINGS_STORAGE_KEY, settings);
+      persisted = true;
+    } catch (error) {
+      console.warn("Failed to persist settings to local storage area", error);
+    }
+  }
+
+  if (!persisted) {
+    writeToLocalStorage(settings);
+    return;
+  }
+
   writeToLocalStorage(settings);
 };
 
@@ -224,7 +283,7 @@ export const saveSettings = async (settings: Settings): Promise<Settings> => {
   const next = mergeWithDefaults(settings);
   await persist(next);
   notify(next);
-  return next;
+  return cloneSettings(next);
 };
 
 export const updateSettings = async (partial: PartialSettings): Promise<Settings> => {
@@ -233,7 +292,7 @@ export const updateSettings = async (partial: PartialSettings): Promise<Settings
   const next = mergeWithDefaults(combined);
   await persist(next);
   notify(next);
-  return next;
+  return cloneSettings(next);
 };
 
 export const subscribeToSettings = (listener: Listener): (() => void) => {
@@ -243,7 +302,7 @@ export const subscribeToSettings = (listener: Listener): (() => void) => {
   const broadcast = ensureBroadcastListener(listener);
 
   if (cachedSettings) {
-    listener(cachedSettings);
+    listener(cloneSettings(cachedSettings));
   }
 
   return () => {
