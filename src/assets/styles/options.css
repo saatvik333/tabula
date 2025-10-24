@@ -15,6 +15,10 @@
   --tabula-background-blur: 0px;
   --tabula-field-gap: clamp(1rem, 2vw, 1.5rem);
   --tabula-panel-gap: clamp(1.5rem, 3vw, 2.25rem);
+  --tabula-background-color-rgb: 15, 23, 42;
+  --tabula-face-color-rgb: 30, 41, 59;
+  --tabula-rim-color-rgb: 71, 85, 105;
+  --tabula-hand-color-rgb: 226, 232, 240;
 }
 
 * {
@@ -59,6 +63,13 @@ body::after {
 :root[data-theme="light"] body::after {
   background: rgba(255, 255, 255, 0.7);
   mix-blend-mode: screen;
+}
+
+:root[data-theme="light"] {
+  --tabula-background-color-rgb: 245, 247, 255;
+  --tabula-face-color-rgb: 236, 245, 255;
+  --tabula-rim-color-rgb: 199, 210, 221;
+  --tabula-hand-color-rgb: 30, 41, 59;
 }
 
 .settings {
@@ -249,15 +260,13 @@ body::after {
 .pinned-manager__list {
   display: grid;
   gap: 1rem;
+  padding: 1.4rem 1.6rem;
+  min-height: 160px;
 }
 
 .pinned-manager__empty {
   margin: 0;
-  padding: 1.5rem;
-  border-radius: var(--tabula-radius-md);
-  border: 1px dashed var(--md-outline);
-  background: rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.05);
-  color: var(--md-on-surface-variant);
+  padding: 0.5rem 0;
   text-align: center;
 }
 
@@ -281,8 +290,8 @@ body::after {
   align-items: center;
   padding: 1rem 1.25rem;
   border-radius: var(--tabula-radius-lg);
-  border: 1px solid var(--md-outline);
-  background: var(--md-surface);
+  border: 1px solid rgba(var(--tabula-rim-color-rgb, 148, 163, 184), 0.24);
+  background: rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.12);
 }
 
 .pinned-item__preview {
@@ -331,56 +340,27 @@ body::after {
 
 .pinned-item__input {
   width: 100%;
-  padding: 0.55rem 0.8rem;
-  border-radius: var(--tabula-radius-sm);
-  border: 1px solid var(--md-outline);
-  background: var(--md-surface);
-  color: var(--md-on-surface);
-  font-size: 0.95rem;
 }
 
-.pinned-item__input:focus {
-  outline: none;
-  border-color: var(--md-primary);
-  box-shadow: 0 0 0 3px rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.22);
+.pinned-item__input[data-invalid="true"] {
+  border-color: rgba(244, 67, 54, 0.6);
+  box-shadow: 0 0 0 2px rgba(244, 67, 54, 0.25);
+}
+
+.pinned-item__input[data-invalid="true"]:focus {
+  box-shadow: 0 0 0 3px rgba(244, 67, 54, 0.3);
 }
 
 .pinned-item__actions {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
+  align-items: flex-start;
 }
 
-.pinned-item__action {
-  border: 1px solid var(--md-outline);
-  background: var(--md-surface);
-  border-radius: var(--tabula-radius-sm);
-  padding: 0.35rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background-color 160ms ease, border 160ms ease, box-shadow 160ms ease;
-}
-
-.pinned-item__action:hover:not(:disabled) {
-  background-color: rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.16);
-  border-color: rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.38);
-  box-shadow: 0 8px 20px rgba(4, 18, 33, 0.2);
-}
-
-.pinned-item__action:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
 
 .pinned-item__action .material-symbols-outlined {
   font-size: 18px;
-}
-
-.pinned-item__action--remove:hover:not(:disabled) {
-  background: rgba(244, 67, 54, 0.16);
-  border-color: rgba(244, 67, 54, 0.35);
 }
 
 .field {
@@ -648,59 +628,6 @@ body::after {
   gap: 0.75rem;
 }
 
-.button {
-  padding: 0.65rem 1.35rem;
-  border-radius: var(--tabula-radius-full);
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  background-color: rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.32);
-  color: var(--md-on-surface);
-  font-weight: var(--tabula-weight-medium);
-  cursor: pointer;
-  backdrop-filter: blur(12px) saturate(140%);
-  -webkit-backdrop-filter: blur(12px) saturate(140%);
-  box-shadow: none;
-  transition: border 160ms ease, background-color 160ms ease, box-shadow 160ms ease, color 160ms ease;
-}
-
-.button:hover {
-  border-color: rgba(255, 255, 255, 0.4);
-  background-color: rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.42);
-  box-shadow: 0 16px 32px rgba(4, 18, 33, 0.24);
-}
-
-.button:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-
-.button:disabled:hover {
-  background-color: rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.32);
-  border-color: rgba(255, 255, 255, 0.24);
-  box-shadow: none;
-}
-
-.button--primary {
-  color: var(--md-on-primary);
-  border-color: transparent;
-  background-color: var(--md-primary);
-}
-
-.button--primary:hover {
-  background-color: var(--md-primary);
-  box-shadow: 0 18px 40px rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.32);
-}
-
-.button--ghost {
-  background-color: transparent;
-  border-color: rgba(255, 255, 255, 0.24);
-}
-
-.button--ghost:hover {
-  border-color: rgba(255, 255, 255, 0.38);
-  background-color: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 12px 26px rgba(4, 18, 33, 0.2);
-}
-
 
 @media (max-width: 720px) {
   .settings {
@@ -730,7 +657,7 @@ body::after {
     flex-direction: column;
   }
 
-  .button {
+  .settings__buttons .tabula-button {
     width: 100%;
     text-align: center;
   }
@@ -748,6 +675,7 @@ body::after {
   .pinned-item__actions {
     flex-direction: row;
     justify-content: flex-end;
+    align-items: center;
   }
 
   .pinned-manager__form {

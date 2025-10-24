@@ -39,14 +39,14 @@
 }
 
 /* Size variations */
-.size-small :root {
+:root.size-small {
   --cell-size: 3rem;
   --field-gap: 2rem;
   --hand-thickness: 2.5px;
   --dot-size: 5px;
 }
 
-.size-large :root {
+:root.size-large {
   --cell-size: 5rem;
   --field-gap: 3rem;
   --hand-thickness: 6px;
@@ -133,13 +133,13 @@
     --hand-thickness: 2.5px;
     --dot-size: 5px;
   }
-  .size-small :root {
+  :root.size-small {
     --cell-size: 2.5rem;
     --field-gap: 1.5rem;
     --hand-thickness: 2px;
     --dot-size: 4px;
   }
-  .size-large :root {
+  :root.size-large {
     --cell-size: 3.5rem;
     --field-gap: 2.5rem;
     --hand-thickness: 3px;
@@ -154,13 +154,13 @@
     --hand-thickness: 2px;
     --dot-size: 4px;
   }
-  .size-small :root {
+  :root.size-small {
     --cell-size: 1.75rem;
     --field-gap: 1rem;
     --hand-thickness: 1.5px;
     --dot-size: 3px;
   }
-  .size-large :root {
+  :root.size-large {
     --cell-size: 2.75rem;
     --field-gap: 1.75rem;
     --hand-thickness: 2.5px;
@@ -175,13 +175,13 @@
     --hand-thickness: 2px;
     --dot-size: 3.5px;
   }
-  .size-small :root {
+  :root.size-small {
     --cell-size: 1.25rem;
     --field-gap: 0.75rem;
     --hand-thickness: 1.5px;
     --dot-size: 2.5px;
   }
-  .size-large :root {
+  :root.size-large {
     --cell-size: 2.25rem;
     --field-gap: 1.25rem;
     --hand-thickness: 2.5px;
@@ -205,13 +205,13 @@
     --dot-size: 3px;
     --cell-border-size: 1.5px;
   }
-  .size-small :root {
+  :root.size-small {
     --cell-size: 1rem;
     --field-gap: 0.5rem;
     --hand-thickness: 1px;
     --dot-size: 2px;
   }
-  .size-large :root {
+  :root.size-large {
     --cell-size: 1.5rem;
     --field-gap: 1rem;
     --hand-thickness: 2px;

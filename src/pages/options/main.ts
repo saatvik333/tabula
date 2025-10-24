@@ -7,13 +7,13 @@ import type {
   SearchPosition,
   PresetName,
   Palette,
-  PinnedTab,
   TimeFormat,
   TemperatureUnit,
 } from "$src/settings/schema";
 import { applyPresetToSettings, listAvailablePresets } from "$src/settings/presets";
 import { loadSettings, saveSettings } from "$src/settings/storage";
 import { getSystemPrefersDark, resolveTheme } from "$src/settings/theme";
+import { createPinnedTabsController } from "./pinned-tabs";
 
 const clone = <T>(value: T): T =>
   typeof structuredClone === "function"
@@ -149,6 +149,25 @@ const applyPreview = () => {
   applySettingsToDocument(document, state, theme);
 };
 
+const pinnedTabsController = createPinnedTabsController({
+  list: pinnedListContainer,
+  emptyState: pinnedEmptyState,
+  addControls: {
+    title: pinnedAddTitleInput,
+    url: pinnedAddUrlInput,
+    icon: pinnedAddIconInput,
+    submit: pinnedAddButton,
+  },
+  maxItems: MAX_PINNED_TABS,
+  generateId: generatePinnedId,
+  validateUrl: isValidPinnedUrl,
+  onChange: (tabs) => {
+    state.pinnedTabs = tabs;
+    schedule(applyPreview);
+  },
+  setStatus,
+});
+
 const updateRangeOutputs = () => {
   clockScaleValue.value = `${state.clock.scale.toFixed(2)}x`;
   rimWidthValue.value = `${state.clock.rimWidth.toFixed(1)}px`;
@@ -247,183 +266,6 @@ const setClockFormat = (format: TimeFormat): void => {
   setStatus("Clock format updated", "success");
 };
 
-function updatePinnedTab(id: string, updater: (tab: PinnedTab) => PinnedTab): void {
-  state.pinnedTabs = state.pinnedTabs.map((tab) => (tab.id === id ? updater(tab) : tab));
-}
-
-function renderPinnedList(): void {
-  const fragment = document.createDocumentFragment();
-
-  if (state.pinnedTabs.length === 0) {
-    pinnedEmptyState.hidden = false;
-    fragment.append(pinnedEmptyState);
-  } else {
-    pinnedEmptyState.hidden = true;
-
-    state.pinnedTabs.forEach((tab, index) => {
-      const item = document.createElement("div");
-      item.className = "pinned-item tabula-card tabula-card--subtle";
-      item.dataset["id"] = tab.id;
-
-      const preview = document.createElement("div");
-      preview.className = "pinned-item__preview";
-
-      const iconWrapper = document.createElement("span");
-      iconWrapper.className = "pinned-item__icon";
-
-      const titleLabel = document.createElement("span");
-      titleLabel.className = "pinned-item__title";
-
-      let currentTitle = tab.title;
-      let currentIcon = tab.icon ?? "";
-      let currentUrl = tab.url;
-
-      const refreshPreview = () => {
-        titleLabel.textContent = currentTitle || currentUrl;
-        iconWrapper.innerHTML = "";
-        if (currentIcon) {
-          const iconImage = document.createElement("img");
-          iconImage.className = "pinned-item__icon-image";
-          iconImage.src = currentIcon;
-          iconImage.alt = "";
-          iconImage.loading = "lazy";
-          iconWrapper.append(iconImage);
-        } else {
-          const fallback = document.createElement("span");
-          fallback.className = "pinned-item__icon-fallback";
-          const seed = (currentTitle || currentUrl).trim();
-          fallback.textContent = seed.charAt(0).toUpperCase() || "•";
-          iconWrapper.append(fallback);
-        }
-      };
-
-      refreshPreview();
-
-      preview.append(iconWrapper, titleLabel);
-
-      const inputs = document.createElement("div");
-      inputs.className = "pinned-item__inputs";
-
-      const titleInput = document.createElement("input");
-      titleInput.className = "pinned-item__input tabula-input";
-      titleInput.value = tab.title;
-      titleInput.placeholder = "Title";
-      titleInput.setAttribute("aria-label", "Pinned tab title");
-      titleInput.maxLength = 40;
-
-      titleInput.addEventListener("input", () => {
-        currentTitle = titleInput.value;
-        updatePinnedTab(tab.id, (prev) => ({ ...prev, title: titleInput.value }));
-        refreshPreview();
-      });
-
-      const urlInput = document.createElement("input");
-      urlInput.className = "pinned-item__input tabula-input";
-      urlInput.type = "url";
-      urlInput.value = tab.url;
-      urlInput.placeholder = "https://example.com";
-      urlInput.setAttribute("aria-label", "Pinned tab URL");
-
-      urlInput.addEventListener("input", () => {
-        currentUrl = urlInput.value;
-        updatePinnedTab(tab.id, (prev) => ({ ...prev, url: urlInput.value }));
-        if (!currentTitle) {
-          refreshPreview();
-        }
-      });
-
-      const iconInput = document.createElement("input");
-      iconInput.className = "pinned-item__input tabula-input";
-      iconInput.type = "url";
-      iconInput.value = tab.icon ?? "";
-      iconInput.placeholder = "Icon URL";
-      iconInput.setAttribute("aria-label", "Pinned tab icon URL");
-
-      iconInput.addEventListener("input", () => {
-        const iconValue = iconInput.value.trim();
-        currentIcon = iconValue;
-        updatePinnedTab(tab.id, (prev) => {
-          if (iconValue) {
-            return { ...prev, icon: iconValue };
-          }
-          const { icon: _removed, ...rest } = prev;
-          return rest;
-        });
-        refreshPreview();
-      });
-
-      inputs.append(titleInput, urlInput, iconInput);
-
-      const actions = document.createElement("div");
-      actions.className = "pinned-item__actions";
-
-      const upButton = document.createElement("button");
-      upButton.type = "button";
-      upButton.className = "pinned-item__action tabula-button tabula-button--icon";
-      upButton.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">arrow_upward</span>';
-      upButton.setAttribute("aria-label", "Move pinned tab up");
-      upButton.disabled = index === 0;
-      upButton.addEventListener("click", () => {
-        movePinnedTab(tab.id, -1);
-      });
-
-      const downButton = document.createElement("button");
-      downButton.type = "button";
-      downButton.className = "pinned-item__action tabula-button tabula-button--icon";
-      downButton.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">arrow_downward</span>';
-      downButton.setAttribute("aria-label", "Move pinned tab down");
-      downButton.disabled = index === state.pinnedTabs.length - 1;
-      downButton.addEventListener("click", () => {
-        movePinnedTab(tab.id, 1);
-      });
-
-      const removeButton = document.createElement("button");
-      removeButton.type = "button";
-      removeButton.className = "pinned-item__action pinned-item__action--remove tabula-button tabula-button--icon";
-      removeButton.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">delete</span>';
-      removeButton.setAttribute("aria-label", "Remove pinned tab");
-      removeButton.addEventListener("click", () => {
-        removePinnedTab(tab.id);
-      });
-
-      actions.append(upButton, downButton, removeButton);
-
-      item.append(preview, inputs, actions);
-      fragment.append(item);
-    });
-  }
-
-  pinnedListContainer.replaceChildren(fragment);
-  pinnedAddButton.disabled = state.pinnedTabs.length >= MAX_PINNED_TABS;
-  if (pinnedAddButton.disabled) {
-    pinnedAddButton.title = "Maximum pinned tabs reached";
-  } else {
-    pinnedAddButton.removeAttribute("title");
-  }
-}
-
-function movePinnedTab(id: string, direction: -1 | 1): void {
-  const index = state.pinnedTabs.findIndex((tab) => tab.id === id);
-  if (index < 0) return;
-  const target = index + direction;
-  if (target < 0 || target >= state.pinnedTabs.length) return;
-  const tabs = [...state.pinnedTabs];
-  const [entry] = tabs.splice(index, 1);
-  if (!entry) {
-    return;
-  }
-  tabs.splice(target, 0, entry);
-  state.pinnedTabs = tabs;
-  renderPinnedList();
-  setStatus("Pinned tabs reordered", "success");
-}
-
-function removePinnedTab(id: string): void {
-  state.pinnedTabs = state.pinnedTabs.filter((tab) => tab.id !== id);
-  renderPinnedList();
-  setStatus("Pinned tab removed", "success");
-}
-
 const renderPresetChips = () => {
   presetContainer.innerHTML = "";
   const fragment = document.createDocumentFragment();
@@ -509,7 +351,7 @@ const syncForm = (settings: Settings) => {
 
   updateRangeOutputs();
   updateSearchFieldState(state.search.enabled);
-  renderPinnedList();
+  pinnedTabsController.sync(state.pinnedTabs);
   applyPreview();
   markPresetActive(state.preset ?? "custom");
 };
@@ -766,59 +608,6 @@ tasksEnabledInput.addEventListener("change", () => {
   state.widgets.tasks.enabled = tasksEnabledInput.checked;
   updateTasksFieldState(state.widgets.tasks.enabled);
   schedule(() => setStatus("Tasks widget preference updated"));
-});
-
-pinnedAddButton.addEventListener("click", () => {
-  if (state.pinnedTabs.length >= MAX_PINNED_TABS) {
-    setStatus("Pinned tabs limit reached", "error");
-    return;
-  }
-
-  const titleRaw = pinnedAddTitleInput.value.trim();
-  const url = pinnedAddUrlInput.value.trim();
-  const icon = pinnedAddIconInput.value.trim();
-
-  if (!url) {
-    setStatus("Enter a valid URL", "error");
-    return;
-  }
-
-  if (!isValidPinnedUrl(url)) {
-    setStatus("Enter a valid URL starting with http or https", "error");
-    return;
-  }
-
-  let title = titleRaw;
-  if (!title) {
-    try {
-      const parsed = new URL(url);
-      title = parsed.hostname.replace(/^www\./i, "") || parsed.hostname;
-    } catch {
-      title = url;
-    }
-  }
-
-  const id = generatePinnedId();
-  const next: PinnedTab = icon
-    ? { id, title, url, icon }
-    : { id, title, url };
-
-  state.pinnedTabs = [...state.pinnedTabs, next];
-  pinnedAddTitleInput.value = "";
-  pinnedAddUrlInput.value = "";
-  pinnedAddIconInput.value = "";
-  pinnedAddTitleInput.focus();
-  renderPinnedList();
-  setStatus("Pinned tab added", "success");
-});
-
-[pinnedAddTitleInput, pinnedAddUrlInput, pinnedAddIconInput].forEach((input) => {
-  input.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      pinnedAddButton.click();
-    }
-  });
 });
 
 form.addEventListener("submit", async (event) => {

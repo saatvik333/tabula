@@ -109,7 +109,9 @@
 
 .tabula-button--icon {
   width: 2.5rem;
-  min-height: 2.5rem;
+  height: 2.5rem;
+  min-height: 0;
+  min-width: 0;
   padding: 0;
   border-radius: var(--tabula-radius-full);
 }
