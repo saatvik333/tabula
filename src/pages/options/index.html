@@ -282,6 +282,17 @@
               <span class="field__label">Focus sessions before long break</span>
               <input type="number" id="pomodoroCycles" name="pomodoroCycles" class="field__control" min="1" max="8" step="1" />
             </label>
+
+            <label class="field field--toggle">
+              <span class="field__text">Enable tasks widget</span>
+              <span class="toggle">
+                <input type="checkbox" id="tasksEnabled" name="tasksEnabled" class="toggle__input" />
+                <span class="toggle__track" aria-hidden="true">
+                  <span class="toggle__thumb"></span>
+                </span>
+              </span>
+            </label>
+            <p class="field__hint" data-widget="tasks">Add quick todos right from the new tab.</p>
           </div>
         </section>
 

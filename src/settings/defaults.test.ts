@@ -105,6 +105,14 @@ describe("mergeWithDefaults", () => {
           longBreakMinutes: 80,
           cyclesBeforeLongBreak: 12,
         },
+        tasks: {
+          enabled: false,
+          items: [
+            { id: "one", text: " First task " },
+            { id: "one", text: "duplicate" },
+            { id: "", text: "" },
+          ],
+        },
       },
     });
 
@@ -115,6 +123,23 @@ describe("mergeWithDefaults", () => {
     expect(result.widgets.pomodoro.longBreakMinutes).toBe(60);
     expect(result.widgets.pomodoro.cyclesBeforeLongBreak).toBe(8);
     expect(result.widgets.layout).toHaveLength(DEFAULT_SETTINGS.widgets.layout.length);
+    expect(result.widgets.tasks.enabled).toBe(false);
+    expect(result.widgets.tasks.items).toHaveLength(1);
+    expect(result.widgets.tasks.items[0]).toMatchObject({ id: "one", text: "First task" });
+  });
+
+  it("sanitises task items", () => {
+    const result = mergeWithDefaults({
+      widgets: {
+        tasks: {
+          enabled: true,
+          items: Array.from({ length: 70 }, (_, index) => ({ id: `id-${index}`, text: ` Task ${index} ` })),
+        },
+      },
+    });
+
+    expect(result.widgets.tasks.items.length).toBeLessThanOrEqual(60);
+    expect(result.widgets.tasks.items[0]).toMatchObject({ text: "Task 0" });
   });
 
   it("sanitises widget layout entries", () => {
@@ -129,7 +154,7 @@ describe("mergeWithDefaults", () => {
     });
 
     const layout = result.widgets.layout;
-    expect(layout).toHaveLength(2);
+    expect(layout).toHaveLength(DEFAULT_SETTINGS.widgets.layout.length);
     const weather = layout.find((entry) => entry.id === "weather");
     expect(weather).toMatchObject({ x: 120, y: 200 });
     const defaultPomodoro = DEFAULT_SETTINGS.widgets.layout.find((entry) => entry.id === "pomodoro");

@@ -3,7 +3,7 @@ import { createElement } from "$src/core/dom";
 import { startAlignedSecondTicker, type StopTicker } from "$src/core/ticker";
 import { formatTimeForDisplay, getCurrentTime, timesEqual, type Meridiem, type Time } from "$src/core/time";
 import { applySettingsToDocument } from "$src/settings/apply";
-import type { PinnedTab, SearchEngine, Settings, WidgetId, WidgetLayoutEntry } from "$src/settings/schema";
+import type { PinnedTab, SearchEngine, Settings, TaskItem, WidgetId, WidgetLayoutEntry } from "$src/settings/schema";
 import {
   getCachedSettingsSnapshot,
   loadSettings,
@@ -13,6 +13,7 @@ import {
 import { getSystemPrefersDark, resolveTheme, watchSystemTheme, type ThemeVariant } from "$src/settings/theme";
 import { createWeatherWidget, type WeatherWidgetController } from "$src/widgets/weather-widget";
 import { createPomodoroWidget, type PomodoroWidgetController } from "$src/widgets/pomodoro-widget";
+import { createTasksWidget, type TasksWidgetController } from "$src/widgets/tasks-widget";
 
 type TimeSource = () => Time;
 
@@ -25,7 +26,7 @@ const SEARCH_ENGINES: Record<SearchEngine, (query: string) => string> = {
   brave: (query) => `https://search.brave.com/search?q=${encodeURIComponent(query)}`,
 };
 
-const WIDGET_IDS: WidgetId[] = ["weather", "pomodoro"];
+const WIDGET_IDS: WidgetId[] = ["weather", "pomodoro", "tasks"];
 
 export class ClockApp {
   private readonly timeSource: TimeSource;
@@ -69,6 +70,7 @@ export class ClockApp {
   private weatherWidget: WeatherWidgetController | null = null;
 
   private pomodoroWidget: PomodoroWidgetController | null = null;
+  private tasksWidget: TasksWidgetController | null = null;
 
   private widgetElements: Partial<Record<WidgetId, HTMLElement>> = {};
 
@@ -121,6 +123,39 @@ export class ClockApp {
       return;
     }
     this.reapplyWidgetLayout();
+  };
+
+  private readonly handleTasksChange = (items: TaskItem[]): void => {
+    if (!this.settings) {
+      return;
+    }
+
+    if (!this.settings.widgets.tasks.enabled) {
+      return;
+    }
+
+    const nextItems = items.slice(0, 60).map((item) => ({ ...item }));
+    const widgets = {
+      ...this.settings.widgets,
+      tasks: {
+        ...this.settings.widgets.tasks,
+        items: nextItems,
+      },
+    };
+
+    this.settings = {
+      ...this.settings,
+      widgets,
+    };
+
+    void updateSettings({
+      widgets: {
+        tasks: {
+          enabled: this.settings.widgets.tasks.enabled,
+          items: nextItems,
+        },
+      },
+    });
   };
 
   constructor(
@@ -181,6 +216,9 @@ export class ClockApp {
       this.pomodoroWidget.destroy();
       this.pomodoroWidget = null;
     }
+    if (this.tasksWidget) {
+      this.tasksWidget = null;
+    }
   }
 
   private buildLayout(): void {
@@ -218,9 +256,13 @@ export class ClockApp {
     const widgetsContainer = createElement("aside", { className: "tabula-widgets" });
     const weatherWidget = createWeatherWidget();
     const pomodoroWidget = createPomodoroWidget();
+    const tasksWidget = createTasksWidget({
+      onChange: (items) => this.handleTasksChange(items),
+    });
     this.prepareWidget(weatherWidget.element, "weather");
     this.prepareWidget(pomodoroWidget.element, "pomodoro");
-    widgetsContainer.append(weatherWidget.element, pomodoroWidget.element);
+    this.prepareWidget(tasksWidget.element, "tasks");
+    widgetsContainer.append(weatherWidget.element, pomodoroWidget.element, tasksWidget.element);
 
     root.append(controls, clockShell, pinnedSection, tagline);
     root.insertBefore(searchForm, clockShell);
@@ -238,6 +280,7 @@ export class ClockApp {
     this.widgetsContainer = widgetsContainer;
     this.weatherWidget = weatherWidget;
     this.pomodoroWidget = pomodoroWidget;
+    this.tasksWidget = tasksWidget;
 
     this.initializeDefaultWidgetLayout();
   }
@@ -663,15 +706,16 @@ export class ClockApp {
   }
 
   private updateWidgets(settings: Settings): void {
-    if (!this.widgetsContainer || !this.weatherWidget || !this.pomodoroWidget) return;
+    if (!this.widgetsContainer || !this.weatherWidget || !this.pomodoroWidget || !this.tasksWidget) return;
 
     const { widgets } = settings;
     this.weatherWidget.update(widgets.weather);
     this.pomodoroWidget.update(widgets.pomodoro);
+    this.tasksWidget.update(widgets.tasks);
 
     this.applyWidgetLayout();
 
-    const allDisabled = !widgets.weather.enabled && !widgets.pomodoro.enabled;
+    const allDisabled = !widgets.weather.enabled && !widgets.pomodoro.enabled && !widgets.tasks.enabled;
     this.widgetsContainer.classList.toggle("is-hidden", allDisabled);
   }
 

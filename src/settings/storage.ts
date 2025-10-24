@@ -188,6 +188,13 @@ const combineWithCurrent = (current: Settings, partial: PartialSettings): Partia
       ...current.widgets.pomodoro,
       ...(partial.widgets?.pomodoro ?? {}),
     },
+    tasks: {
+      ...current.widgets.tasks,
+      ...(partial.widgets?.tasks ?? {}),
+      items: partial.widgets?.tasks?.items
+        ? partial.widgets.tasks.items.map((item) => ({ ...item }))
+        : current.widgets.tasks.items.map((item) => ({ ...item })),
+    },
   },
   palettes: {
     light: {

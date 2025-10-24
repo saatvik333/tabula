@@ -15,6 +15,7 @@ import type {
   TemperatureUnit,
   WidgetLayoutEntry,
   WidgetId,
+  TaskItem,
 } from "$src/settings/schema";
 import { applyPresetToSettings, isPresetName } from "$src/settings/presets";
 
@@ -92,7 +93,7 @@ const coerceTimeFormat = (value: unknown, fallback: TimeFormat): TimeFormat => {
   return fallback;
 };
 
-const KNOWN_WIDGET_IDS: readonly WidgetId[] = ["weather", "pomodoro"];
+const KNOWN_WIDGET_IDS: readonly WidgetId[] = ["weather", "pomodoro", "tasks"];
 
 const sanitizeWidgetLayout = (
   value: unknown,
@@ -188,6 +189,39 @@ const sanitizePinnedTabs = (value: unknown, fallback: PinnedTab[]): PinnedTab[] 
   return result;
 };
 
+const MAX_TASK_ITEMS = 60;
+const MAX_TASK_LENGTH = 120;
+
+const sanitizeTaskItem = (value: unknown): TaskItem | null => {
+  if (!value || typeof value !== "object") return null;
+  const candidate = value as Partial<TaskItem> & { text?: unknown };
+  const text = typeof candidate.text === "string" ? candidate.text.trim() : "";
+  if (!text) {
+    return null;
+  }
+  const truncated = text.slice(0, MAX_TASK_LENGTH);
+  const idCandidate = typeof candidate.id === "string" && candidate.id.trim().length > 0 ? candidate.id.trim() : null;
+  const id = idCandidate ?? `task-${Math.random().toString(36).slice(2, 10)}`;
+  return { id, text: truncated };
+};
+
+const sanitizeTaskItems = (value: unknown, fallback: TaskItem[]): TaskItem[] => {
+  if (!Array.isArray(value)) {
+    return fallback.map((item) => ({ ...item }));
+  }
+  const seen = new Set<string>();
+  const result: TaskItem[] = [];
+  for (const entry of value) {
+    if (result.length >= MAX_TASK_ITEMS) break;
+    const sanitized = sanitizeTaskItem(entry);
+    if (!sanitized) continue;
+    if (seen.has(sanitized.id)) continue;
+    seen.add(sanitized.id);
+    result.push(sanitized);
+  }
+  return result;
+};
+
 const sanitizeWeather = (
   value: Partial<WeatherWidgetSettings> | undefined,
   fallback: WeatherWidgetSettings,
@@ -223,6 +257,14 @@ const sanitizePomodoro = (
   };
 };
 
+const sanitizeTasks = (
+  value: Partial<Settings["widgets"]["tasks"]> | undefined,
+  fallback: Settings["widgets"]["tasks"],
+): Settings["widgets"]["tasks"] => ({
+  enabled: sanitizeBoolean(value?.enabled, fallback.enabled),
+  items: sanitizeTaskItems(value?.items, fallback.items),
+});
+
 const mergeWidgets = (
   value: Partial<WidgetsSettings> | undefined,
   fallback: WidgetsSettings,
@@ -230,6 +272,7 @@ const mergeWidgets = (
   layout: sanitizeWidgetLayout(value?.layout, fallback.layout),
   weather: sanitizeWeather(value?.weather, fallback.weather),
   pomodoro: sanitizePomodoro(value?.pomodoro, fallback.pomodoro),
+  tasks: sanitizeTasks(value?.tasks, fallback.tasks),
 });
 const MATERIAL_LIGHT: Palette = {
   background: "#f3f4f6",
@@ -250,6 +293,7 @@ const MATERIAL_DARK: Palette = {
 const DEFAULT_WIDGET_LAYOUT: WidgetLayoutEntry[] = [
   { id: "weather", x: 0, y: 0 },
   { id: "pomodoro", x: 0, y: 260 },
+  { id: "tasks", x: 0, y: 520 },
 ];
 
 export const DEFAULT_PALETTE_LIGHT: Palette = MATERIAL_LIGHT;
@@ -296,6 +340,10 @@ const BASE_DEFAULT_SETTINGS: Settings = {
       breakMinutes: 5,
       longBreakMinutes: 15,
       cyclesBeforeLongBreak: 4,
+    },
+    tasks: {
+      enabled: true,
+      items: [],
     },
   },
 };

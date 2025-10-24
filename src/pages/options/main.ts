@@ -79,6 +79,7 @@ const pomodoroFocusInput = getElement<HTMLInputElement>("pomodoroFocus");
 const pomodoroBreakInput = getElement<HTMLInputElement>("pomodoroBreak");
 const pomodoroLongBreakInput = getElement<HTMLInputElement>("pomodoroLongBreak");
 const pomodoroCyclesInput = getElement<HTMLInputElement>("pomodoroCycles");
+const tasksEnabledInput = getElement<HTMLInputElement>("tasksEnabled");
 const presetContainer = getElement<HTMLDivElement>("presetChips");
 const pinnedListContainer = getElement<HTMLDivElement>("pinnedList");
 const pinnedEmptyState = getElement<HTMLParagraphElement>("pinnedEmpty");
@@ -209,6 +210,7 @@ const pomodoroFieldElements = [
   pomodoroLongBreakInput.parentElement!,
   pomodoroCyclesInput.parentElement!,
 ].filter(Boolean) as HTMLElement[];
+const tasksFieldElements = Array.from(document.querySelectorAll<HTMLElement>("[data-widget='tasks']"));
 
 const updateWeatherFieldState = (enabled: boolean) => {
   markWidgetFields(weatherFieldElements, enabled);
@@ -218,6 +220,18 @@ const updateWeatherFieldState = (enabled: boolean) => {
 
 const updatePomodoroFieldState = (enabled: boolean) => {
   markWidgetFields(pomodoroFieldElements, enabled);
+};
+
+const updateTasksFieldState = (enabled: boolean) => {
+  tasksFieldElements.forEach((element) => {
+    if (enabled) {
+      delete element.dataset["disabled"];
+      element.hidden = false;
+    } else {
+      element.dataset["disabled"] = "true";
+      element.hidden = true;
+    }
+  });
 };
 
 const markPresetActive = (name: PresetName) => {
@@ -490,6 +504,8 @@ const syncForm = (settings: Settings) => {
   pomodoroLongBreakInput.value = state.widgets.pomodoro.longBreakMinutes.toString();
   pomodoroCyclesInput.value = state.widgets.pomodoro.cyclesBeforeLongBreak.toString();
   updatePomodoroFieldState(state.widgets.pomodoro.enabled);
+  tasksEnabledInput.checked = state.widgets.tasks.enabled;
+  updateTasksFieldState(state.widgets.tasks.enabled);
 
   updateRangeOutputs();
   updateSearchFieldState(state.search.enabled);
@@ -744,6 +760,12 @@ pomodoroLongBreakInput.addEventListener("input", () => {
 
 pomodoroCyclesInput.addEventListener("input", () => {
   updatePomodoroDuration("cyclesBeforeLongBreak", pomodoroCyclesInput, 1, 8);
+});
+
+tasksEnabledInput.addEventListener("change", () => {
+  state.widgets.tasks.enabled = tasksEnabledInput.checked;
+  updateTasksFieldState(state.widgets.tasks.enabled);
+  schedule(() => setStatus("Tasks widget preference updated"));
 });
 
 pinnedAddButton.addEventListener("click", () => {

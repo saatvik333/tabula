@@ -24,7 +24,12 @@ export type TimeFormat = "12h" | "24h";
 
 export type TemperatureUnit = "metric" | "imperial";
 
-export type WidgetId = "weather" | "pomodoro";
+export type TaskItem = {
+  id: string;
+  text: string;
+};
+
+export type WidgetId = "weather" | "pomodoro" | "tasks";
 
 export type WidgetLayoutEntry = {
   id: WidgetId;
@@ -65,6 +70,10 @@ export type WidgetsSettings = {
   layout: WidgetLayoutEntry[];
   weather: WeatherWidgetSettings;
   pomodoro: PomodoroWidgetSettings;
+  tasks: {
+    enabled: boolean;
+    items: TaskItem[];
+  };
 };
 
 export type Settings = {
@@ -115,6 +124,10 @@ export type PartialSettings = Partial<Omit<Settings, "background" | "clock" | "s
     layout?: WidgetLayoutEntry[];
     weather?: Partial<WeatherWidgetSettings>;
     pomodoro?: Partial<PomodoroWidgetSettings>;
+    tasks?: {
+      enabled?: boolean;
+      items?: TaskItem[];
+    };
   };
 };
 
