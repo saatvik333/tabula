@@ -247,7 +247,10 @@ export class ClockApp {
       className: "tabula-button tabula-button--fab tabula-button--ghost tabula-settings-button",
     });
     settingsButton.type = "button";
-    settingsButton.innerHTML = `<span class="material-symbols-outlined" aria-hidden="true">settings</span>`;
+    const settingsIcon = createElement("span", { className: "material-symbols-outlined" });
+    settingsIcon.setAttribute("aria-hidden", "true");
+    settingsIcon.textContent = "settings";
+    settingsButton.append(settingsIcon);
     settingsButton.setAttribute("aria-label", "Open Tabula settings");
     settingsButton.title = "Customize Tabula";
     settingsButton.addEventListener("click", () => this.openOptions());
@@ -317,10 +320,12 @@ export class ClockApp {
       className: "tabula-search__button tabula-button tabula-button--primary",
     });
     button.type = "submit";
-    button.innerHTML = `
-      <span class="material-symbols-outlined" aria-hidden="true">search</span>
-      <span class="tabula-search__label">Search</span>
-    `;
+    const searchIcon = createElement("span", { className: "material-symbols-outlined" });
+    searchIcon.setAttribute("aria-hidden", "true");
+    searchIcon.textContent = "search";
+    const searchLabel = createElement("span", { className: "tabula-search__label" });
+    searchLabel.textContent = "Search";
+    button.append(searchIcon, searchLabel);
 
     form.append(input, button);
 
@@ -620,10 +625,11 @@ export class ClockApp {
     this.setElementStyle(element, position);
 
     if (updateLayout) {
+      const cloned = position.anchor ? this.cloneAnchor(position.anchor) : undefined;
       this.widgetLayout.set(id, {
         x: position.x,
         y: position.y,
-        ...(position.anchor ? { anchor: this.cloneAnchor(position.anchor) } : {}),
+        ...(cloned ? { anchor: cloned } : {}),
       });
     }
     if (element.classList.contains("tabula-widget--initial") && this.settings) {
@@ -636,11 +642,11 @@ export class ClockApp {
   private loadWidgetLayout(layout: WidgetLayoutEntry[]): void {
     this.widgetLayout.clear();
     layout.forEach((entry) => {
-      const anchor = this.cloneAnchor(entry.anchor);
+      const cloned = entry.anchor ? this.cloneAnchor(entry.anchor) : undefined;
       this.widgetLayout.set(entry.id, {
         x: entry.x,
         y: entry.y,
-        ...(anchor ? { anchor } : {}),
+        ...(cloned ? { anchor: cloned } : {}),
       });
     });
     this.ensureLayoutEntries();
@@ -677,10 +683,11 @@ export class ClockApp {
             ? this.resolveAnchoredCoordinates(element, existing.anchor, existing.x, existing.y)
             : { x: existing.x, y: existing.y };
           const clamped = element ? this.clampPosition(element, resolved.x, resolved.y) : resolved;
+          const cloned = existing.anchor ? this.cloneAnchor(existing.anchor) : undefined;
           this.widgetLayout.set(id, {
             x: clamped.x,
             y: clamped.y,
-            ...(existing.anchor ? { anchor: this.cloneAnchor(existing.anchor) } : {}),
+            ...(cloned ? { anchor: cloned } : {}),
           });
           cursorY = Math.max(cursorY, clamped.y + height + 20);
         }
@@ -739,14 +746,20 @@ export class ClockApp {
       }
       const anchor = this.deriveAnchorFromPosition(element, coords);
       if (anchor) {
-        coords.anchor = this.cloneAnchor(anchor);
+        const cloned = this.cloneAnchor(anchor);
+        if (cloned) {
+          coords.anchor = cloned;
+        } else {
+          delete coords.anchor;
+        }
       } else {
         delete coords.anchor;
       }
+      const clonedExisting = coords.anchor ? this.cloneAnchor(coords.anchor) : undefined;
       this.widgetLayout.set(id, {
         x: coords.x,
         y: coords.y,
-        ...(coords.anchor ? { anchor: this.cloneAnchor(coords.anchor) } : {}),
+        ...(clonedExisting ? { anchor: clonedExisting } : {}),
       });
     }
 
@@ -819,9 +832,10 @@ export class ClockApp {
       if (!coords) {
         continue;
       }
+      const cloned = coords.anchor ? this.cloneAnchor(coords.anchor) : undefined;
       this.applyWidgetPosition(id, element, coords.x, coords.y, {
         updateLayout: true,
-        anchor: this.cloneAnchor(coords.anchor),
+        anchor: cloned ?? null,
       });
     }
   }

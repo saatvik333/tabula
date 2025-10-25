@@ -38,7 +38,9 @@ describe("settings storage", () => {
     });
 
     const reloaded = await loadSettings();
-    expect(reloaded.widgets.layout[0].anchor).toEqual({
+    expect(reloaded.widgets.layout.length).toBeGreaterThan(0);
+    const first = reloaded.widgets.layout[0]!;
+    expect(first.anchor).toEqual({
       horizontal: "right",
       vertical: "top",
       offsetX: 24,
@@ -48,12 +50,16 @@ describe("settings storage", () => {
 
   it("returns defensive clones so cached settings remain immutable", async () => {
     const snapshot = getCachedSettingsSnapshot();
-    snapshot.widgets.layout[0].x = 999;
-    snapshot.widgets.layout[0].anchor = { horizontal: "left", offsetX: 10 };
+    expect(snapshot.widgets.layout.length).toBeGreaterThan(0);
+    const first = snapshot.widgets.layout[0]!;
+    first.x = 999;
+    first.anchor = { horizontal: "left", offsetX: 10 } as any;
 
     const reloaded = await loadSettings();
-    expect(reloaded.widgets.layout[0].x).not.toBe(999);
-    expect(reloaded.widgets.layout[0].anchor).not.toEqual({ horizontal: "left", offsetX: 10 });
+    expect(reloaded.widgets.layout.length).toBeGreaterThan(0);
+    const reFirst = reloaded.widgets.layout[0]!;
+    expect(reFirst.x).not.toBe(999);
+    expect(reFirst.anchor).not.toEqual({ horizontal: "left", offsetX: 10 });
   });
 
   it("updates stored anchors when updateSettings merges layout overrides", async () => {

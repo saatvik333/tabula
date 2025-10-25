@@ -240,7 +240,11 @@ export const createPinnedTabsController = (
       const button = document.createElement("button");
       button.type = "button";
       button.className = "pinned-item__action tabula-button tabula-button--icon";
-      button.innerHTML = `<span class="material-symbols-outlined" aria-hidden="true">${iconName}</span>`;
+      const icon = document.createElement("span");
+      icon.className = "material-symbols-outlined";
+      icon.setAttribute("aria-hidden", "true");
+      icon.textContent = iconName;
+      button.appendChild(icon);
       button.setAttribute("aria-label", label);
       button.disabled = disabled;
       button.addEventListener("click", handler);

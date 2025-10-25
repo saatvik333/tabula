@@ -55,10 +55,12 @@ class TasksWidget {
       className: "tasks-form__button tabula-button tabula-button--primary",
     });
     this.addButton.type = "submit";
-    this.addButton.innerHTML = `
-      <span class="material-symbols-outlined" aria-hidden="true">add</span>
-      <span class="tasks-form__button-label">Add</span>
-    `;
+    const addIcon = createElement("span", { className: "material-symbols-outlined" });
+    addIcon.setAttribute("aria-hidden", "true");
+    addIcon.textContent = "add";
+    const addLabel = createElement("span", { className: "tasks-form__button-label" });
+    addLabel.textContent = "Add";
+    this.addButton.append(addIcon, addLabel);
 
     form.append(this.inputEl, this.addButton);
     form.addEventListener("submit", (event) => {
@@ -105,10 +107,12 @@ class TasksWidget {
         });
         removeButton.type = "button";
         removeButton.setAttribute("aria-label", "Remove task");
-        removeButton.innerHTML = `
-          <span class="material-symbols-outlined" aria-hidden="true">close</span>
-          <span class="visually-hidden">Remove</span>
-        `;
+        const removeIcon = createElement("span", { className: "material-symbols-outlined" });
+        removeIcon.setAttribute("aria-hidden", "true");
+        removeIcon.textContent = "close";
+        const removeSr = createElement("span", { className: "visually-hidden" });
+        removeSr.textContent = "Remove";
+        removeButton.append(removeIcon, removeSr);
         removeButton.addEventListener("click", () => this.handleRemove(item.id));
 
         entry.append(text, removeButton);

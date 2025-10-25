@@ -166,7 +166,10 @@ const sanitizeWidgetLayout = (
   fallback: WidgetLayoutEntry[],
 ): WidgetLayoutEntry[] => {
   if (!Array.isArray(value)) {
-    return fallback.map((entry) => ({ ...entry, anchor: cloneAnchor(entry.anchor) }));
+    return fallback.map((entry) => {
+      const cloned = entry.anchor ? cloneAnchor(entry.anchor) : undefined;
+      return cloned ? { ...entry, anchor: cloned } : { id: entry.id, x: entry.x, y: entry.y };
+    });
   }
 
   const seen = new Set<WidgetId>();
@@ -191,8 +194,8 @@ const sanitizeWidgetLayout = (
   for (const id of KNOWN_WIDGET_IDS) {
     if (seen.has(id)) continue;
     const fallbackEntry = fallbackMap.get(id) ?? { id, x: 0, y: 0 };
-    const anchor = cloneAnchor(fallbackEntry.anchor);
-    result.push(anchor ? { id, x: fallbackEntry.x, y: fallbackEntry.y, anchor } : { id, x: fallbackEntry.x, y: fallbackEntry.y });
+    const cloned = fallbackEntry.anchor ? cloneAnchor(fallbackEntry.anchor) : undefined;
+    result.push(cloned ? { id, x: fallbackEntry.x, y: fallbackEntry.y, anchor: cloned } : { id, x: fallbackEntry.x, y: fallbackEntry.y });
   }
 
   return result;
@@ -399,12 +402,12 @@ const BASE_DEFAULT_SETTINGS: Settings = {
     position: "top",
   },
   widgets: {
-    layout: DEFAULT_WIDGET_LAYOUT.map((entry) => ({
-      id: entry.id,
-      x: entry.x,
-      y: entry.y,
-      ...(entry.anchor ? { anchor: cloneAnchor(entry.anchor) } : {}),
-    })),
+    layout: DEFAULT_WIDGET_LAYOUT.map((entry) => {
+      const cloned = entry.anchor ? cloneAnchor(entry.anchor) : undefined;
+      return cloned
+        ? { id: entry.id, x: entry.x, y: entry.y, anchor: cloned }
+        : { id: entry.id, x: entry.x, y: entry.y };
+    }),
     weather: {
       enabled: true,
       location: "New York, NY",

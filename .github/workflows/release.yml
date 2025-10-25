@@ -48,13 +48,25 @@ jobs:
             tabula-${{ steps.ver.outputs.version }}-chrome.zip
             tabula-${{ steps.ver.outputs.version }}-firefox.zip
       - name: Sign for Firefox (AMO)
-        if: github.event_name == 'release' && (env.AMO_JWT_ISSUER != '' && env.AMO_JWT_SECRET != '')
+        if: github.event_name == 'release' && (secrets.AMO_JWT_ISSUER != '' && secrets.AMO_JWT_SECRET != '')
         env:
           AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
           AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
         run: npm run sign:firefox
+      - name: Upload signed XPI (if present)
+        if: github.event_name == 'release' && (secrets.AMO_JWT_ISSUER != '' && secrets.AMO_JWT_SECRET != '')
+        uses: actions/upload-artifact@v4
+        with:
+          name: signed-firefox-xpi
+          path: web-ext-artifacts/*.xpi
+          if-no-files-found: ignore
+      - name: Attach signed XPI to GitHub Release (if present)
+        if: github.event_name == 'release' && (secrets.AMO_JWT_ISSUER != '' && secrets.AMO_JWT_SECRET != '')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: web-ext-artifacts/*.xpi
       - name: Publish to Chrome Web Store
-        if: github.event_name == 'release' && (env.CHROME_CLIENT_ID != '' && env.CHROME_CLIENT_SECRET != '' && env.CHROME_REFRESH_TOKEN != '' && env.CHROME_EXTENSION_ID != '')
+        if: github.event_name == 'release' && (secrets.CHROME_CLIENT_ID != '' && secrets.CHROME_CLIENT_SECRET != '' && secrets.CHROME_REFRESH_TOKEN != '' && secrets.CHROME_EXTENSION_ID != '')
         env:
           CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
           CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}

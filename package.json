@@ -34,5 +34,9 @@
     "archiver": "^7.0.1",
     "chrome-webstore-upload-cli": "^2.1.0"
   },
-  "dependencies": {}
+  "dependencies": {},
+  "webExt": {
+    "sourceDir": "dist",
+    "artifactsDir": "web-ext-artifacts"
+  }
 }

@@ -34,7 +34,7 @@ describe("ClockApp widget anchoring", () => {
     Object.defineProperty(window, "innerHeight", { value: 800, writable: true });
   });
 
-  const getPrivate = <T>(instance: unknown, key: string): T => (instance as Record<string, T>)[key];
+  const getPrivate = <T>(instance: unknown, key: string): T => (instance as Record<string, T | undefined>)[key] as T;
 
   it("derives anchors for widgets near edges", () => {
     const element = createWidgetElement(240, 180);
