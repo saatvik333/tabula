@@ -34,7 +34,9 @@ const resetButton = getElement<HTMLButtonElement>("resetButton");
 
 const themeModeSelect = getElement<HTMLSelectElement>("themeMode");
 const taglineInput = getElement<HTMLInputElement>("taglineInput");
+const taglineEnabledInput = getElement<HTMLInputElement>("taglineEnabled");
 const timeFormat24Input = getElement<HTMLInputElement>("timeFormat24");
+const clockEnabledInput = getElement<HTMLInputElement>("clockEnabled");
 const timeFormat12Input = getElement<HTMLInputElement>("timeFormat12");
 const showSecondsInput = getElement<HTMLInputElement>("showSeconds");
 
@@ -298,6 +300,9 @@ const syncForm = (settings: Settings) => {
 
   themeModeSelect.value = state.themeMode;
   taglineInput.value = state.tagline;
+  taglineEnabledInput.checked = Boolean(state.taglineEnabled);
+  taglineInput.disabled = !state.taglineEnabled;
+  clockEnabledInput.checked = Boolean(state.clock.enabled);
   if (state.clock.format === "12h") {
     timeFormat12Input.checked = true;
   } else {
@@ -386,6 +391,12 @@ taglineInput.addEventListener("input", () => {
   state.tagline = taglineInput.value;
 });
 
+taglineEnabledInput.addEventListener("change", () => {
+  state.taglineEnabled = taglineEnabledInput.checked;
+  taglineInput.disabled = !state.taglineEnabled;
+  schedule(() => setStatus(`Tagline ${state.taglineEnabled ? "shown" : "hidden"}`));
+});
+
 timeFormat24Input.addEventListener("change", () => {
   if (timeFormat24Input.checked) {
     setClockFormat("24h");
@@ -396,6 +407,11 @@ timeFormat12Input.addEventListener("change", () => {
   if (timeFormat12Input.checked) {
     setClockFormat("12h");
   }
+});
+
+clockEnabledInput.addEventListener("change", () => {
+  state.clock.enabled = clockEnabledInput.checked;
+  schedule(() => setStatus(`Clock ${state.clock.enabled ? "shown" : "hidden"}`));
 });
 
 showSecondsInput.addEventListener("change", () => {

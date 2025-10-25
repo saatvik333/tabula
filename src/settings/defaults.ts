@@ -101,7 +101,7 @@ const normaliseOffset = (value: unknown): number | undefined => {
   if (!Number.isFinite(numeric) || numeric < 0) {
     return undefined;
   }
-  return Math.round(numeric * 100) / 100;
+  return Math.round(numeric);
 };
 
 const cloneAnchor = (anchor: WidgetAnchor | undefined): WidgetAnchor | undefined => {
@@ -376,6 +376,7 @@ const BASE_DEFAULT_SETTINGS: Settings = {
     blur: 24,
   },
   clock: {
+    enabled: true,
     scale: 1,
     rimWidth: 2,
     handWidth: 5,
@@ -389,6 +390,7 @@ const BASE_DEFAULT_SETTINGS: Settings = {
   },
   preset: "material",
   tagline: DEFAULT_TAGLINE,
+  taglineEnabled: true,
   pinnedTabs: [],
   search: {
     enabled: false,
@@ -428,6 +430,7 @@ const mergeClock = (
   value: Partial<Settings["clock"]> | undefined,
   fallback: Settings["clock"],
 ): Settings["clock"] => ({
+  enabled: sanitizeBoolean(value?.enabled, fallback.enabled),
   scale: clamp(Number(value?.scale), fallback.scale, 0.5, 2),
   rimWidth: clamp(Number(value?.rimWidth), fallback.rimWidth, 1, 12),
   handWidth: clamp(Number(value?.handWidth), fallback.handWidth, 2, 14),
@@ -495,6 +498,7 @@ export const mergeWithDefaults = (partial: PartialSettings | undefined): Setting
     },
     preset: presetProvided ? initialPreset : DEFAULT_SETTINGS.preset,
     tagline,
+    taglineEnabled: sanitizeBoolean(source.taglineEnabled, DEFAULT_SETTINGS.taglineEnabled),
     pinnedTabs,
   };
 

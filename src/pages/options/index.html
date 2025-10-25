@@ -47,6 +47,15 @@
               <span class="field__label">Tagline</span>
               <input type="text" id="taglineInput" name="taglineInput" class="field__control" maxlength="120" placeholder="Your space, no noise" />
             </label>
+            <label class="field field--toggle">
+              <span class="field__text">Show tagline</span>
+              <span class="toggle">
+                <input type="checkbox" id="taglineEnabled" name="taglineEnabled" class="toggle__input" />
+                <span class="toggle__track" aria-hidden="true">
+                  <span class="toggle__thumb"></span>
+                </span>
+              </span>
+            </label>
           </div>
         </section>
 
@@ -89,6 +98,15 @@
             <p>Tune the layout and proportions of the clock grid.</p>
           </header>
           <div class="panel__grid">
+            <label class="field field--toggle">
+              <span class="field__text">Show clock</span>
+              <span class="toggle">
+                <input type="checkbox" id="clockEnabled" name="clockEnabled" class="toggle__input" />
+                <span class="toggle__track" aria-hidden="true">
+                  <span class="toggle__thumb"></span>
+                </span>
+              </span>
+            </label>
             <fieldset class="field field--inline">
               <legend class="field__label">Time</legend>
               <label class="choice">

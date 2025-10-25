@@ -831,8 +831,9 @@ export class ClockApp {
     this.loadWidgetLayout(settings.widgets.layout);
     this.configureSystemWatcher(settings.themeMode);
     this.refreshTheme();
-    this.updateSearch(settings);
-    this.updateTagline(settings);
+   this.updateSearch(settings);
+   this.updateTagline(settings);
+   this.updateClockVisibility(settings);
     this.updatePinnedTabs(settings);
     if (this.display) {
       this.display.setSecondsVisible(Boolean(settings.clock.showSeconds));
@@ -888,6 +889,7 @@ export class ClockApp {
   private updateTagline(settings: Settings): void {
     if (!this.tagline) return;
     this.tagline.textContent = settings.tagline;
+    this.tagline.classList.toggle("is-hidden", !settings.taglineEnabled);
   }
 
   private updatePinnedTabs(settings: Settings): void {
@@ -937,6 +939,11 @@ export class ClockApp {
     if (this.settings) {
       this.updateSearch(this.settings);
     }
+  }
+
+  private updateClockVisibility(settings: Settings): void {
+    if (!this.clockContainer) return;
+    this.clockContainer.classList.toggle("is-hidden", !settings.clock.enabled);
   }
 
   private updateMeridiem(indicator: Meridiem | null): void {

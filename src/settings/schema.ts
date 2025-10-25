@@ -100,6 +100,7 @@ export type Settings = {
     dotSize: number;
     format: TimeFormat;
     showSeconds: boolean;
+    enabled: boolean;
   };
   palettes: {
     light: Palette;
@@ -107,6 +108,7 @@ export type Settings = {
   };
   preset: PresetName;
   tagline: string;
+  taglineEnabled: boolean;
   pinnedTabs: PinnedTab[];
   search: {
     enabled: boolean;

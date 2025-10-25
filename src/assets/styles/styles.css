@@ -141,6 +141,8 @@ body::after {
   z-index: 20;
 }
 
+.tabula-clock.is-hidden { display: none; }
+
 .tabula-widgets.is-hidden {
   display: none;
 }
@@ -523,6 +525,8 @@ body::after {
   align-items: center;
   gap: 1rem;
 }
+
+.tabula-tagline.is-hidden { display: none; }
 
 .tabula-pinned.is-hidden {
   display: none;
