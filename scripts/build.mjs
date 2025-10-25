@@ -29,7 +29,24 @@ await rename(optionsSource, join(distDir, "options.html"));
 
 await rm(join(distDir, "src"), { recursive: true, force: true }).catch(() => {});
 
-await cp(join(projectRoot, "manifest.json"), join(distDir, "manifest.json"));
+// Load manifest and optionally patch for release/CI
+import { readFile, writeFile } from 'node:fs/promises';
+const manifestPath = join(projectRoot, "manifest.json");
+const manifestOut = join(distDir, "manifest.json");
+const manifestRaw = await readFile(manifestPath, "utf8");
+const manifest = JSON.parse(manifestRaw);
+
+if (process.env.CI || process.env.RELEASE_BUILD) {
+  manifest.browser_specific_settings = manifest.browser_specific_settings || {};
+  manifest.browser_specific_settings.gecko = manifest.browser_specific_settings.gecko || {};
+  manifest.browser_specific_settings.gecko.data_collection = {
+    collects_data: false,
+    policy_url: "",
+    data_collection_permissions: {},
+  };
+}
+
+await writeFile(manifestOut, JSON.stringify(manifest, null, 2));
 await cp(join(projectRoot, "src", "assets", "icons"), join(distDir, "icons"), { recursive: true });
 
 // PNG icons are already provided in src/assets/icons; no rasterization needed.

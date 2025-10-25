@@ -25,7 +25,7 @@ jobs:
       - name: Test
         run: npm test
       - name: Build
-        run: npm run build
+        run: RELEASE_BUILD=1 npm run build
       - name: Lint (Firefox)
         run: npm run lint:firefox
       - name: Package
