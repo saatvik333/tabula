@@ -94,6 +94,8 @@ export const applySettingsToDocument = (
   root.style.setProperty("--tabula-clock-dot-size", formatPixels(settings.clock.dotSize));
 
   root.style.setProperty("--tabula-background-mode", settings.background.type);
+  // Expose background mode as data attribute for CSS overrides
+  root.dataset["backgroundMode"] = settings.background.type;
 
   if (doc.body) {
     doc.body.dataset["theme"] = theme;

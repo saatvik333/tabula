@@ -27,6 +27,15 @@
   --tabula-input-radius: var(--tabula-radius-full);
 }
 
+:root[data-background-mode="image"] {
+  /* Disable all elevation shadows when a wallpaper is used */
+  --tabula-shadow-xs: none;
+  --tabula-shadow-sm: none;
+  --tabula-shadow-md: none;
+  --tabula-shadow-lg: none;
+}
+
+
 .tabula-card {
   border-radius: var(--tabula-radius-lg);
   background: linear-gradient(

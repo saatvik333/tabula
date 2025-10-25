@@ -113,6 +113,35 @@ body::after {
   opacity: 0.75;
 }
 
+/* Remove gradients and shadows when a background image is applied */
+:root[data-background-mode="image"] .tabula-card,
+:root[data-background-mode="image"] .tabula-settings-button,
+:root[data-background-mode="image"] .tabula-widget,
+:root[data-background-mode="image"] .tabula-clock,
+:root[data-background-mode="image"] .tabula-pinned__item,
+:root[data-background-mode="image"] .tabula-clock-meridiem {
+  box-shadow: none !important;
+  background: none !important;
+}
+
+:root[data-background-mode="image"] .tabula-clock * {
+  box-shadow: none !important;
+}
+
+:root[data-background-mode="image"] .tabula-card,
+:root[data-background-mode="image"] .tabula-settings-button,
+:root[data-background-mode="image"] .tabula-widget,
+:root[data-background-mode="image"] .tabula-clock,
+:root[data-background-mode="image"] .tabula-pinned__item,
+:root[data-background-mode="image"] .tabula-clock-meridiem,
+:root[data-background-mode="image"] .cell,
+:root[data-background-mode="image"] .tabula-search,
+:root[data-background-mode="image"] .tabula-search__button,
+:root[data-background-mode="image"] .tabula-settings-button:hover {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
 #app {
   width: 100%;
   display: flex;
@@ -696,4 +725,11 @@ body::after {
     width: 46px;
     height: 46px;
   }
+}
+/* When background image is active, remove body gradient overlays */
+:root[data-background-mode="image"] body {
+  background: transparent !important;
+}
+:root[data-background-mode="image"] body::after {
+  background: none !important;
 }
