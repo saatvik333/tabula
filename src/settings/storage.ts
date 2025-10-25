@@ -153,7 +153,10 @@ const ensureBroadcastListener = (listener: Listener): BroadcastChannel | null =>
   channel.onmessage = (event) => {
     if (!event?.data) return;
     const merged = mergeWithDefaults(event.data as PartialSettings);
-    listener(cloneSettings(merged));
+    // Update local cache and notify all listeners without re-broadcasting to avoid loops
+    const snapshot = cloneSettings(merged);
+    cachedSettings = snapshot;
+    listeners.forEach((l) => l(cloneSettings(snapshot)));
   };
   return channel;
 };
@@ -164,7 +167,7 @@ export const loadSettings = async (): Promise<Settings> => {
   }
 
   if (hasExtensionStorage()) {
-    const storesInPriority = [localStorageArea, syncStorage].filter(Boolean);
+    const storesInPriority = [syncStorage, localStorageArea].filter(Boolean);
     for (const store of storesInPriority) {
       try {
         const raw = await invokeGet(store, SETTINGS_STORAGE_KEY);
