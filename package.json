@@ -14,8 +14,8 @@
     "test:coverage": "vitest --run --coverage",
     "type-check": "tsc --noEmit",
     "lint:firefox": "web-ext lint -s dist",
-    "pack:chrome": "cd dist && zip -r ../tabula-chrome.zip .",
-    "pack:firefox": "cd dist && zip -r ../tabula-firefox.zip ."
+    "pack:chrome": "node scripts/package.mjs",
+    "pack:firefox": "node scripts/package.mjs"
   },
   "author": "Saatvik Sharma",
   "license": "MIT",
@@ -27,7 +27,8 @@
     "typescript": "^5.9.2",
     "vite": "^7.1.7",
     "vitest": "^3.2.4",
-    "web-ext": "^7.11.0"
+    "web-ext": "^7.11.0",
+    "archiver": "^7.0.1"
   },
   "dependencies": {}
 }
