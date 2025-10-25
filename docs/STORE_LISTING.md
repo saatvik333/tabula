@@ -4,7 +4,7 @@
 Tabula — Minimalist New Tab (Clock, Tagline, Widgets)
 
 ## Short description
-A calm, customizable New Tab featuring a beautiful clock of clocks, optional tagline, and focused productivity widgets.
+A calm, customizable New Tab featuring a beautiful clock of clocks, and focused productivity widgets.
 
 ## Full description
 Tabula transforms your New Tab into a clean, distraction-free dashboard. It pairs a unique "clock of clocks" with optional productivity widgets and a personal tagline. Simple, fast, and private.
@@ -39,7 +39,7 @@ Tabula does not collect or transmit personal data. Settings are stored locally i
 - Productivity, Appearance (Tabs)
 
 ## Support contact
-- Email: your-contact@example.com (replace with a real address)
+- Email: saatvik333sharma@gmail.com
 
 ## Changelog (example format)
 - vX.Y.Z: Short summary of changes

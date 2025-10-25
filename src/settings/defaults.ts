@@ -376,7 +376,7 @@ const BASE_DEFAULT_SETTINGS: Settings = {
     type: "image",
     color: "#111111",
     imageUrl: "",
-    blur: 24,
+    blur: 12,
   },
   clock: {
     enabled: true,
