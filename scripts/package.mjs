@@ -33,8 +33,11 @@ async function zipDir(sourceDir, outPath) {
     console.error('dist/ not found. Run `npm run build` first.');
     process.exit(1);
   }
-  const chromeZip = join(projectRoot, 'tabula-chrome.zip');
-  const firefoxZip = join(projectRoot, 'tabula-firefox.zip');
+  const { readFile } = await import('node:fs/promises');
+  const manifestRaw = await readFile(join(projectRoot, 'manifest.json'), 'utf8');
+  const { version } = JSON.parse(manifestRaw);
+  const chromeZip = join(projectRoot, `tabula-${version}-chrome.zip`);
+  const firefoxZip = join(projectRoot, `tabula-${version}-firefox.zip`);
 
   await zipDir(distDir, chromeZip);
   await zipDir(distDir, firefoxZip);

@@ -15,7 +15,10 @@
     "type-check": "tsc --noEmit",
     "lint:firefox": "web-ext lint -s dist",
     "pack:chrome": "node scripts/package.mjs",
-    "pack:firefox": "node scripts/package.mjs"
+    "pack:firefox": "node scripts/package.mjs",
+    "sign:firefox": "web-ext sign -s dist -a web-ext-artifacts",
+    "version": "node scripts/version.mjs",
+    "publish:chrome": "node scripts/version.mjs | xargs -I{} bash -lc 'npx chrome-webstore-upload-cli upload --source tabula-{}-chrome.zip --extension-id $CHROME_EXTENSION_ID && npx chrome-webstore-upload-cli publish --extension-id $CHROME_EXTENSION_ID'"
   },
   "author": "Saatvik Sharma",
   "license": "MIT",
@@ -28,7 +31,8 @@
     "vite": "^7.1.7",
     "vitest": "^3.2.4",
     "web-ext": "^7.11.0",
-    "archiver": "^7.0.1"
+    "archiver": "^7.0.1",
+    "chrome-webstore-upload-cli": "^2.1.0"
   },
   "dependencies": {}
 }
