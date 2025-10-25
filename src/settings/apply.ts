@@ -15,6 +15,16 @@ const formatBackgroundImage = (settings: Settings): string => {
   return `url(${trimmed})`;
 };
 
+const getBackgroundMode = (settings: Settings): "image" | "color" => {
+  const { type, imageUrl, imageData } = settings.background;
+  if (type === "image") {
+    const hasInline = typeof imageData === "string" && imageData.trim().length > 0;
+    const hasUrl = typeof imageUrl === "string" && imageUrl.trim().length > 0;
+    if (hasInline || hasUrl) return "image";
+  }
+  return "color";
+};
+
 const hexToRgb = (hex: string): string | null => {
   const normalized = hex.replace("#", "");
   if (![3, 6, 8].includes(normalized.length)) {
@@ -93,9 +103,10 @@ export const applySettingsToDocument = (
   root.style.setProperty("--tabula-clock-hand-width", formatPixels(settings.clock.handWidth));
   root.style.setProperty("--tabula-clock-dot-size", formatPixels(settings.clock.dotSize));
 
-  root.style.setProperty("--tabula-background-mode", settings.background.type);
+  const bgMode = getBackgroundMode(settings);
+  root.style.setProperty("--tabula-background-mode", bgMode);
   // Expose background mode as data attribute for CSS overrides
-  root.dataset["backgroundMode"] = settings.background.type;
+  root.dataset["backgroundMode"] = bgMode;
 
   if (doc.body) {
     doc.body.dataset["theme"] = theme;
