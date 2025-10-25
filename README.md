@@ -1,6 +1,6 @@
 # Tabula
 
-Tabula is a customizable, minimalist New Tab extension for Chromium-based browsers and Firefox. It focuses on clarity and control: a beautiful "clock of clocks," distraction-free tagline, and optional productivity widgets.
+Tabula is a customizable, minimalist New Tab extension for Chromium-based browsers and Firefox. It focuses on clarity and control: a beautiful "clock of clocks" and optional productivity widgets.
 
 ## Highlights
 
@@ -25,7 +25,7 @@ Tabula is a customizable, minimalist New Tab extension for Chromium-based browse
   - Weather
   - Drag-to-position; placement persists
 - Search
-  - Built-in search bar with configurable options
+  - Built-in search bar with configurable search engine
 - Pinned tabs
   - Quickly access frequently used sites
 - Themes and backgrounds

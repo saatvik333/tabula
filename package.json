@@ -12,7 +12,10 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --run --coverage",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "lint:firefox": "web-ext lint -s dist",
+    "pack:chrome": "cd dist && zip -r ../tabula-chrome.zip .",
+    "pack:firefox": "cd dist && zip -r ../tabula-firefox.zip ."
   },
   "author": "Saatvik Sharma",
   "license": "MIT",
@@ -23,7 +26,9 @@
     "jsdom": "^27.0.0",
     "typescript": "^5.9.2",
     "vite": "^7.1.7",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "sharp": "^0.33.5",
+    "web-ext": "^7.11.0"
   },
   "dependencies": {}
 }
