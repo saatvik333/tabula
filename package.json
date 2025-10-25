@@ -27,7 +27,6 @@
     "typescript": "^5.9.2",
     "vite": "^7.1.7",
     "vitest": "^3.2.4",
-    "sharp": "^0.33.5",
     "web-ext": "^7.11.0"
   },
   "dependencies": {}

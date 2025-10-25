@@ -32,24 +32,6 @@ await rm(join(distDir, "src"), { recursive: true, force: true }).catch(() => {})
 await cp(join(projectRoot, "manifest.json"), join(distDir, "manifest.json"));
 await cp(join(projectRoot, "src", "assets", "icons"), join(distDir, "icons"), { recursive: true });
 
-// Rasterize SVG icons to PNG for Chrome Web Store compatibility
-try {
- const sharp = (await import('sharp')).default;
- const iconSizes = [16, 32, 48, 128];
- const iconBase = join(projectRoot, 'src', 'assets', 'icons');
- const outBase = join(distDir, 'icons');
- const files = [
-   { in: 'icon16.svg', out: 'icon16.png', size: 16 },
-   { in: 'icon32.svg', out: 'icon32.png', size: 32 },
-   { in: 'icon48.svg', out: 'icon48.png', size: 48 },
-   { in: 'icon128.svg', out: 'icon128.png', size: 128 },
- ];
- for (const f of files) {
-   await sharp(join(iconBase, f.in)).resize(f.size, f.size).png().toFile(join(outBase, f.out));
- }
- console.log('Icons rasterized to PNG.');
-} catch (e) {
- console.warn('Icon rasterization skipped (sharp not installed):', e?.message || e);
-}
+// PNG icons are already provided in src/assets/icons; no rasterization needed.
 
 console.log("Build complete.");
