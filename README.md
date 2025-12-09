@@ -1,104 +1,121 @@
 # Tabula
 
-Tabula is a customizable, minimalist New Tab extension for Chromium-based browsers and Firefox. It focuses on clarity and control: a beautiful "clock of clocks" and optional productivity widgets.
+<p align="center">
+  <img src="src/assets/icons/icon128.png" alt="Tabula Logo" width="80" height="80">
+</p>
 
-## Highlights
+<p align="center">
+  <strong>Your space, no noise.</strong>
+</p>
 
-- Clean, fast, no tracking. Works offline.
-- Cross-browser: Chrome, Edge, Brave, and Firefox.
-- Sensible defaults with fine-grained customization.
+<p align="center">
+  <a href="https://github.com/saatvik333/tabula/releases"><img src="https://img.shields.io/github/v/release/saatvik333/tabula?style=flat-square&color=blue" alt="Release"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/saatvik333/tabula?style=flat-square" alt="License"></a>
+  <a href="https://github.com/saatvik333/tabula/actions"><img src="https://img.shields.io/github/actions/workflow/status/saatvik333/tabula/release.yml?style=flat-square" alt="CI"></a>
+</p>
 
-## Features
+---
 
-- Clock
-  - Unique 24-cell digit display (the "clock of clocks")
-  - 12/24-hour formats
-  - Optional seconds
-  - Adjustable scale, rim and hand width, dot size
-  - Show/hide clock
-- Tagline
-  - Customizable text
-  - Show/hide tagline
-- Productivity widgets
-  - Tasks
-  - Pomodoro timer
-  - Weather
-  - Drag-to-position; placement persists
-- Search
-  - Built-in search bar with configurable search engine
-- Pinned tabs
-  - Quickly access frequently used sites
-- Themes and backgrounds
-  - Multiple themes and palettes
-  - Background images and theme modes
+A customizable, minimalist New Tab extension for **Chrome**, **Edge**, **Brave**, and **Firefox**. Features a unique "clock of clocks" display and optional productivity widgets—clean, fast, works offline.
 
-## Getting started
+## ✨ Features
+
+### Core
+
+- **Clock of Clocks** — Unique 24-cell digit display with 12/24h formats
+- **Customizable Tagline** — Personalized greeting message
+- **Pinned Tabs** — Quick access to frequently used sites
+- **Built-in Search** — Configurable search engine integration
+
+### Widgets
+
+- **Pomodoro Timer** — Focus sessions with browser notifications
+- **Tasks** — Simple todo list that persists across tabs
+- **Weather** — Current conditions at a glance
+
+### Appearance
+
+- **13 Color Palettes** — Material, Nord, Catppuccin, Dracula, Tokyo Night, and more
+- **Light/Dark/Auto Modes** — System theme integration
+- **Custom Backgrounds** — Solid colors, gradients, or images with blur
+
+## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+
-- npm 9+
 
-### Install and develop
+- [Bun](https://bun.sh) (recommended) or Node.js 18+
+
+### Development
+
 ```bash
-# Install dependencies
-npm install
+git clone https://github.com/saatvik333/tabula.git
+cd tabula
+bun install
 
-# Start development server (Vite)
-npm run dev
-
-# Run unit tests (Vitest)
-npm test
-
-# Type-check (TypeScript)
-npm run type-check
-
-# Build production extension
-npm run build
+bun run dev          # Dev server
+bun test             # Tests
+bun run type-check   # Type check
+bun run build        # Production build
 ```
 
-The production build is emitted to `dist/`.
+### Load Extension
 
-### Load in your browser
+**Chrome / Edge / Brave:**
 
-Chromium (Chrome/Edge/Brave):
-1. Open `chrome://extensions`
-2. Enable "Developer mode"
-3. Click "Load unpacked" and choose the `dist/` folder
+1. Navigate to `chrome://extensions`
+2. Enable **Developer mode** → **Load unpacked** → select `dist/`
 
-Firefox:
-1. Open `about:debugging`
-2. Click "This Firefox"
-3. "Load Temporary Add-on" and select `dist/manifest.json`
+**Firefox:**
 
-## Configuration
+1. Navigate to `about:debugging` → **This Firefox**
+2. **Load Temporary Add-on** → select `dist/manifest.json`
 
-Use the Options page to configure:
-- Clock: show/hide, format (12h/24h), seconds, size and styling controls
-- Tagline: show/hide and text
-- Widgets: enable, drag to position
-- Search: preferences for the search box
-- Pinned tabs: manage quick links
-- Themes/appearance: theme mode, palettes, and background
+## 📁 Project Structure
 
-All settings are persisted and applied instantly on the New Tab page.
+```
+src/
+├── app/        # New Tab app composition
+├── clock/      # Clock display
+├── core/       # Utilities (time, DOM, ticker)
+├── pages/      # Page entrypoints
+├── settings/   # Schema, defaults, storage
+├── widgets/    # Pomodoro, tasks, weather
+└── assets/     # Icons, styles
+```
 
-## Project structure
+## 🎨 Palettes
 
-- `src/app/` – New Tab app composition (clock, search, tagline, pinned tabs, widgets)
-- `src/clock/` – Clock display implementation
-- `src/core/` – Core utilities (time, DOM, ticker)
-- `src/pages/` – Entrypoints for New Tab and Options pages
-- `src/settings/` – Settings schema, defaults, storage, and application
-- `src/widgets/` – Pomodoro, tasks, and weather widgets
-- `scripts/` – Build and clean scripts
+| Palette     | Style                 |
+| ----------- | --------------------- |
+| Material    | Clean material design |
+| Nord        | Arctic, bluish tones  |
+| Catppuccin  | Soothing pastel       |
+| Dracula     | Dark purple theme     |
+| Tokyo Night | Vibrant city lights   |
+| Gruvbox     | Retro, warm colors    |
+| Rosé Pine   | Natural, muted        |
+| Everforest  | Soft green            |
+| One Dark    | Atom-inspired         |
+| Solarized   | Precision colors      |
+| Monokai     | Iconic syntax         |
+| Ayu         | Minimal elegance      |
+| Pitch Black | OLED dark             |
 
-## Contributing
+## 🔄 Releases
 
-Issues and PRs are welcome. Please:
-- Keep code modular and well-tested (see `npm test`)
-- Favor general solutions over special cases
-- Follow existing code style conventions
+Releases are fully automated via GitHub Actions. Creating a new GitHub Release or pushing a `v*` tag triggers:
 
-## License
+- Build & test
+- Package Chrome/Firefox zips
+- Publish to Chrome Web Store
+- Publish to Firefox Add-ons (AMO)
 
-MIT © 2025 Saatvik Sharma
+See [RELEASE_GUIDE.md](.github/RELEASE_GUIDE.md) for secrets setup.
+
+## 🤝 Contributing
+
+See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for development setup and guidelines.
+
+## 📄 License
+
+[MIT](LICENSE) © 2025 Saatvik Sharma

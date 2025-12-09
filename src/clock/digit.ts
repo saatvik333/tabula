@@ -61,7 +61,12 @@ export const createDigit = (): DigitView => {
 
         updateHand(firstHand, first);
         updateHand(secondHand, second);
-        cell.classList.toggle("cell--inactive", !active);
+
+        // Only toggle class if state actually changed
+        const isCurrentlyInactive = cell.classList.contains("cell--inactive");
+        if (active === isCurrentlyInactive) {
+          cell.classList.toggle("cell--inactive", !active);
+        }
       }
     },
   };

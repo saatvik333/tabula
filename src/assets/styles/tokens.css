@@ -16,6 +16,22 @@
   --tabula-shadow-md: 0 20px 48px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.32);
   --tabula-shadow-lg: 0 32px 72px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.48);
 
+  --tabula-glass-alpha-strong-top: 0.42;
+  --tabula-glass-alpha-strong-bottom: 0.18;
+  --tabula-glass-alpha-strong-hover-top: 0.55;
+  --tabula-glass-alpha-strong-hover-bottom: 0.24;
+  --tabula-glass-alpha-subtle-top: 0.28;
+  --tabula-glass-alpha-subtle-bottom: 0.12;
+  --tabula-glass-alpha-surface: 0.22;
+  --tabula-glass-alpha-surface-hover: 0.34;
+  --tabula-glass-alpha-field: 0.18;
+  --tabula-glass-alpha-field-focus: 0.3;
+  --tabula-glass-alpha-meridiem: 0.35;
+  --tabula-glass-alpha-clock-top: 0.78;
+  --tabula-glass-alpha-clock-bottom: 0.28;
+  --tabula-glass-alpha-highlight: 0.9;
+  --tabula-glass-alpha-highlight-muted: 0.28;
+
   --tabula-transition-duration: 160ms;
   --tabula-transition-timing: ease;
 
@@ -40,8 +56,8 @@
   border-radius: var(--tabula-radius-lg);
   background: linear-gradient(
     135deg,
-    rgba(var(--tabula-face-color-rgb, 255, 255, 255), 0.42),
-    rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.18)
+    rgba(var(--tabula-face-color-rgb, 255, 255, 255), var(--tabula-glass-alpha-strong-top, 0.42)),
+    rgba(var(--tabula-background-color-rgb, 17, 23, 42), var(--tabula-glass-alpha-strong-bottom, 0.18))
   );
   border: 1px solid rgba(var(--tabula-rim-color-rgb, 148, 163, 184), 0.32);
   backdrop-filter: blur(24px) saturate(160%);
@@ -53,8 +69,8 @@
 .tabula-card--subtle {
   background: linear-gradient(
     135deg,
-    rgba(var(--tabula-face-color-rgb, 255, 255, 255), 0.28),
-    rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.12)
+    rgba(var(--tabula-face-color-rgb, 255, 255, 255), var(--tabula-glass-alpha-subtle-top, 0.28)),
+    rgba(var(--tabula-background-color-rgb, 17, 23, 42), var(--tabula-glass-alpha-subtle-bottom, 0.12))
   );
   border: 1px solid rgba(var(--tabula-rim-color-rgb, 148, 163, 184), 0.22);
   box-shadow: var(--tabula-shadow-sm);
@@ -69,7 +85,7 @@
   padding: 0 calc(var(--tabula-button-padding-x)) 0 calc(var(--tabula-button-padding-x));
   border-radius: var(--tabula-radius-full);
   border: 1px solid rgba(var(--tabula-rim-color-rgb, 148, 163, 184), 0.34);
-  background-color: rgba(var(--tabula-face-color-rgb, 255, 255, 255), 0.22);
+  background-color: rgba(var(--tabula-face-color-rgb, 255, 255, 255), var(--tabula-glass-alpha-surface, 0.22));
   color: var(--md-on-surface);
   font-family: var(--tabula-font-family);
   font-weight: var(--tabula-weight-medium);
@@ -86,7 +102,7 @@
 
 .tabula-button:hover:not(:disabled) {
   border-color: rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.5);
-  background-color: rgba(var(--tabula-face-color-rgb, 255, 255, 255), 0.34);
+  background-color: rgba(var(--tabula-face-color-rgb, 255, 255, 255), var(--tabula-glass-alpha-surface-hover, 0.34));
   box-shadow: none;
 }
 
@@ -108,7 +124,7 @@
 }
 
 .tabula-button--ghost {
-  background-color: rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.22);
+  background-color: rgba(var(--tabula-background-color-rgb, 17, 23, 42), var(--tabula-glass-alpha-surface, 0.22));
   border-color: rgba(var(--tabula-rim-color-rgb, 148, 163, 184), 0.28);
 }
 
@@ -137,7 +153,7 @@
   padding: var(--tabula-input-padding-y) var(--tabula-input-padding-x);
   border-radius: var(--tabula-input-radius);
   border: 1px solid rgba(var(--tabula-rim-color-rgb, 148, 163, 184), 0.32);
-  background-color: rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.18);
+  background-color: rgba(var(--tabula-background-color-rgb, 17, 23, 42), var(--tabula-glass-alpha-field, 0.18));
   color: var(--md-on-surface);
   font-family: var(--tabula-font-family);
   font-size: 0.95rem;
@@ -150,7 +166,7 @@
   outline: none;
   border-color: rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.65);
   box-shadow: 0 0 0 3px rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.2);
-  background-color: rgba(var(--tabula-face-color-rgb, 255, 255, 255), 0.3);
+  background-color: rgba(var(--tabula-face-color-rgb, 255, 255, 255), var(--tabula-glass-alpha-field-focus, 0.3));
 }
 
 .tabula-input::placeholder {

@@ -15,17 +15,24 @@ export const cloneSettings = (settings: Settings): Settings => {
   return JSON.parse(JSON.stringify(settings)) as Settings;
 };
 
-const extensionAPI: any =
-  (typeof globalThis !== "undefined" && (globalThis as any).chrome) ??
-  (typeof globalThis !== "undefined" && (globalThis as any).browser) ??
-  null;
+let extensionAPI: any = null;
+let syncStorage: any = null;
+let localStorageArea: any = null;
+let extensionOnChanged: any = null;
 
-const syncStorage: any = extensionAPI?.storage?.sync ?? null;
-const localStorageArea: any = extensionAPI?.storage?.local ?? null;
-const extensionOnChanged: any = extensionAPI?.storage?.onChanged ?? null;
+let broadcastChannel: BroadcastChannel | null = null;
 
-const broadcastChannel: BroadcastChannel | null =
-  typeof BroadcastChannel === "function" ? new BroadcastChannel("tabula:settings") : null;
+const assignGlobalAPIs = (): void => {
+  extensionAPI =
+    (typeof globalThis !== "undefined" && (globalThis as any).chrome) ??
+    (typeof globalThis !== "undefined" && (globalThis as any).browser) ??
+    null;
+  syncStorage = extensionAPI?.storage?.sync ?? null;
+  localStorageArea = extensionAPI?.storage?.local ?? null;
+  extensionOnChanged = extensionAPI?.storage?.onChanged ?? null;
+};
+
+assignGlobalAPIs();
 
 const hasExtensionStorage = (): boolean => !!(syncStorage || localStorageArea);
 
@@ -125,6 +132,9 @@ const notify = (settings: Settings): void => {
   cachedSettings = snapshot;
   listeners.forEach((listener) => listener(cloneSettings(snapshot)));
   try {
+    if (!broadcastChannel && typeof BroadcastChannel === "function") {
+      broadcastChannel = new BroadcastChannel("tabula:settings");
+    }
     broadcastChannel?.postMessage(snapshot);
   } catch (error) {
     console.warn("Failed to broadcast settings", error);
@@ -132,6 +142,7 @@ const notify = (settings: Settings): void => {
 };
 
 let extensionListenerInitialized = false;
+let extensionOnChangedHandler: ((changes: Record<string, { newValue?: PartialSettings }>, area: string) => void) | null = null;
 
 const ensureExtensionListener = (): void => {
   if (extensionListenerInitialized || !extensionOnChanged) return;
@@ -144,21 +155,32 @@ const ensureExtensionListener = (): void => {
   };
 
   extensionOnChanged.addListener(handler);
+  extensionOnChangedHandler = handler;
   extensionListenerInitialized = true;
 };
 
-const ensureBroadcastListener = (listener: Listener): BroadcastChannel | null => {
-  if (typeof BroadcastChannel !== "function") return null;
-  const channel = new BroadcastChannel("tabula:settings");
-  channel.onmessage = (event) => {
-    if (!event?.data) return;
-    const merged = mergeWithDefaults(event.data as PartialSettings);
-    // Update local cache and notify all listeners without re-broadcasting to avoid loops
-    const snapshot = cloneSettings(merged);
-    cachedSettings = snapshot;
-    listeners.forEach((l) => l(cloneSettings(snapshot)));
-  };
-  return channel;
+let broadcastListenerInitialized = false;
+
+const ensureBroadcastListener = (): void => {
+  if (broadcastListenerInitialized) return;
+  if (typeof BroadcastChannel !== "function") return;
+
+  try {
+    if (!broadcastChannel) {
+      broadcastChannel = new BroadcastChannel("tabula:settings");
+    }
+    broadcastChannel.onmessage = (event) => {
+      if (!event?.data) return;
+      const merged = mergeWithDefaults(event.data as PartialSettings);
+      // Update local cache and notify all listeners without re-broadcasting to avoid loops
+      const snapshot = cloneSettings(merged);
+      cachedSettings = snapshot;
+      listeners.forEach((l) => l(cloneSettings(snapshot)));
+    };
+    broadcastListenerInitialized = true;
+  } catch (error) {
+    console.warn("Failed to initialize broadcast listener", error);
+  }
 };
 
 export const loadSettings = async (): Promise<Settings> => {
@@ -194,9 +216,8 @@ export const getCachedSettingsSnapshot = (): Settings => {
     return cloneSettings(cachedSettings);
   }
   const snapshot = readFromLocalStorage();
-  const clone = cloneSettings(snapshot);
-  cachedSettings = clone;
-  return cloneSettings(clone);
+  cachedSettings = cloneSettings(snapshot);
+  return cloneSettings(cachedSettings);
 };
 
 const combineWithCurrent = (current: Settings, partial: PartialSettings): Partial<Settings> => ({
@@ -311,8 +332,7 @@ export const updateSettings = async (partial: PartialSettings): Promise<Settings
 export const subscribeToSettings = (listener: Listener): (() => void) => {
   listeners.add(listener);
   ensureExtensionListener();
-
-  const broadcast = ensureBroadcastListener(listener);
+  ensureBroadcastListener();
 
   if (cachedSettings) {
     listener(cloneSettings(cachedSettings));
@@ -320,6 +340,34 @@ export const subscribeToSettings = (listener: Listener): (() => void) => {
 
   return () => {
     listeners.delete(listener);
-    broadcast?.close();
   };
+};
+
+export const __resetStorageModuleForTests = (): void => {
+  listeners.clear();
+  cachedSettings = null;
+
+  if (broadcastChannel) {
+    try {
+      broadcastChannel.close();
+    } catch (error) {
+      console.warn("Failed to close broadcast channel during reset", error);
+    }
+    broadcastChannel = null;
+  }
+
+  broadcastListenerInitialized = false;
+
+  if (extensionOnChanged && extensionOnChangedHandler && typeof extensionOnChanged.removeListener === "function") {
+    try {
+      extensionOnChanged.removeListener(extensionOnChangedHandler);
+    } catch (error) {
+      console.warn("Failed to remove extension storage listener during reset", error);
+    }
+  }
+
+  extensionListenerInitialized = false;
+  extensionOnChangedHandler = null;
+
+  assignGlobalAPIs();
 };

@@ -90,6 +90,10 @@ class TasksWidget {
     this.render();
   }
 
+  destroy(): void {
+    // No timers to clean up currently, but provides consistent API
+  }
+
   private render(): void {
     this.listEl.replaceChildren();
     const items = this.settings.items;
@@ -180,6 +184,7 @@ class TasksWidget {
 export type TasksWidgetController = {
   element: HTMLElement;
   update: (settings: TasksSettings) => void;
+  destroy: () => void;
 };
 
 export const createTasksWidget = (options: TasksWidgetOptions): TasksWidgetController => {
@@ -187,5 +192,6 @@ export const createTasksWidget = (options: TasksWidgetOptions): TasksWidgetContr
   return {
     element: widget.element,
     update: (settings) => widget.update(settings),
+    destroy: () => widget.destroy(),
   };
 };

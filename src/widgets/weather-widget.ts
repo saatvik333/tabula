@@ -30,6 +30,40 @@ const WEATHER_API_KEY = "c921752e6e4a4d68b04162048252210";
 const WEATHER_ENDPOINT = "https://api.weatherapi.com/v1/current.json";
 const REFRESH_INTERVAL_MS = 15 * 60 * 1000;
 
+// Cache weather data for 5 minutes to avoid redundant API calls
+const WEATHER_CACHE_KEY = "tabula:weather-cache";
+const WEATHER_CACHE_TTL_MS = 5 * 60 * 1000;
+
+type WeatherCacheEntry = {
+  location: string;
+  locationLabel: string;
+  snapshot: WeatherSnapshot;
+  timestamp: number;
+};
+
+const loadWeatherCache = (location: string): WeatherCacheEntry | null => {
+  try {
+    const raw = localStorage.getItem(WEATHER_CACHE_KEY);
+    if (!raw) return null;
+    const entry = JSON.parse(raw) as WeatherCacheEntry;
+    if (entry.location !== location) return null;
+    if (Date.now() - entry.timestamp > WEATHER_CACHE_TTL_MS) return null;
+    return entry;
+  } catch {
+    return null;
+  }
+};
+
+const saveWeatherCache = (location: string, locationLabel: string, snapshot: WeatherSnapshot): void => {
+  try {
+    const entry: WeatherCacheEntry = { location, locationLabel, snapshot, timestamp: Date.now() };
+    localStorage.setItem(WEATHER_CACHE_KEY, JSON.stringify(entry));
+  } catch {
+    // Ignore storage errors
+  }
+};
+
+
 const convertTemperature = (snapshot: WeatherSnapshot, unit: TemperatureUnit): { value: number; suffix: string } => {
   if (unit === "imperial") {
     return { value: Math.round(snapshot.temperatureF), suffix: "°F" };
@@ -107,6 +141,7 @@ const fetchWeatherSnapshot = async (
 class WeatherWidget {
   private requestId = 0;
   private refreshHandle: number | null = null;
+  private abortController: AbortController | null = null;
   private settings: WeatherWidgetSettings = { enabled: true, location: "", unit: "metric" };
 
   readonly element: HTMLElement;
@@ -159,17 +194,39 @@ class WeatherWidget {
 
   destroy(): void {
     this.clearRefreshTimer();
+    this.abortCurrentRequest();
+  }
+
+  private abortCurrentRequest(): void {
+    if (this.abortController) {
+      try {
+        this.abortController.abort();
+      } catch (error) {
+        console.warn("Failed to abort weather request", error);
+      }
+      this.abortController = null;
+    }
   }
 
   private async loadSnapshot(location: string): Promise<void> {
     const currentRequest = ++this.requestId;
+
+    // Check cache first - skip API call if fresh data exists
+    const cached = loadWeatherCache(location);
+    if (cached) {
+      this.renderSnapshot(cached.locationLabel, cached.snapshot);
+      this.scheduleRefresh();
+      return;
+    }
+
     this.showStatus("Updating weather…");
 
-    const controller = new AbortController();
-    const cleanup = () => controller.abort();
+    // Cancel any previous in-flight request
+    this.abortCurrentRequest();
+    this.abortController = new AbortController();
 
     try {
-      const result = await fetchWeatherSnapshot(location, controller.signal);
+      const result = await fetchWeatherSnapshot(location, this.abortController.signal);
       if (!result) {
         this.showStatus("Weather data temporarily unavailable.");
         this.displayPlaceholder(location);
@@ -181,6 +238,9 @@ class WeatherWidget {
         return;
       }
 
+      // Cache the result
+      saveWeatherCache(location, result.locationLabel, result.snapshot);
+
       this.renderSnapshot(result.locationLabel, result.snapshot);
       this.scheduleRefresh();
     } catch (error) {
@@ -190,7 +250,7 @@ class WeatherWidget {
       this.displayPlaceholder(location);
       this.clearRefreshTimer();
     } finally {
-      cleanup();
+      this.abortController = null;
     }
   }
 

@@ -26,6 +26,44 @@ const MODE_LABELS: Record<PomodoroMode, string> = {
   "long-break": "Long break",
 };
 
+const requestNotificationPermission = async (): Promise<boolean> => {
+  if (typeof Notification === "undefined") {
+    return false;
+  }
+
+  if (Notification.permission === "granted") {
+    return true;
+  }
+
+  if (Notification.permission === "denied") {
+    return false;
+  }
+
+  try {
+    const result = await Notification.requestPermission();
+    return result === "granted";
+  } catch (error) {
+    console.warn("Failed to request notification permission", error);
+    return false;
+  }
+};
+
+const sendNotification = (title: string, body: string): void => {
+  if (typeof Notification === "undefined" || Notification.permission !== "granted") {
+    return;
+  }
+
+  try {
+    new Notification(title, {
+      body,
+      tag: "pomodoro-timer",
+      requireInteraction: false,
+    });
+  } catch (error) {
+    console.warn("Failed to send notification", error);
+  }
+};
+
 const formatTime = (ms: number): string => {
   const totalSeconds = Math.max(0, Math.round(ms / 1000));
   const minutes = Math.floor(totalSeconds / 60)
@@ -67,6 +105,15 @@ class PomodoroWidget {
     breakMinutes: 5,
     longBreakMinutes: 15,
     cyclesBeforeLongBreak: 4,
+    notifications: {
+      enabled: true,
+      focusTitle: "Focus time",
+      focusBody: "Break is over. Time to get back to work.",
+      shortBreakTitle: "Short break",
+      shortBreakBody: "Great work! Take a quick break.",
+      longBreakTitle: "Long break",
+      longBreakBody: "You've earned a longer rest. Well done!",
+    },
   };
 
   private state: PomodoroState;
@@ -363,6 +410,9 @@ class PomodoroWidget {
     this.persistState(this.state);
     this.render();
     this.applyRunningState();
+
+    // Request notification permission when timer starts
+    void requestNotificationPermission();
   }
 
   private pause(): void {
@@ -423,6 +473,31 @@ class PomodoroWidget {
 
   private notifyModeChange(): void {
     this.statusEl.textContent = `${MODE_LABELS[this.state.mode]} started`;
+
+    if (!this.settings.notifications.enabled) {
+      return;
+    }
+
+    const { notifications } = this.settings;
+    let title: string;
+    let body: string;
+
+    switch (this.state.mode) {
+      case "focus":
+        title = notifications.focusTitle;
+        body = notifications.focusBody;
+        break;
+      case "short-break":
+        title = notifications.shortBreakTitle;
+        body = notifications.shortBreakBody;
+        break;
+      case "long-break":
+        title = notifications.longBreakTitle;
+        body = notifications.longBreakBody;
+        break;
+    }
+
+    sendNotification(title, body);
   }
 }
 

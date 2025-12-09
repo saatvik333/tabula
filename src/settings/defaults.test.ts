@@ -104,6 +104,15 @@ describe("mergeWithDefaults", () => {
           breakMinutes: -5,
           longBreakMinutes: 80,
           cyclesBeforeLongBreak: 12,
+          notifications: {
+            enabled: true,
+            focusTitle: "Focus",
+            focusBody: "Time to focus",
+            shortBreakTitle: "Break",
+            shortBreakBody: "Take a break",
+            longBreakTitle: "Long break",
+            longBreakBody: "Take a long break",
+          },
         },
         tasks: {
           enabled: false,

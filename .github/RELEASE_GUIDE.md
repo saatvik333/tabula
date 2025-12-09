@@ -1,36 +1,54 @@
-# Release guide (Chrome Web Store and Firefox AMO)
+# Release Guide
 
-## Version bump
-- Update `version` in `manifest.json`
-- Commit the change (conventional commit recommended)
+## Automated Releases
 
-## Build and package
-- Local: `npm install && npm run build && npm run pack:chrome`
-- CI: Create a GitHub Release (or push a `vX.Y.Z` tag) to trigger the workflow
+Creating a GitHub Release or pushing a `v*` tag triggers the full CI pipeline:
 
-Artifacts created:
+1. **Build & Test** — Type check, unit tests, Firefox lint
+2. **Package** — Creates Chrome and Firefox zips
+3. **Publish** — Auto-publishes to both stores (if secrets configured)
+4. **Attach** — Zips and signed XPI attached to GitHub Release
+
+## Version Bump
+
+Update `version` in `manifest.json`, then create a release.
+
+## Required Secrets
+
+### Firefox Add-ons (AMO)
+
+| Secret           | Description              |
+| ---------------- | ------------------------ |
+| `AMO_JWT_ISSUER` | AMO API key (JWT issuer) |
+| `AMO_JWT_SECRET` | AMO API secret           |
+
+Get from [AMO Developer Hub → Manage API Keys](https://addons.mozilla.org/developers/addon/api/key/)
+
+### Chrome Web Store
+
+| Secret                 | Description          |
+| ---------------------- | -------------------- |
+| `CHROME_EXTENSION_ID`  | Extension ID         |
+| `CHROME_CLIENT_ID`     | OAuth2 client ID     |
+| `CHROME_CLIENT_SECRET` | OAuth2 client secret |
+| `CHROME_REFRESH_TOKEN` | OAuth2 refresh token |
+
+## Manual Build
+
+```bash
+bun install
+bun run build
+bun run pack:chrome
+```
+
+Creates:
+
 - `tabula-<version>-chrome.zip`
 - `tabula-<version>-firefox.zip`
 
-## Lint and sign
-- Firefox lint (AMO): `npm run lint:firefox`
-- Optional signing on Release if secrets are configured
+## Store Listing Assets
 
-## Configure GitHub Actions secrets (optional for auto-publish)
-- AMO_JWT_ISSUER / AMO_JWT_SECRET (for Firefox signing)
-- CHROME_EXTENSION_ID / CHROME_CLIENT_ID / CHROME_CLIENT_SECRET / CHROME_REFRESH_TOKEN (for Chrome upload/publish)
-
-## Store listing checklist
-- Screenshots:
-  - New Tab (light theme, clock + tagline)
-  - New Tab (dark theme, clock hidden, widgets visible)
-  - Options (theme/clock/tagline)
-  - Options (widgets/pinned tabs)
-- Icon assets:
-  - 128×128 PNG
-  - 1400×560 banner (Chrome promo) optional
-- Descriptions and privacy policy (no data collected)
-
-## Manual publishing
-- Chrome: Upload `tabula-<version>-chrome.zip` to the Developer Console and submit for review
-- Firefox: Upload `tabula-<version>-firefox.zip` to AMO and submit for review
+- **Screenshots**: New Tab (light/dark), Options page
+- **Icon**: 128×128 PNG
+- **Banner**: 1400×560 (Chrome promo, optional)
+- **Privacy**: No data collected

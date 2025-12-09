@@ -76,12 +76,19 @@ const searchBottomInput = getElement<HTMLInputElement>("searchBottom");
 const weatherEnabledInput = getElement<HTMLInputElement>("weatherEnabled");
 const weatherLocationInput = getElement<HTMLInputElement>("weatherLocation");
 const weatherUnitSelect = getElement<HTMLSelectElement>("weatherUnit");
-const weatherStatusHint = getElement<HTMLParagraphElement>("weatherStatus");
 const pomodoroEnabledInput = getElement<HTMLInputElement>("pomodoroEnabled");
 const pomodoroFocusInput = getElement<HTMLInputElement>("pomodoroFocus");
 const pomodoroBreakInput = getElement<HTMLInputElement>("pomodoroBreak");
 const pomodoroLongBreakInput = getElement<HTMLInputElement>("pomodoroLongBreak");
 const pomodoroCyclesInput = getElement<HTMLInputElement>("pomodoroCycles");
+// Notification inputs
+const pomodoroNotificationsEnabledInput = getElement<HTMLInputElement>("pomodoroNotificationsEnabled");
+const pomodoroFocusTitleInput = getElement<HTMLInputElement>("pomodoroFocusTitle");
+const pomodoroFocusBodyInput = getElement<HTMLInputElement>("pomodoroFocusBody");
+const pomodoroShortBreakTitleInput = getElement<HTMLInputElement>("pomodoroShortBreakTitle");
+const pomodoroShortBreakBodyInput = getElement<HTMLInputElement>("pomodoroShortBreakBody");
+const pomodoroLongBreakTitleInput = getElement<HTMLInputElement>("pomodoroLongBreakTitle");
+const pomodoroLongBreakBodyInput = getElement<HTMLInputElement>("pomodoroLongBreakBody");
 const tasksEnabledInput = getElement<HTMLInputElement>("tasksEnabled");
 const presetContainer = getElement<HTMLDivElement>("presetChips");
 const pinnedListContainer = getElement<HTMLDivElement>("pinnedList");
@@ -90,6 +97,7 @@ const pinnedAddTitleInput = getElement<HTMLInputElement>("pinnedAddTitle");
 const pinnedAddUrlInput = getElement<HTMLInputElement>("pinnedAddUrl");
 const pinnedAddIconInput = getElement<HTMLInputElement>("pinnedAddIcon");
 const pinnedAddButton = getElement<HTMLButtonElement>("pinnedAddButton");
+const settingsNav = getElement<HTMLElement>("settingsNav");
 
 const setStatus = (text: string, tone: "default" | "success" | "error" = "default") => {
   statusEl.textContent = text;
@@ -204,12 +212,18 @@ const updateBackgroundImageStatus = () => {
 };
 
 const updateSearchFieldState = (enabled: boolean) => {
+  const dependsGroup = document.querySelector('[data-depends="searchEnabled"]') as HTMLElement | null;
+  if (dependsGroup) {
+    if (enabled) {
+      delete dependsGroup.dataset["disabled"];
+    } else {
+      dependsGroup.dataset["disabled"] = "true";
+    }
+  }
   [searchEngineSelect, searchPlaceholderInput, searchTopInput, searchBottomInput].forEach((element) => {
     element.disabled = !enabled;
   });
 };
-
-const WEATHER_HINT_DEFAULT = "Weather data provided by WeatherAPI.com.";
 
 const markWidgetFields = (elements: HTMLElement[], enabled: boolean) => {
   elements.forEach((element) => {
@@ -236,8 +250,6 @@ const tasksFieldElements = Array.from(document.querySelectorAll<HTMLElement>("[d
 
 const updateWeatherFieldState = (enabled: boolean) => {
   markWidgetFields(weatherFieldElements, enabled);
-  weatherStatusHint.dataset["tone"] = enabled ? "muted" : "info";
-  weatherStatusHint.textContent = enabled ? WEATHER_HINT_DEFAULT : "Enable the weather widget to display conditions.";
 };
 
 const updatePomodoroFieldState = (enabled: boolean) => {
@@ -253,6 +265,53 @@ const updateTasksFieldState = (enabled: boolean) => {
       element.dataset["disabled"] = "true";
       element.hidden = true;
     }
+  });
+};
+
+const updateNotificationFieldState = (enabled: boolean) => {
+  const dependsGroup = document.querySelector('[data-depends="pomodoroNotificationsEnabled"]') as HTMLElement | null;
+  if (dependsGroup) {
+    if (enabled) {
+      delete dependsGroup.dataset["disabled"];
+    } else {
+      dependsGroup.dataset["disabled"] = "true";
+    }
+  }
+  [
+    pomodoroFocusTitleInput,
+    pomodoroFocusBodyInput,
+    pomodoroShortBreakTitleInput,
+    pomodoroShortBreakBodyInput,
+    pomodoroLongBreakTitleInput,
+    pomodoroLongBreakBodyInput,
+  ].forEach((element) => {
+    element.disabled = !enabled;
+  });
+};
+
+// Sidebar Navigation
+const initSidebarNavigation = () => {
+  const navItems = settingsNav.querySelectorAll<HTMLButtonElement>('.nav-item');
+  const sections = document.querySelectorAll<HTMLElement>('.section');
+
+  const showSection = (sectionName: string) => {
+    sections.forEach((section) => {
+      const isTarget = section.dataset['section'] === sectionName;
+      section.classList.toggle('is-active', isTarget);
+    });
+    navItems.forEach((item) => {
+      const isTarget = item.dataset['section'] === sectionName;
+      item.classList.toggle('is-active', isTarget);
+    });
+  };
+
+  navItems.forEach((item) => {
+    item.addEventListener('click', () => {
+      const section = item.dataset['section'];
+      if (section) {
+        showSection(section);
+      }
+    });
   });
 };
 
@@ -361,6 +420,16 @@ const syncForm = (settings: Settings) => {
   pinnedTabsController.sync(state.pinnedTabs);
   applyPreview();
   markPresetActive(state.preset ?? "custom");
+
+  // Notification settings
+  pomodoroNotificationsEnabledInput.checked = state.widgets.pomodoro.notifications.enabled;
+  pomodoroFocusTitleInput.value = state.widgets.pomodoro.notifications.focusTitle;
+  pomodoroFocusBodyInput.value = state.widgets.pomodoro.notifications.focusBody;
+  pomodoroShortBreakTitleInput.value = state.widgets.pomodoro.notifications.shortBreakTitle;
+  pomodoroShortBreakBodyInput.value = state.widgets.pomodoro.notifications.shortBreakBody;
+  pomodoroLongBreakTitleInput.value = state.widgets.pomodoro.notifications.longBreakTitle;
+  pomodoroLongBreakBodyInput.value = state.widgets.pomodoro.notifications.longBreakBody;
+  updateNotificationFieldState(state.widgets.pomodoro.notifications.enabled);
 };
 
 const handleThemeModeChange = () => {
@@ -633,6 +702,37 @@ tasksEnabledInput.addEventListener("change", () => {
   schedule(() => setStatus("Tasks widget preference updated"));
 });
 
+// Notification settings handlers
+pomodoroNotificationsEnabledInput.addEventListener("change", () => {
+  state.widgets.pomodoro.notifications.enabled = pomodoroNotificationsEnabledInput.checked;
+  updateNotificationFieldState(state.widgets.pomodoro.notifications.enabled);
+  schedule(() => setStatus("Notification preference updated"));
+});
+
+pomodoroFocusTitleInput.addEventListener("input", () => {
+  state.widgets.pomodoro.notifications.focusTitle = pomodoroFocusTitleInput.value;
+});
+
+pomodoroFocusBodyInput.addEventListener("input", () => {
+  state.widgets.pomodoro.notifications.focusBody = pomodoroFocusBodyInput.value;
+});
+
+pomodoroShortBreakTitleInput.addEventListener("input", () => {
+  state.widgets.pomodoro.notifications.shortBreakTitle = pomodoroShortBreakTitleInput.value;
+});
+
+pomodoroShortBreakBodyInput.addEventListener("input", () => {
+  state.widgets.pomodoro.notifications.shortBreakBody = pomodoroShortBreakBodyInput.value;
+});
+
+pomodoroLongBreakTitleInput.addEventListener("input", () => {
+  state.widgets.pomodoro.notifications.longBreakTitle = pomodoroLongBreakTitleInput.value;
+});
+
+pomodoroLongBreakBodyInput.addEventListener("input", () => {
+  state.widgets.pomodoro.notifications.longBreakBody = pomodoroLongBreakBodyInput.value;
+});
+
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
   setStatus("Saving...");
@@ -662,6 +762,7 @@ resetButton.addEventListener("click", async () => {
 
 const init = async () => {
   renderPresetChips();
+  initSidebarNavigation();
   try {
     const stored = await loadSettings();
     syncForm(stored);

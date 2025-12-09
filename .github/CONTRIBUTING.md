@@ -1,43 +1,53 @@
 # Contributing to Tabula
 
-Thanks for your interest in contributing! This guide helps you set up your environment and make effective contributions.
+Thanks for your interest in contributing!
 
-## Development setup
-- Prerequisites: Node.js 18+, npm 9+
-- Install dependencies:
-  - `npm install`
-- Start dev server (Vite):
-  - `npm run dev`
-- Run tests (Vitest):
-  - `npm test`
-- Type-check (TypeScript):
-  - `npm run type-check`
+## Development Setup
 
-## Building and packaging
-- Production build: `npm run build` (outputs to `dist/`)
-- Package zips for stores: `npm run pack:chrome` (creates versioned Chrome and Firefox zips)
-- Lint for Firefox/AMO: `npm run lint:firefox`
+### Prerequisites
 
-## Project structure
-- `src/app/` – App composition (clock, search, tagline, pinned tabs, widgets)
-- `src/clock/` – Clock display implementation
-- `src/core/` – Core utilities (time, DOM, ticker)
-- `src/pages/` – Entrypoints for New Tab and Options pages
-- `src/settings/` – Settings schema, defaults, storage, and application
-- `src/widgets/` – Pomodoro, tasks, and weather widgets
-- `scripts/` – Build/pack scripts
-- `.github/workflows/` – CI automation
+- [Bun](https://bun.sh) (recommended) or Node.js 18+
 
-## Coding guidelines
-- Prefer pure, well-typed functions and defensive clones for stored state
-- Avoid innerHTML for dynamic content; use DOM APIs
-- Keep tests passing (PRs run tests in CI)
-- Avoid broad permissions in the extension manifest
+### Commands
 
-## Commit and PR style
-- Conventional commits (e.g., `feat:`, `fix:`, `docs:`)
-- Keep PRs focused and add context in the description
+```bash
+bun install          # Install dependencies
+bun run dev          # Start dev server
+bun test             # Run tests
+bun run type-check   # TypeScript check
+bun run build        # Production build
+bun run lint:firefox # AMO lint
+```
 
-## Reporting bugs / requesting features
-- Open an Issue with clear steps to reproduce and expected behavior
-- Include browser, OS, and screenshots if relevant
+## Project Structure
+
+| Path                 | Description                              |
+| -------------------- | ---------------------------------------- |
+| `src/app/`           | App composition (clock, search, widgets) |
+| `src/clock/`         | Clock display                            |
+| `src/core/`          | Utilities (time, DOM, ticker)            |
+| `src/pages/`         | Page entrypoints                         |
+| `src/settings/`      | Schema, defaults, storage                |
+| `src/widgets/`       | Pomodoro, tasks, weather                 |
+| `scripts/`           | Build scripts                            |
+| `.github/workflows/` | CI automation                            |
+
+## Guidelines
+
+- Prefer pure, well-typed functions
+- Avoid `innerHTML` for dynamic content
+- Keep tests passing
+- Avoid broad permissions in manifest
+
+## Commits & PRs
+
+- Use conventional commits (`feat:`, `fix:`, `docs:`)
+- Keep PRs focused with clear descriptions
+
+## Issues
+
+Open an issue with:
+
+- Steps to reproduce
+- Expected vs actual behavior
+- Browser, OS, screenshots if relevant

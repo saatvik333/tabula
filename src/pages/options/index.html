@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -16,345 +16,754 @@
   <body>
     <main class="settings" id="settings">
       <header class="settings__header">
-        <h1>Tabula preferences</h1>
-        <p>Personalise your new tab with colours, backgrounds, and layout options.</p>
+        <h1>Settings</h1>
+        <p>Customize your new tab experience.</p>
       </header>
 
-      <form id="settings-form" class="settings__form">
-        <section class="panel tabula-card tabula-card--subtle">
-          <header class="panel__header">
-            <h2>Presets</h2>
-            <p>Jump start your look with curated palettes inspired by beloved themes.</p>
-          </header>
-          <div class="preset-grid" id="presetChips"></div>
-        </section>
+      <div class="settings__layout">
+        <!-- Sidebar Navigation -->
+        <nav class="settings__nav" id="settingsNav">
+          <button
+            type="button"
+            class="nav-item is-active"
+            data-section="appearance"
+          >
+            <span class="material-symbols-outlined" aria-hidden="true"
+              >palette</span
+            >
+            <span>Appearance</span>
+          </button>
+          <button type="button" class="nav-item" data-section="clock">
+            <span class="material-symbols-outlined" aria-hidden="true"
+              >schedule</span
+            >
+            <span>Clock</span>
+          </button>
+          <button type="button" class="nav-item" data-section="background">
+            <span class="material-symbols-outlined" aria-hidden="true"
+              >image</span
+            >
+            <span>Background</span>
+          </button>
+          <button type="button" class="nav-item" data-section="search">
+            <span class="material-symbols-outlined" aria-hidden="true"
+              >search</span
+            >
+            <span>Search</span>
+          </button>
+          <button type="button" class="nav-item" data-section="widgets">
+            <span class="material-symbols-outlined" aria-hidden="true"
+              >widgets</span
+            >
+            <span>Widgets</span>
+          </button>
+          <button type="button" class="nav-item" data-section="shortcuts">
+            <span class="material-symbols-outlined" aria-hidden="true"
+              >bookmark</span
+            >
+            <span>Shortcuts</span>
+          </button>
+        </nav>
 
-        <section class="panel tabula-card tabula-card--subtle">
-          <header class="panel__header">
-            <h2>Theme</h2>
-            <p>Select how Tabula adapts to your environment.</p>
-          </header>
-          <div class="panel__grid">
-            <label class="field">
-              <span class="field__label">Theme mode</span>
-              <select id="themeMode" name="themeMode" class="field__control">
-                <option value="system">Match system</option>
-                <option value="light">Light</option>
-                <option value="dark">Dark</option>
-              </select>
-            </label>
-            <label class="field">
-              <span class="field__label">Tagline</span>
-              <input type="text" id="taglineInput" name="taglineInput" class="field__control" maxlength="120" placeholder="Your space, no noise" />
-            </label>
-            <label class="field field--toggle">
-              <span class="field__text">Show tagline</span>
-              <span class="toggle">
-                <input type="checkbox" id="taglineEnabled" name="taglineEnabled" class="toggle__input" />
-                <span class="toggle__track" aria-hidden="true">
-                  <span class="toggle__thumb"></span>
-                </span>
-              </span>
-            </label>
-          </div>
-        </section>
+        <!-- Content Area -->
+        <form id="settings-form" class="settings__content">
+          <!-- Appearance Section -->
+          <section class="section is-active" data-section="appearance">
+            <header class="section__header">
+              <h2>Appearance</h2>
+              <p>Theme, presets, and color palette</p>
+            </header>
 
-        <section class="panel tabula-card tabula-card--subtle">
-          <header class="panel__header">
-            <h2>Background</h2>
-            <p>Bring your own image with adjustable blur, or stick with a preset.</p>
-          </header>
-          <div class="background-section">
-            <div class="background-section__inputs">
+            <div class="section__group">
+              <h3>Presets</h3>
+              <p class="section__hint">Quick-start with curated palettes</p>
+              <div class="preset-grid" id="presetChips"></div>
+            </div>
+
+            <div class="section__group">
+              <h3>Theme</h3>
               <label class="field">
-                <span class="field__label">Image URL</span>
-                <input type="url" id="backgroundImage" name="backgroundImage" placeholder="https://example.com/wallpaper.jpg" class="field__control" />
+                <span class="field__label">Mode</span>
+                <select id="themeMode" name="themeMode" class="field__control">
+                  <option value="system">Match system</option>
+                  <option value="light">Light</option>
+                  <option value="dark">Dark</option>
+                </select>
               </label>
+            </div>
 
-              <div class="field background-section__upload tabula-card tabula-card--subtle">
-                <span class="field__label">Upload image</span>
-                <input type="file" id="backgroundImageUpload" name="backgroundImageUpload" class="field__control field__control--file" accept="image/*" />
-                <p class="field__hint" id="backgroundImageStatus" data-tone="muted">No image selected</p>
-                <button type="button" id="backgroundImageClear" class="tabula-button tabula-button--ghost">Remove uploaded image</button>
+            <div class="section__group">
+              <h3>Light palette</h3>
+              <div class="palette-grid">
+                <label class="field field--color">
+                  <span class="field__label">Background</span>
+                  <input
+                    type="color"
+                    id="lightBackground"
+                    name="lightBackground"
+                  />
+                </label>
+                <label class="field field--color">
+                  <span class="field__label">Clock face</span>
+                  <input type="color" id="lightFace" name="lightFace" />
+                </label>
+                <label class="field field--color">
+                  <span class="field__label">Rim</span>
+                  <input type="color" id="lightRim" name="lightRim" />
+                </label>
+                <label class="field field--color">
+                  <span class="field__label">Hands</span>
+                  <input type="color" id="lightHand" name="lightHand" />
+                </label>
+                <label class="field field--color">
+                  <span class="field__label">Accent</span>
+                  <input type="color" id="lightAccent" name="lightAccent" />
+                </label>
               </div>
             </div>
 
-            <div class="background-section__controls tabula-card tabula-card--subtle">
+            <div class="section__group">
+              <h3>Dark palette</h3>
+              <div class="palette-grid">
+                <label class="field field--color">
+                  <span class="field__label">Background</span>
+                  <input
+                    type="color"
+                    id="darkBackground"
+                    name="darkBackground"
+                  />
+                </label>
+                <label class="field field--color">
+                  <span class="field__label">Clock face</span>
+                  <input type="color" id="darkFace" name="darkFace" />
+                </label>
+                <label class="field field--color">
+                  <span class="field__label">Rim</span>
+                  <input type="color" id="darkRim" name="darkRim" />
+                </label>
+                <label class="field field--color">
+                  <span class="field__label">Hands</span>
+                  <input type="color" id="darkHand" name="darkHand" />
+                </label>
+                <label class="field field--color">
+                  <span class="field__label">Accent</span>
+                  <input type="color" id="darkAccent" name="darkAccent" />
+                </label>
+              </div>
+            </div>
+          </section>
+
+          <!-- Clock Section -->
+          <section class="section" data-section="clock">
+            <header class="section__header">
+              <h2>Clock</h2>
+              <p>Display settings and styling</p>
+            </header>
+
+            <div class="section__group">
+              <label class="field field--toggle">
+                <span class="field__text">Show clock</span>
+                <span class="toggle">
+                  <input
+                    type="checkbox"
+                    id="clockEnabled"
+                    name="clockEnabled"
+                    class="toggle__input"
+                  />
+                  <span class="toggle__track" aria-hidden="true">
+                    <span class="toggle__thumb"></span>
+                  </span>
+                </span>
+              </label>
+            </div>
+
+            <div class="section__group">
+              <h3>Format</h3>
+              <div class="choice-group">
+                <label class="choice">
+                  <input
+                    type="radio"
+                    name="timeFormat"
+                    id="timeFormat24"
+                    value="24h"
+                  />
+                  <span>24-hour</span>
+                </label>
+                <label class="choice">
+                  <input
+                    type="radio"
+                    name="timeFormat"
+                    id="timeFormat12"
+                    value="12h"
+                  />
+                  <span>12-hour</span>
+                </label>
+                <label class="choice">
+                  <input type="checkbox" id="showSeconds" />
+                  <span>Show seconds</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="section__group">
+              <h3>Styling</h3>
+              <label class="field">
+                <span class="field__label">Scale</span>
+                <div class="field__range">
+                  <input
+                    type="range"
+                    id="clockScale"
+                    name="clockScale"
+                    min="0.5"
+                    max="2"
+                    step="0.02"
+                  />
+                  <output id="clockScaleValue" for="clockScale">1.00x</output>
+                </div>
+              </label>
+              <label class="field">
+                <span class="field__label">Rim width</span>
+                <div class="field__range">
+                  <input
+                    type="range"
+                    id="rimWidth"
+                    name="rimWidth"
+                    min="1"
+                    max="12"
+                    step="0.5"
+                  />
+                  <output id="rimWidthValue" for="rimWidth">2px</output>
+                </div>
+              </label>
+              <label class="field">
+                <span class="field__label">Hand width</span>
+                <div class="field__range">
+                  <input
+                    type="range"
+                    id="handWidth"
+                    name="handWidth"
+                    min="2"
+                    max="14"
+                    step="0.5"
+                  />
+                  <output id="handWidthValue" for="handWidth">5px</output>
+                </div>
+              </label>
+              <label class="field">
+                <span class="field__label">Dot size</span>
+                <div class="field__range">
+                  <input
+                    type="range"
+                    id="dotSize"
+                    name="dotSize"
+                    min="4"
+                    max="24"
+                    step="1"
+                  />
+                  <output id="dotSizeValue" for="dotSize">8px</output>
+                </div>
+              </label>
+            </div>
+          </section>
+
+          <!-- Background Section -->
+          <section class="section" data-section="background">
+            <header class="section__header">
+              <h2>Background</h2>
+              <p>Custom image and blur settings</p>
+            </header>
+
+            <div class="section__group">
+              <label class="field">
+                <span class="field__label">Image URL</span>
+                <input
+                  type="url"
+                  id="backgroundImage"
+                  name="backgroundImage"
+                  placeholder="https://example.com/wallpaper.jpg"
+                  class="field__control"
+                />
+              </label>
+            </div>
+
+            <div class="section__group">
+              <h3>Upload image</h3>
+              <div class="upload-area">
+                <input
+                  type="file"
+                  id="backgroundImageUpload"
+                  name="backgroundImageUpload"
+                  class="field__control field__control--file"
+                  accept="image/*"
+                />
+                <p
+                  class="field__hint"
+                  id="backgroundImageStatus"
+                  data-tone="muted"
+                >
+                  No image selected
+                </p>
+                <button
+                  type="button"
+                  id="backgroundImageClear"
+                  class="tabula-button tabula-button--ghost"
+                >
+                  Remove uploaded image
+                </button>
+              </div>
+            </div>
+
+            <div class="section__group">
               <label class="field">
                 <span class="field__label">Blur</span>
                 <div class="field__range">
-                  <input type="range" id="backgroundBlur" name="backgroundBlur" min="0" max="40" step="1" />
-                  <output id="backgroundBlurValue" for="backgroundBlur">0px</output>
+                  <input
+                    type="range"
+                    id="backgroundBlur"
+                    name="backgroundBlur"
+                    min="0"
+                    max="40"
+                    step="1"
+                  />
+                  <output id="backgroundBlurValue" for="backgroundBlur"
+                    >0px</output
+                  >
                 </div>
               </label>
-              <p class="background-section__hint">Higher blur softens busy images and keeps the clock readable.</p>
+              <p class="section__hint">
+                Higher blur softens busy images and keeps the clock readable.
+              </p>
             </div>
-          </div>
-        </section>
+          </section>
 
-        <section class="panel tabula-card tabula-card--subtle">
-          <header class="panel__header">
-            <h2>Clock</h2>
-            <p>Tune the layout and proportions of the clock grid.</p>
-          </header>
-          <div class="panel__grid">
-            <label class="field field--toggle">
-              <span class="field__text">Show clock</span>
-              <span class="toggle">
-                <input type="checkbox" id="clockEnabled" name="clockEnabled" class="toggle__input" />
-                <span class="toggle__track" aria-hidden="true">
-                  <span class="toggle__thumb"></span>
+          <!-- Search Section -->
+          <section class="section" data-section="search">
+            <header class="section__header">
+              <h2>Search</h2>
+              <p>Search bar configuration</p>
+            </header>
+
+            <div class="section__group">
+              <label class="field field--toggle">
+                <span class="field__text">Show search bar</span>
+                <span class="toggle">
+                  <input
+                    type="checkbox"
+                    id="searchEnabled"
+                    name="searchEnabled"
+                    class="toggle__input"
+                  />
+                  <span class="toggle__track" aria-hidden="true">
+                    <span class="toggle__thumb"></span>
+                  </span>
                 </span>
-              </span>
-            </label>
-            <fieldset class="field field--inline">
-              <legend class="field__label">Time</legend>
-              <label class="choice">
-                <input type="radio" name="timeFormat" id="timeFormat24" value="24h" />
-                <span>24-hour</span>
               </label>
-              <label class="choice">
-                <input type="radio" name="timeFormat" id="timeFormat12" value="12h" />
-                <span>12-hour</span>
-              </label>
-              <label class="choice">
-                <input type="checkbox" id="showSeconds" />
-                <span>Show seconds</span>
-              </label>
-            </fieldset>
-            <label class="field">
-              <span class="field__label">Scale</span>
-              <div class="field__range">
-                <input type="range" id="clockScale" name="clockScale" min="0.5" max="2" step="0.02" />
-                <output id="clockScaleValue" for="clockScale">1.00x</output>
-              </div>
-            </label>
-            <label class="field">
-              <span class="field__label">Rim width</span>
-              <div class="field__range">
-                <input type="range" id="rimWidth" name="rimWidth" min="1" max="12" step="0.5" />
-                <output id="rimWidthValue" for="rimWidth">2px</output>
-              </div>
-            </label>
-            <label class="field">
-              <span class="field__label">Hand width</span>
-              <div class="field__range">
-                <input type="range" id="handWidth" name="handWidth" min="2" max="14" step="0.5" />
-                <output id="handWidthValue" for="handWidth">5px</output>
-              </div>
-            </label>
-            <label class="field">
-              <span class="field__label">Dot size</span>
-              <div class="field__range">
-                <input type="range" id="dotSize" name="dotSize" min="4" max="24" step="1" />
-                <output id="dotSizeValue" for="dotSize">8px</output>
-              </div>
-            </label>
-          </div>
-        </section>
-
-        <section class="panel tabula-card tabula-card--subtle">
-          <header class="panel__header">
-            <h2>Palette</h2>
-            <p>Customise colours for light and dark appearances.</p>
-          </header>
-          <div class="panel__grid panel__grid--palette">
-            <fieldset class="palette" data-theme="light">
-              <legend>Light theme</legend>
-              <label class="field">
-                <span class="field__label">Background</span>
-                <input type="color" id="lightBackground" name="lightBackground" />
-              </label>
-              <label class="field">
-                <span class="field__label">Clock face</span>
-                <input type="color" id="lightFace" name="lightFace" />
-              </label>
-              <label class="field">
-                <span class="field__label">Rim</span>
-                <input type="color" id="lightRim" name="lightRim" />
-              </label>
-              <label class="field">
-                <span class="field__label">Hands</span>
-                <input type="color" id="lightHand" name="lightHand" />
-              </label>
-              <label class="field">
-                <span class="field__label">Accent</span>
-                <input type="color" id="lightAccent" name="lightAccent" />
-              </label>
-            </fieldset>
-
-            <fieldset class="palette" data-theme="dark">
-              <legend>Dark theme</legend>
-              <label class="field">
-                <span class="field__label">Background</span>
-                <input type="color" id="darkBackground" name="darkBackground" />
-              </label>
-              <label class="field">
-                <span class="field__label">Clock face</span>
-                <input type="color" id="darkFace" name="darkFace" />
-              </label>
-              <label class="field">
-                <span class="field__label">Rim</span>
-                <input type="color" id="darkRim" name="darkRim" />
-              </label>
-              <label class="field">
-                <span class="field__label">Hands</span>
-                <input type="color" id="darkHand" name="darkHand" />
-              </label>
-              <label class="field">
-                <span class="field__label">Accent</span>
-                <input type="color" id="darkAccent" name="darkAccent" />
-              </label>
-            </fieldset>
-          </div>
-        </section>
-
-        <section class="panel tabula-card tabula-card--subtle">
-          <header class="panel__header">
-            <h2>Search</h2>
-            <p>Toggle the optional search bar and choose your preferred engine.</p>
-          </header>
-          <div class="panel__grid">
-            <label class="field field--toggle">
-              <span class="field__text">Show search bar</span>
-              <span class="toggle">
-                <input type="checkbox" id="searchEnabled" name="searchEnabled" class="toggle__input" />
-                <span class="toggle__track" aria-hidden="true">
-                  <span class="toggle__thumb"></span>
-                </span>
-              </span>
-            </label>
-            <label class="field">
-              <span class="field__label">Search engine</span>
-              <select id="searchEngine" name="searchEngine" class="field__control">
-                <option value="google">Google</option>
-                <option value="bing">Bing</option>
-                <option value="duckduckgo">DuckDuckGo</option>
-                <option value="brave">Brave</option>
-              </select>
-            </label>
-            <label class="field">
-              <span class="field__label">Placeholder text</span>
-              <input type="text" id="searchPlaceholder" name="searchPlaceholder" class="field__control" />
-            </label>
-            <fieldset class="field field--inline">
-              <legend class="field__label">Placement</legend>
-              <label class="choice">
-                <input type="radio" name="searchPosition" id="searchTop" value="top" />
-                <span>Above clock</span>
-              </label>
-              <label class="choice">
-                <input type="radio" name="searchPosition" id="searchBottom" value="bottom" />
-                <span>Below clock</span>
-              </label>
-            </fieldset>
-          </div>
-        </section>
-
-        <section class="panel tabula-card tabula-card--subtle">
-          <header class="panel__header">
-            <h2>Widgets</h2>
-            <p>Curate at-a-glance cards like weather snapshots and a Pomodoro timer.</p>
-          </header>
-          <div class="panel__grid panel__grid--widgets">
-            <label class="field field--toggle">
-              <span class="field__text">Show weather widget</span>
-              <span class="toggle">
-                <input type="checkbox" id="weatherEnabled" name="weatherEnabled" class="toggle__input" />
-                <span class="toggle__track" aria-hidden="true">
-                  <span class="toggle__thumb"></span>
-                </span>
-              </span>
-            </label>
-            <label class="field" data-widget="weather">
-              <span class="field__label">Location</span>
-              <input type="text" id="weatherLocation" name="weatherLocation" class="field__control" placeholder="City, Country" />
-            </label>
-            <label class="field" data-widget="weather">
-              <span class="field__label">Units</span>
-              <select id="weatherUnit" name="weatherUnit" class="field__control">
-                <option value="metric">Celsius</option>
-                <option value="imperial">Fahrenheit</option>
-              </select>
-            </label>
-            <p class="field__hint" id="weatherStatus">Weather data provided by WeatherAPI.com.</p>
-
-            <label class="field field--toggle">
-              <span class="field__text">Enable Pomodoro timer</span>
-              <span class="toggle">
-                <input type="checkbox" id="pomodoroEnabled" name="pomodoroEnabled" class="toggle__input" />
-                <span class="toggle__track" aria-hidden="true">
-                  <span class="toggle__thumb"></span>
-                </span>
-              </span>
-            </label>
-            <label class="field" data-widget="pomodoro">
-              <span class="field__label">Focus length (minutes)</span>
-              <input type="number" id="pomodoroFocus" name="pomodoroFocus" class="field__control" min="5" max="90" step="1" />
-            </label>
-            <label class="field" data-widget="pomodoro">
-              <span class="field__label">Short break (minutes)</span>
-              <input type="number" id="pomodoroBreak" name="pomodoroBreak" class="field__control" min="1" max="45" step="1" />
-            </label>
-            <label class="field" data-widget="pomodoro">
-              <span class="field__label">Long break (minutes)</span>
-              <input type="number" id="pomodoroLongBreak" name="pomodoroLongBreak" class="field__control" min="5" max="60" step="1" />
-            </label>
-            <label class="field" data-widget="pomodoro">
-              <span class="field__label">Focus sessions before long break</span>
-              <input type="number" id="pomodoroCycles" name="pomodoroCycles" class="field__control" min="1" max="8" step="1" />
-            </label>
-
-            <label class="field field--toggle">
-              <span class="field__text">Enable tasks widget</span>
-              <span class="toggle">
-                <input type="checkbox" id="tasksEnabled" name="tasksEnabled" class="toggle__input" />
-                <span class="toggle__track" aria-hidden="true">
-                  <span class="toggle__thumb"></span>
-                </span>
-              </span>
-            </label>
-            <p class="field__hint" data-widget="tasks">Add quick todos right from the new tab.</p>
-          </div>
-        </section>
-
-        <section class="panel tabula-card tabula-card--subtle">
-          <header class="panel__header">
-            <h2>Pinned tabs</h2>
-            <p>Collect your favourite sites for one-click access on every new tab.</p>
-          </header>
-          <div class="pinned-manager">
-            <div class="pinned-manager__list tabula-card tabula-card--subtle" id="pinnedList">
-              <p class="pinned-manager__empty tabula-status-muted" id="pinnedEmpty">No pinned tabs yet. Add your go-to destinations below.</p>
             </div>
-            <div class="pinned-manager__form">
-              <div class="field">
-                <span class="field__label">Title</span>
-                <input type="text" id="pinnedAddTitle" name="pinnedAddTitle" class="field__control" maxlength="40" placeholder="Factory" />
-              </div>
-              <div class="field">
-                <span class="field__label">URL</span>
-                <input type="url" id="pinnedAddUrl" name="pinnedAddUrl" class="field__control" placeholder="https://example.com" />
-              </div>
-              <div class="field">
-                <span class="field__label">Icon URL (optional)</span>
-                <input type="url" id="pinnedAddIcon" name="pinnedAddIcon" class="field__control" placeholder="https://example.com/icon.png" />
-              </div>
-              <div class="pinned-manager__actions">
-                <button type="button" id="pinnedAddButton" class="tabula-button tabula-button--primary">Add pinned tab</button>
+
+            <div class="section__group" data-depends="searchEnabled">
+              <label class="field">
+                <span class="field__label">Search engine</span>
+                <select
+                  id="searchEngine"
+                  name="searchEngine"
+                  class="field__control"
+                >
+                  <option value="google">Google</option>
+                  <option value="bing">Bing</option>
+                  <option value="duckduckgo">DuckDuckGo</option>
+                  <option value="brave">Brave</option>
+                </select>
+              </label>
+              <label class="field">
+                <span class="field__label">Placeholder text</span>
+                <input
+                  type="text"
+                  id="searchPlaceholder"
+                  name="searchPlaceholder"
+                  class="field__control"
+                />
+              </label>
+              <fieldset class="field">
+                <legend class="field__label">Position</legend>
+                <div class="choice-group">
+                  <label class="choice">
+                    <input
+                      type="radio"
+                      name="searchPosition"
+                      id="searchTop"
+                      value="top"
+                    />
+                    <span>Above clock</span>
+                  </label>
+                  <label class="choice">
+                    <input
+                      type="radio"
+                      name="searchPosition"
+                      id="searchBottom"
+                      value="bottom"
+                    />
+                    <span>Below clock</span>
+                  </label>
+                </div>
+              </fieldset>
+            </div>
+          </section>
+
+          <!-- Widgets Section -->
+          <section class="section" data-section="widgets">
+            <header class="section__header">
+              <h2>Widgets</h2>
+              <p>Weather, Pomodoro timer, and tasks</p>
+            </header>
+
+            <!-- Weather Widget -->
+            <div class="section__group">
+              <h3>Weather</h3>
+              <label class="field field--toggle">
+                <span class="field__text">Enable weather widget</span>
+                <span class="toggle">
+                  <input
+                    type="checkbox"
+                    id="weatherEnabled"
+                    name="weatherEnabled"
+                    class="toggle__input"
+                  />
+                  <span class="toggle__track" aria-hidden="true">
+                    <span class="toggle__thumb"></span>
+                  </span>
+                </span>
+              </label>
+              <div data-widget="weather">
+                <label class="field">
+                  <span class="field__label">Location</span>
+                  <input
+                    type="text"
+                    id="weatherLocation"
+                    name="weatherLocation"
+                    class="field__control"
+                    placeholder="City, Country"
+                  />
+                </label>
+                <label class="field">
+                  <span class="field__label">Units</span>
+                  <select
+                    id="weatherUnit"
+                    name="weatherUnit"
+                    class="field__control"
+                  >
+                    <option value="metric">Celsius</option>
+                    <option value="imperial">Fahrenheit</option>
+                  </select>
+                </label>
               </div>
             </div>
-          </div>
-        </section>
 
-        <footer class="settings__actions">
-          <div class="settings__status" id="status" role="status" aria-live="polite"></div>
-          <div class="settings__buttons">
-            <button type="submit" class="tabula-button tabula-button--primary">Save changes</button>
-            <button type="button" id="resetButton" class="tabula-button tabula-button--ghost">Reset to defaults</button>
-          </div>
-        </footer>
-      </form>
+            <!-- Pomodoro Widget -->
+            <div class="section__group">
+              <h3>Pomodoro timer</h3>
+              <label class="field field--toggle">
+                <span class="field__text">Enable Pomodoro timer</span>
+                <span class="toggle">
+                  <input
+                    type="checkbox"
+                    id="pomodoroEnabled"
+                    name="pomodoroEnabled"
+                    class="toggle__input"
+                  />
+                  <span class="toggle__track" aria-hidden="true">
+                    <span class="toggle__thumb"></span>
+                  </span>
+                </span>
+              </label>
+              <div data-widget="pomodoro">
+                <div class="field-row">
+                  <label class="field">
+                    <span class="field__label">Focus (min)</span>
+                    <input
+                      type="number"
+                      id="pomodoroFocus"
+                      name="pomodoroFocus"
+                      class="field__control"
+                      min="5"
+                      max="90"
+                      step="1"
+                    />
+                  </label>
+                  <label class="field">
+                    <span class="field__label">Short break (min)</span>
+                    <input
+                      type="number"
+                      id="pomodoroBreak"
+                      name="pomodoroBreak"
+                      class="field__control"
+                      min="1"
+                      max="45"
+                      step="1"
+                    />
+                  </label>
+                </div>
+                <div class="field-row">
+                  <label class="field">
+                    <span class="field__label">Long break (min)</span>
+                    <input
+                      type="number"
+                      id="pomodoroLongBreak"
+                      name="pomodoroLongBreak"
+                      class="field__control"
+                      min="5"
+                      max="60"
+                      step="1"
+                    />
+                  </label>
+                  <label class="field">
+                    <span class="field__label">Sessions before long break</span>
+                    <input
+                      type="number"
+                      id="pomodoroCycles"
+                      name="pomodoroCycles"
+                      class="field__control"
+                      min="1"
+                      max="8"
+                      step="1"
+                    />
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pomodoro Notifications -->
+            <div class="section__group" data-widget="pomodoro">
+              <h3>Notifications</h3>
+              <label class="field field--toggle">
+                <span class="field__text">Enable notifications</span>
+                <span class="toggle">
+                  <input
+                    type="checkbox"
+                    id="pomodoroNotificationsEnabled"
+                    name="pomodoroNotificationsEnabled"
+                    class="toggle__input"
+                  />
+                  <span class="toggle__track" aria-hidden="true">
+                    <span class="toggle__thumb"></span>
+                  </span>
+                </span>
+              </label>
+              <div data-depends="pomodoroNotificationsEnabled">
+                <label class="field">
+                  <span class="field__label">Focus notification title</span>
+                  <input
+                    type="text"
+                    id="pomodoroFocusTitle"
+                    name="pomodoroFocusTitle"
+                    class="field__control"
+                    maxlength="60"
+                  />
+                </label>
+                <label class="field">
+                  <span class="field__label">Focus notification body</span>
+                  <input
+                    type="text"
+                    id="pomodoroFocusBody"
+                    name="pomodoroFocusBody"
+                    class="field__control"
+                    maxlength="120"
+                  />
+                </label>
+                <label class="field">
+                  <span class="field__label"
+                    >Short break notification title</span
+                  >
+                  <input
+                    type="text"
+                    id="pomodoroShortBreakTitle"
+                    name="pomodoroShortBreakTitle"
+                    class="field__control"
+                    maxlength="60"
+                  />
+                </label>
+                <label class="field">
+                  <span class="field__label"
+                    >Short break notification body</span
+                  >
+                  <input
+                    type="text"
+                    id="pomodoroShortBreakBody"
+                    name="pomodoroShortBreakBody"
+                    class="field__control"
+                    maxlength="120"
+                  />
+                </label>
+                <label class="field">
+                  <span class="field__label"
+                    >Long break notification title</span
+                  >
+                  <input
+                    type="text"
+                    id="pomodoroLongBreakTitle"
+                    name="pomodoroLongBreakTitle"
+                    class="field__control"
+                    maxlength="60"
+                  />
+                </label>
+                <label class="field">
+                  <span class="field__label">Long break notification body</span>
+                  <input
+                    type="text"
+                    id="pomodoroLongBreakBody"
+                    name="pomodoroLongBreakBody"
+                    class="field__control"
+                    maxlength="120"
+                  />
+                </label>
+              </div>
+            </div>
+
+            <!-- Tasks Widget -->
+            <div class="section__group">
+              <h3>Tasks</h3>
+              <label class="field field--toggle">
+                <span class="field__text">Enable tasks widget</span>
+                <span class="toggle">
+                  <input
+                    type="checkbox"
+                    id="tasksEnabled"
+                    name="tasksEnabled"
+                    class="toggle__input"
+                  />
+                  <span class="toggle__track" aria-hidden="true">
+                    <span class="toggle__thumb"></span>
+                  </span>
+                </span>
+              </label>
+              <p class="section__hint" data-widget="tasks">
+                Add quick todos right from the new tab.
+              </p>
+            </div>
+          </section>
+
+          <!-- Shortcuts Section -->
+          <section class="section" data-section="shortcuts">
+            <header class="section__header">
+              <h2>Shortcuts</h2>
+              <p>Pinned tabs and tagline</p>
+            </header>
+
+            <div class="section__group">
+              <h3>Tagline</h3>
+              <label class="field field--toggle">
+                <span class="field__text">Show tagline</span>
+                <span class="toggle">
+                  <input
+                    type="checkbox"
+                    id="taglineEnabled"
+                    name="taglineEnabled"
+                    class="toggle__input"
+                  />
+                  <span class="toggle__track" aria-hidden="true">
+                    <span class="toggle__thumb"></span>
+                  </span>
+                </span>
+              </label>
+              <label class="field">
+                <span class="field__label">Text</span>
+                <input
+                  type="text"
+                  id="taglineInput"
+                  name="taglineInput"
+                  class="field__control"
+                  maxlength="120"
+                  placeholder="Your space, no noise"
+                />
+              </label>
+            </div>
+
+            <div class="section__group">
+              <h3>Pinned tabs</h3>
+              <p class="section__hint">
+                Collect your favourite sites for one-click access.
+              </p>
+              <div
+                class="pinned-manager__list tabula-card tabula-card--subtle"
+                id="pinnedList"
+              >
+                <p
+                  class="pinned-manager__empty tabula-status-muted"
+                  id="pinnedEmpty"
+                >
+                  No pinned tabs yet.
+                </p>
+              </div>
+              <div class="pinned-manager__form">
+                <div class="field">
+                  <span class="field__label">Title</span>
+                  <input
+                    type="text"
+                    id="pinnedAddTitle"
+                    name="pinnedAddTitle"
+                    class="field__control"
+                    maxlength="40"
+                    placeholder="My Site"
+                  />
+                </div>
+                <div class="field">
+                  <span class="field__label">URL</span>
+                  <input
+                    type="url"
+                    id="pinnedAddUrl"
+                    name="pinnedAddUrl"
+                    class="field__control"
+                    placeholder="https://example.com"
+                  />
+                </div>
+                <div class="field">
+                  <span class="field__label">Icon URL (optional)</span>
+                  <input
+                    type="url"
+                    id="pinnedAddIcon"
+                    name="pinnedAddIcon"
+                    class="field__control"
+                    placeholder="https://example.com/icon.png"
+                  />
+                </div>
+                <div class="pinned-manager__actions">
+                  <button
+                    type="button"
+                    id="pinnedAddButton"
+                    class="tabula-button tabula-button--primary"
+                  >
+                    Add pinned tab
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Footer Actions -->
+          <footer class="settings__actions">
+            <div
+              class="settings__status"
+              id="status"
+              role="status"
+              aria-live="polite"
+            ></div>
+            <div class="settings__buttons">
+              <button
+                type="submit"
+                class="tabula-button tabula-button--primary"
+              >
+                Save changes
+              </button>
+              <button
+                type="button"
+                id="resetButton"
+                class="tabula-button tabula-button--ghost"
+              >
+                Reset to defaults
+              </button>
+            </div>
+          </footer>
+        </form>
+      </div>
     </main>
 
     <script type="module" src="main.ts"></script>

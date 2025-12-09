@@ -1,2 +1,7 @@
 [test]
 preload = ["./bun-test.setup.ts"]
+coverage = false
+
+# Module resolution aliases
+[resolve]
+alias = { "vitest" = "./vitest-shim.ts", "$src" = "./src" }

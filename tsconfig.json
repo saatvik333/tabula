@@ -7,7 +7,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    
+
     // Strict Type-Checking Options
     "strict": true,
     "noImplicitAny": true,
@@ -17,7 +17,7 @@
     "strictPropertyInitialization": true,
     "noImplicitThis": true,
     "alwaysStrict": true,
-    
+
     // Additional Checks
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -26,25 +26,25 @@
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
-    
+
     // Module Resolution Options
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    
+
     // Advanced Options
     "exactOptionalPropertyTypes": true,
     "useDefineForClassFields": true,
-    
+
     // Path Mapping
     "baseUrl": ".",
     "paths": {
       "$src/*": ["src/*"]
     },
-    
+
     // Type Definitions
-    "types": ["vitest/globals", "node", "chrome"]
+    "types": ["vitest/globals", "node", "chrome", "bun-types"]
   },
   "include": ["src/**/*", "vitest.config.ts"],
   "exclude": ["node_modules", "dist", "build"]

@@ -1,8 +1,14 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
 // We dynamically import the storage module after setting globals
+let moduleInitialized = false;
+
 const importStorage = async () => {
   const mod = await import("$src/settings/storage");
+  if (!moduleInitialized && typeof (mod as any).__resetStorageModuleForTests === "function") {
+    (mod as any).__resetStorageModuleForTests();
+    moduleInitialized = true;
+  }
   return mod;
 };
 
@@ -38,17 +44,13 @@ class MemoryStorage {
   clear() { this.map.clear(); }
 }
 
-// Utilities
-const SETTINGS_STORAGE_KEY = "tabula:settings" as const;
-
 describe("settings cross-tab broadcast keeps cache fresh", () => {
   beforeEach(() => {
-    vi.resetModules();
     (globalThis as any).BroadcastChannel = MockBroadcastChannel as any;
+    (MockBroadcastChannel as any).channels = {};
     (globalThis as any).window = { localStorage: new MemoryStorage() } as any;
     delete (globalThis as any).chrome;
-    // Clear channels
-    (MockBroadcastChannel as any).channels = {};
+    moduleInitialized = false;
   });
 
   it("updates cachedSettings on broadcast and returns fresh snapshot", async () => {

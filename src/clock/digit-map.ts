@@ -106,13 +106,27 @@ export type CellConfig = {
   active: boolean;
 };
 
-export const getCellConfig = (digit: string, index: number): CellConfig => {
+// Pre-computed cache for all digit configurations
+// Key format: "digit:index" -> CellConfig
+const configCache = new Map<string, CellConfig>();
+
+const computeCellConfig = (digit: string, index: number): CellConfig => {
   const layout = DIGIT_LAYOUT[digit];
   const symbol = layout?.[index] ?? " ";
   return {
     rotation: ROTATIONS[symbol],
     active: symbol !== " ",
   };
+};
+
+export const getCellConfig = (digit: string, index: number): CellConfig => {
+  const key = `${digit}:${index}`;
+  let config = configCache.get(key);
+  if (!config) {
+    config = computeCellConfig(digit, index);
+    configCache.set(key, config);
+  }
+  return config;
 };
 
 export const DIGIT_SIZE = 24;

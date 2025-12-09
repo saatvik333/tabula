@@ -13,11 +13,13 @@ export type PresetName =
   | "tokyo-night"
   | "gruvbox"
   | "rose-pine"
-  | "pitch-black"
+  | "dracula"
+  | "solarized"
+  | "one-dark"
+  | "monokai"
+  | "ayu"
   | "everforest"
-  | "sunset-haze"
-  | "ocean-breeze"
-  | "neon-dream"
+  | "pitch-black"
   | "custom";
 
 export type TimeFormat = "12h" | "24h";
@@ -72,6 +74,15 @@ export type PomodoroWidgetSettings = {
   breakMinutes: number;
   longBreakMinutes: number;
   cyclesBeforeLongBreak: number;
+  notifications: {
+    enabled: boolean;
+    focusTitle: string;
+    focusBody: string;
+    shortBreakTitle: string;
+    shortBreakBody: string;
+    longBreakTitle: string;
+    longBreakBody: string;
+  };
 };
 
 export type WidgetsSettings = {

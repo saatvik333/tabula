@@ -95,6 +95,58 @@ export const applySettingsToDocument = (
   root.style.setProperty("--tabula-rim-color-rgb", rimRgb);
   root.style.setProperty("--tabula-hand-color-rgb", handRgb);
 
+  const glassAlpha = theme === "dark"
+    ? {
+        strongTop: 0.38,
+        strongBottom: 0.16,
+        strongHoverTop: 0.48,
+        strongHoverBottom: 0.2,
+        subtleTop: 0.24,
+        subtleBottom: 0.1,
+        surface: 0.19,
+        surfaceHover: 0.27,
+        field: 0.16,
+        fieldFocus: 0.24,
+        meridiem: 0.28,
+        clockTop: 0.68,
+        clockBottom: 0.24,
+        highlight: 0.86,
+        highlightMuted: 0.24,
+      }
+    : {
+        strongTop: 0.32,
+        strongBottom: 0.13,
+        strongHoverTop: 0.4,
+        strongHoverBottom: 0.18,
+        subtleTop: 0.2,
+        subtleBottom: 0.09,
+        surface: 0.16,
+        surfaceHover: 0.22,
+        field: 0.14,
+        fieldFocus: 0.2,
+        meridiem: 0.22,
+        clockTop: 0.6,
+        clockBottom: 0.2,
+        highlight: 0.8,
+        highlightMuted: 0.2,
+      };
+
+  root.style.setProperty("--tabula-glass-alpha-strong-top", glassAlpha.strongTop.toString());
+  root.style.setProperty("--tabula-glass-alpha-strong-bottom", glassAlpha.strongBottom.toString());
+  root.style.setProperty("--tabula-glass-alpha-strong-hover-top", glassAlpha.strongHoverTop.toString());
+  root.style.setProperty("--tabula-glass-alpha-strong-hover-bottom", glassAlpha.strongHoverBottom.toString());
+  root.style.setProperty("--tabula-glass-alpha-subtle-top", glassAlpha.subtleTop.toString());
+  root.style.setProperty("--tabula-glass-alpha-subtle-bottom", glassAlpha.subtleBottom.toString());
+  root.style.setProperty("--tabula-glass-alpha-surface", glassAlpha.surface.toString());
+  root.style.setProperty("--tabula-glass-alpha-surface-hover", glassAlpha.surfaceHover.toString());
+  root.style.setProperty("--tabula-glass-alpha-field", glassAlpha.field.toString());
+  root.style.setProperty("--tabula-glass-alpha-field-focus", glassAlpha.fieldFocus.toString());
+  root.style.setProperty("--tabula-glass-alpha-meridiem", glassAlpha.meridiem.toString());
+  root.style.setProperty("--tabula-glass-alpha-clock-top", glassAlpha.clockTop.toString());
+  root.style.setProperty("--tabula-glass-alpha-clock-bottom", glassAlpha.clockBottom.toString());
+  root.style.setProperty("--tabula-glass-alpha-highlight", glassAlpha.highlight.toString());
+  root.style.setProperty("--tabula-glass-alpha-highlight-muted", glassAlpha.highlightMuted.toString());
+
   root.style.setProperty("--tabula-background-image", formatBackgroundImage(settings));
   root.style.setProperty("--tabula-background-blur", formatPixels(settings.background.blur));
 

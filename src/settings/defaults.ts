@@ -319,12 +319,23 @@ const sanitizePomodoro = (
     8,
   );
 
+  const notifications = {
+    enabled: sanitizeBoolean(value?.notifications?.enabled, fallback.notifications.enabled),
+    focusTitle: sanitizeString(value?.notifications?.focusTitle, fallback.notifications.focusTitle),
+    focusBody: sanitizeString(value?.notifications?.focusBody, fallback.notifications.focusBody),
+    shortBreakTitle: sanitizeString(value?.notifications?.shortBreakTitle, fallback.notifications.shortBreakTitle),
+    shortBreakBody: sanitizeString(value?.notifications?.shortBreakBody, fallback.notifications.shortBreakBody),
+    longBreakTitle: sanitizeString(value?.notifications?.longBreakTitle, fallback.notifications.longBreakTitle),
+    longBreakBody: sanitizeString(value?.notifications?.longBreakBody, fallback.notifications.longBreakBody),
+  };
+
   return {
     enabled: sanitizeBoolean(value?.enabled, fallback.enabled),
     focusMinutes,
     breakMinutes,
     longBreakMinutes,
     cyclesBeforeLongBreak,
+    notifications,
   };
 };
 
@@ -346,19 +357,19 @@ const mergeWidgets = (
   tasks: sanitizeTasks(value?.tasks, fallback.tasks),
 });
 const MATERIAL_LIGHT: Palette = {
-  background: "#f3f4f6",
+  background: "#fafafa",
   face: "#ffffff",
-  rim: "#d1d5db",
-  hand: "#111827",
-  accent: "#6b7280",
+  rim: "#e0e0e0",
+  hand: "#212121",
+  accent: "#757575",
 };
 
 const MATERIAL_DARK: Palette = {
-  background: "#111827",
-  face: "#1f2937",
-  rim: "#374151",
-  hand: "#f3f4f6",
-  accent: "#9ca3af",
+  background: "#121212",
+  face: "#1e1e1e",
+  rim: "#2d2d2d",
+  hand: "#e0e0e0",
+  accent: "#9e9e9e",
 };
 
 const DEFAULT_WIDGET_LAYOUT: WidgetLayoutEntry[] = [
@@ -419,6 +430,15 @@ const BASE_DEFAULT_SETTINGS: Settings = {
       breakMinutes: 5,
       longBreakMinutes: 15,
       cyclesBeforeLongBreak: 4,
+      notifications: {
+        enabled: true,
+        focusTitle: "Focus time",
+        focusBody: "Break is over. Time to get back to work.",
+        shortBreakTitle: "Short break",
+        shortBreakBody: "Great work! Take a quick break.",
+        longBreakTitle: "Long break",
+        longBreakBody: "You've earned a longer rest. Well done!",
+      },
     },
     tasks: {
       enabled: true,

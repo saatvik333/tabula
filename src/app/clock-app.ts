@@ -23,6 +23,9 @@ import { createWeatherWidget, type WeatherWidgetController } from "$src/widgets/
 import { createPomodoroWidget, type PomodoroWidgetController } from "$src/widgets/pomodoro-widget";
 import { createTasksWidget, type TasksWidgetController } from "$src/widgets/tasks-widget";
 
+// Firefox uses `browser` namespace for WebExtension APIs
+declare const browser: typeof chrome | undefined;
+
 type TimeSource = () => Time;
 
 type TickerFactory = (tick: () => void) => StopTicker;
@@ -233,6 +236,7 @@ export class ClockApp {
       this.pomodoroWidget = null;
     }
     if (this.tasksWidget) {
+      this.tasksWidget.destroy();
       this.tasksWidget = null;
     }
   }
@@ -973,17 +977,23 @@ export class ClockApp {
 
   private openOptions(): void {
     try {
-      if (typeof chrome !== "undefined" && chrome.runtime?.openOptionsPage) {
-        chrome.runtime.openOptionsPage();
+      // Firefox uses browser.* namespace, Chromium uses chrome.*
+      const api =
+        (typeof browser !== "undefined" && (browser as any)?.runtime)
+          ? (browser as any)
+          : (typeof chrome !== "undefined" ? chrome : null);
+
+      if (api?.runtime?.openOptionsPage) {
+        api.runtime.openOptionsPage();
         return;
       }
-      if (typeof chrome !== "undefined" && chrome.runtime?.getURL) {
-        const url = chrome.runtime.getURL("options.html");
+      if (api?.runtime?.getURL) {
+        const url = api.runtime.getURL("options.html");
         window.open(url, "_blank", "noopener");
         return;
       }
     } catch (error) {
-      console.warn("Failed to open options page via chrome.runtime", error);
+      console.warn("Failed to open options page via extension runtime", error);
     }
 
     window.open("options.html", "_blank", "noopener");

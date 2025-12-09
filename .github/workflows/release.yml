@@ -1,11 +1,11 @@
-name: Build and Package Extension
+name: Release
 
 on:
   release:
     types: [published]
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 jobs:
   build:
@@ -13,26 +13,34 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Node
-        uses: actions/setup-node@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: 18
-          cache: 'npm'
+          bun-version: latest
+
       - name: Install
-        run: npm ci
+        run: bun install --frozen-lockfile
+
       - name: Type check
-        run: npm run type-check
+        run: bun run type-check
+
       - name: Test
-        run: npm test
+        run: bun test
+
       - name: Build
-        run: RELEASE_BUILD=1 npm run build
+        run: RELEASE_BUILD=1 bun run build
+
       - name: Lint (Firefox)
-        run: npm run lint:firefox
+        run: bun run lint:firefox
+
       - name: Package
-        run: npm run pack:chrome
+        run: bun run pack:chrome
+
       - name: Determine version
         id: ver
-        run: echo "version=$(npm run -s version)" >> $GITHUB_OUTPUT
+        run: echo "version=$(bun run -s version)" >> $GITHUB_OUTPUT
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -40,40 +48,46 @@ jobs:
           path: |
             tabula-${{ steps.ver.outputs.version }}-chrome.zip
             tabula-${{ steps.ver.outputs.version }}-firefox.zip
-      - name: Attach assets to GitHub Release
+
+      - name: Attach to Release
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@v2
         with:
           files: |
             tabula-${{ steps.ver.outputs.version }}-chrome.zip
             tabula-${{ steps.ver.outputs.version }}-firefox.zip
-      - name: Sign for Firefox (AMO)
-        if: github.event_name == 'release' && (secrets.AMO_JWT_ISSUER != '' && secrets.AMO_JWT_SECRET != '')
+
+      - name: Publish to Firefox AMO
+        if: github.event_name == 'release' && env.AMO_JWT_ISSUER != '' && env.AMO_JWT_SECRET != ''
         env:
           AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
           AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
-        run: npm run sign:firefox
-      - name: Upload signed XPI (if present)
-        if: github.event_name == 'release' && (secrets.AMO_JWT_ISSUER != '' && secrets.AMO_JWT_SECRET != '')
+          WEB_EXT_API_KEY: ${{ secrets.AMO_JWT_ISSUER }}
+          WEB_EXT_API_SECRET: ${{ secrets.AMO_JWT_SECRET }}
+        run: bun run publish:firefox
+
+      - name: Upload signed XPI
+        if: github.event_name == 'release'
         uses: actions/upload-artifact@v4
         with:
           name: signed-firefox-xpi
           path: web-ext-artifacts/*.xpi
           if-no-files-found: ignore
-      - name: Attach signed XPI to GitHub Release (if present)
-        if: github.event_name == 'release' && (secrets.AMO_JWT_ISSUER != '' && secrets.AMO_JWT_SECRET != '')
+
+      - name: Attach signed XPI to Release
+        if: github.event_name == 'release'
         uses: softprops/action-gh-release@v2
         with:
           files: web-ext-artifacts/*.xpi
+
       - name: Publish to Chrome Web Store
-        if: github.event_name == 'release' && (secrets.CHROME_CLIENT_ID != '' && secrets.CHROME_CLIENT_SECRET != '' && secrets.CHROME_REFRESH_TOKEN != '' && secrets.CHROME_EXTENSION_ID != '')
+        if: github.event_name == 'release' && env.CHROME_EXTENSION_ID != ''
         env:
           CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
           CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
           CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
           CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
-        run: |
-          export CLIENT_ID="$CHROME_CLIENT_ID"
-          export CLIENT_SECRET="$CHROME_CLIENT_SECRET"
-          export REFRESH_TOKEN="$CHROME_REFRESH_TOKEN"
-          npm run publish:chrome
+          CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+        run: bun run publish:chrome

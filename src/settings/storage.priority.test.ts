@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
 import { SETTINGS_STORAGE_KEY } from "$src/settings/schema";
 
@@ -42,10 +42,22 @@ class MemoryStorage {
   clear() { this.map.clear(); }
 }
 
+let moduleInitialized = false;
+
+const importStorageModule = async () => {
+  const mod = await import("$src/settings/storage");
+  if (!moduleInitialized && typeof (mod as any).__resetStorageModuleForTests === "function") {
+    (mod as any).__resetStorageModuleForTests();
+    moduleInitialized = true;
+  }
+  return mod;
+};
+
 describe("settings storage load priority prefers sync first", () => {
   beforeEach(() => {
-    vi.resetModules();
     (globalThis as any).window = { localStorage: new MemoryStorage() } as any;
+    moduleInitialized = false;
+    delete (globalThis as any).chrome;
   });
 
   it("loads from sync when both sync and local areas have values, even if local has different value", async () => {
@@ -57,7 +69,7 @@ describe("settings storage load priority prefers sync first", () => {
       runtime: { lastError: null },
     } as any;
 
-    const storage = await import("$src/settings/storage");
+    const storage = await importStorageModule();
     const loaded = await storage.loadSettings();
     expect(loaded.clock.format).toBe("24h");
   });
