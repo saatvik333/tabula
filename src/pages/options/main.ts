@@ -124,6 +124,87 @@ const formatBytes = (size: number): string => {
   return `${(size / (1024 * 1024)).toFixed(2)} MB`;
 };
 
+/**
+ * Compresses an image to fit within target bytes by aggressively resizing.
+ * Targets 2MB to leave headroom for Chrome storage limits.
+ */
+const compressImage = async (dataUrl: string, maxBytes: number): Promise<string> => {
+  // Target 2MB for better Chrome compatibility
+  const targetBytes = Math.min(maxBytes, 2 * 1024 * 1024);
+  
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      let quality = 0.85;
+      let scale = 1.0;
+      let attempts = 0;
+      const MAX_ATTEMPTS = 20;
+      
+      const tryCompress = (): void => {
+        if (attempts++ > MAX_ATTEMPTS) {
+          // Give up after too many attempts
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.floor(img.width * 0.3);
+          canvas.height = Math.floor(img.height * 0.3);
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            resolve(canvas.toDataURL('image/jpeg', 0.6));
+          } else {
+            reject(new Error('Could not get canvas context'));
+          }
+          return;
+        }
+        
+        const canvas = document.createElement('canvas');
+        const targetWidth = Math.floor(img.width * scale);
+        const targetHeight = Math.floor(img.height * scale);
+        
+        // Minimum dimensions to prevent unusable images
+        if (targetWidth < 400 || targetHeight < 300) {
+          canvas.width = Math.max(400, targetWidth);
+          canvas.height = Math.max(300, targetHeight);
+        } else {
+          canvas.width = targetWidth;
+          canvas.height = targetHeight;
+        }
+        
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new Error('Could not get canvas context'));
+          return;
+        }
+        
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        
+        const compressed = canvas.toDataURL('image/jpeg', quality);
+        const estimatedBytes = estimateDataUrlBytes(compressed);
+        
+        // If still too large, reduce more aggressively
+        if (estimatedBytes > targetBytes) {
+          if (scale > 0.35) {
+            // Reduce scale more aggressively
+            scale -= 0.15;
+            tryCompress();
+          } else if (quality > 0.4) {
+            quality -= 0.15;
+            tryCompress();
+          } else {
+            // Best effort - return what we have
+            resolve(compressed);
+          }
+        } else {
+          resolve(compressed);
+        }
+      };
+      
+      tryCompress();
+    };
+    img.onerror = () => reject(new Error('Failed to load image'));
+    img.src = dataUrl;
+  });
+};
+
 const estimateDataUrlBytes = (dataUrl: string): number => {
   const parts = dataUrl.split(",");
   if (parts.length < 2) return 0;
@@ -497,34 +578,47 @@ backgroundImageInput.addEventListener("input", () => {
   schedule(applyPreview);
 });
 
-backgroundImageUpload.addEventListener("change", () => {
+backgroundImageUpload.addEventListener("change", async () => {
   const [file] = backgroundImageUpload.files ?? [];
   if (!file) return;
 
-  if (file.size > MAX_IMAGE_BYTES) {
-    backgroundImageUpload.value = "";
-    setStatus(`Choose an image under ${formatBytes(MAX_IMAGE_BYTES)}`, "error");
-    return;
-  }
-
   const reader = new FileReader();
-  reader.addEventListener("load", () => {
+  reader.addEventListener("load", async () => {
     const result = reader.result;
     if (typeof result !== "string") {
       setStatus("Unsupported image encoding", "error");
       return;
     }
 
-    state.background.imageData = result;
+    let imageData = result;
+    const initialSize = estimateDataUrlBytes(imageData);
+
+    // Auto-compress if over limit
+    if (initialSize > MAX_IMAGE_BYTES) {
+      setStatus(`Compressing image (${formatBytes(initialSize)})...`, "default");
+      try {
+        imageData = await compressImage(imageData, MAX_IMAGE_BYTES);
+        const finalSize = estimateDataUrlBytes(imageData);
+        setStatus(`Image compressed from ${formatBytes(initialSize)} to ${formatBytes(finalSize)}`, "success");
+      } catch (error) {
+        backgroundImageUpload.value = "";
+        setStatus("Failed to compress image", "error");
+        return;
+      }
+    }
+
+    state.background.imageData = imageData;
     state.background.type = "image";
-    uploadedImageMeta = { name: file.name, size: file.size };
+    uploadedImageMeta = { name: file.name, size: estimateDataUrlBytes(imageData) };
     updateBackgroundImageStatus();
     if (!isApplyingPreset) {
       state.preset = "custom";
       markPresetActive(state.preset);
     }
     schedule(applyPreview);
-    setStatus(`Custom background image "${file.name}" added`, "success");
+    if (initialSize <= MAX_IMAGE_BYTES) {
+      setStatus(`Custom background image "${file.name}" added`, "success");
+    }
     backgroundImageUpload.value = "";
   });
   reader.addEventListener("error", () => {

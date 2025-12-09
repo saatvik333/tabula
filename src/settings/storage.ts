@@ -189,7 +189,9 @@ export const loadSettings = async (): Promise<Settings> => {
   }
 
   if (hasExtensionStorage()) {
-    const storesInPriority = [syncStorage, localStorageArea].filter(Boolean);
+    // Prioritize LOCAL storage first - it has imageData
+    // Sync storage is used as fallback for other settings on new devices
+    const storesInPriority = [localStorageArea, syncStorage].filter(Boolean);
     for (const store of storesInPriority) {
       try {
         const raw = await invokeGet(store, SETTINGS_STORAGE_KEY);
@@ -282,9 +284,17 @@ const combineWithCurrent = (current: Settings, partial: PartialSettings): Partia
 const persist = async (settings: Settings): Promise<void> => {
   let persisted = false;
 
+  // Extract imageData to store separately - it's too large for sync storage
+  const { imageData, ...backgroundWithoutImage } = settings.background;
+  const settingsWithoutImageData: Partial<Settings> = {
+    ...settings,
+    background: backgroundWithoutImage,
+  };
+
+  // Try sync storage first - WITHOUT imageData (avoids quota errors)
   if (syncStorage) {
     try {
-      await invokeSet(syncStorage, SETTINGS_STORAGE_KEY, settings);
+      await invokeSet(syncStorage, SETTINGS_STORAGE_KEY, settingsWithoutImageData as Settings);
       persisted = true;
     } catch (error) {
       console.warn("Failed to persist settings to sync storage", error);
@@ -296,7 +306,8 @@ const persist = async (settings: Settings): Promise<void> => {
     }
   }
 
-  if (!persisted && localStorageArea) {
+  // Store FULL settings (with imageData) to local storage
+  if (localStorageArea) {
     try {
       await invokeSet(localStorageArea, SETTINGS_STORAGE_KEY, settings);
       persisted = true;
