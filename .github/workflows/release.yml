@@ -58,7 +58,7 @@ jobs:
             tabula-${{ steps.ver.outputs.version }}-firefox.zip
 
       - name: Publish to Firefox AMO
-        if: github.event_name == 'release' && env.AMO_JWT_ISSUER != '' && env.AMO_JWT_SECRET != ''
+        if: github.event_name == 'release'
         env:
           AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
           AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
