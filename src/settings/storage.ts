@@ -189,21 +189,41 @@ export const loadSettings = async (): Promise<Settings> => {
   }
 
   if (hasExtensionStorage()) {
-    // Prioritize LOCAL storage first - it has imageData
-    // Sync storage is used as fallback for other settings on new devices
-    const storesInPriority = [localStorageArea, syncStorage].filter(Boolean);
-    for (const store of storesInPriority) {
+    let syncSettings: PartialSettings | undefined;
+    let localSettings: PartialSettings | undefined;
+
+    // Try Sync first
+    if (syncStorage) {
       try {
-        const raw = await invokeGet(store, SETTINGS_STORAGE_KEY);
-        if (raw) {
-          const merged = mergeWithDefaults(raw);
-          const snapshot = cloneSettings(merged);
-          cachedSettings = snapshot;
-          return cloneSettings(snapshot);
-        }
-      } catch (error) {
-        console.warn("Failed to read settings from extension storage", error);
+        syncSettings = await invokeGet(syncStorage, SETTINGS_STORAGE_KEY);
+      } catch (e) {
+        console.warn("Failed to read settings from sync storage", e);
       }
+    }
+
+    // Try Local
+    if (localStorageArea) {
+      try {
+        localSettings = await invokeGet(localStorageArea, SETTINGS_STORAGE_KEY);
+      } catch (e) {
+        console.warn("Failed to read settings from local storage", e);
+      }
+    }
+
+    if (syncSettings || localSettings) {
+      // Use Sync as the base source of truth if available, otherwise Local
+      const combined = syncSettings ? { ...syncSettings } : { ...localSettings! };
+
+      // If we have Sync settings, overlay imageData from Local (since Sync omits it)
+      if (syncSettings && localSettings?.background?.imageData) {
+        if (!combined.background) combined.background = {} as any;
+        combined.background!.imageData = localSettings.background.imageData;
+      }
+
+      const merged = mergeWithDefaults(combined);
+      const snapshot = cloneSettings(merged);
+      cachedSettings = snapshot;
+      return cloneSettings(snapshot);
     }
   }
 
@@ -354,7 +374,7 @@ export const subscribeToSettings = (listener: Listener): (() => void) => {
   };
 };
 
-export const __resetStorageModuleForTests = (): void => {
+export const __resetStorageModuleForTests = (api?: any): void => {
   listeners.clear();
   cachedSettings = null;
 
@@ -380,5 +400,12 @@ export const __resetStorageModuleForTests = (): void => {
   extensionListenerInitialized = false;
   extensionOnChangedHandler = null;
 
-  assignGlobalAPIs();
+  if (api) {
+    extensionAPI = api;
+    syncStorage = extensionAPI?.storage?.sync ?? null;
+    localStorageArea = extensionAPI?.storage?.local ?? null;
+    extensionOnChanged = extensionAPI?.storage?.onChanged ?? null;
+  } else {
+    assignGlobalAPIs();
+  }
 };

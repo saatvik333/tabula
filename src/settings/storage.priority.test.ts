@@ -64,12 +64,16 @@ describe("settings storage load priority prefers sync first", () => {
     const sync = createArea({ [SETTINGS_STORAGE_KEY]: { clock: { format: "24h" } } });
     const local = createArea({ [SETTINGS_STORAGE_KEY]: { clock: { format: "12h" } } });
 
-    (globalThis as any).chrome = {
+    const chromeMock = {
       storage: { sync, local },
       runtime: { lastError: null },
-    } as any;
+    };
+    (globalThis as any).chrome = chromeMock as any;
 
     const storage = await importStorageModule();
+    // Inject the mock API directly to avoid global state issues
+    (storage as any).__resetStorageModuleForTests(chromeMock);
+    
     const loaded = await storage.loadSettings();
     expect(loaded.clock.format).toBe("24h");
   });
