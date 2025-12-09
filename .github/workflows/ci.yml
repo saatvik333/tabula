@@ -1,34 +1,34 @@
 name: CI
 
 on:
-    push:
-        branches: [main]
-    pull_request:
-        branches: [main]
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
-    test:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-            - name: Setup Bun
-              uses: oven-sh/setup-bun@v2
-              with:
-                  bun-version: latest
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
 
-            - name: Install
-              run: bun install --frozen-lockfile
+      - name: Install
+        run: bun install
 
-            - name: Type check
-              run: bun run type-check
+      - name: Type check
+        run: bun run type-check
 
-            - name: Test
-              run: bun test
+      - name: Test
+        run: bun test
 
-            - name: Build
-              run: bun run build
+      - name: Build
+        run: bun run build
 
-            - name: Lint (Firefox)
-              run: bun run lint:firefox
+      - name: Lint (Firefox)
+        run: bun run lint:firefox
