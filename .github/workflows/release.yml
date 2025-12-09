@@ -80,14 +80,16 @@ jobs:
         with:
           files: web-ext-artifacts/*.xpi
 
-      - name: Publish to Chrome Web Store
-        if: github.event_name == 'release' && env.CHROME_EXTENSION_ID != ''
-        env:
-          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
-          CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
-          CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
-          CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
-          CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
-          CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
-          REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
-        run: bun run publish:chrome
+      # Chrome Web Store publishing disabled - requires $5 developer fee
+      # Uncomment when ready to publish to Chrome
+      # - name: Publish to Chrome Web Store
+      #   if: github.event_name == 'release' && env.CHROME_EXTENSION_ID != ''
+      #   env:
+      #     CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+      #     CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+      #     CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+      #     CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+      #     CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+      #     CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+      #     REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+      #   run: bun run publish:chrome

@@ -12,6 +12,7 @@
   <a href="https://github.com/saatvik333/tabula/releases"><img src="https://img.shields.io/github/v/release/saatvik333/tabula?style=flat-square&color=blue" alt="Release"></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/saatvik333/tabula?style=flat-square" alt="License"></a>
   <a href="https://github.com/saatvik333/tabula/actions"><img src="https://img.shields.io/github/actions/workflow/status/saatvik333/tabula/release.yml?style=flat-square" alt="CI"></a>
+  <a href="https://github.com/sponsors/saatvik333"><img src="https://img.shields.io/badge/sponsor-💖-pink?style=flat-square" alt="Sponsor"></a>
 </p>
 
 ---
@@ -103,12 +104,13 @@ src/
 
 ## 🔄 Releases
 
-Releases are fully automated via GitHub Actions. Creating a new GitHub Release or pushing a `v*` tag triggers:
+Releases are automated via GitHub Actions. Creating a new GitHub Release triggers:
 
 - Build & test
 - Package Chrome/Firefox zips
-- Publish to Chrome Web Store
 - Publish to Firefox Add-ons (AMO)
+
+> **Chrome Web Store**: Publish requires a $5 developer fee. [Sponsor this project](https://github.com/sponsors/saatvik333) to help get Tabula on Chrome!
 
 See [RELEASE_GUIDE.md](.github/RELEASE_GUIDE.md) for secrets setup.
 
