@@ -39,7 +39,7 @@ jobs:
 
       - name: Determine version
         id: ver
-        run: echo "version=$(bun run -s version)" >> $GITHUB_OUTPUT
+        run: echo "version=$(bun scripts/version.mjs)" >> $GITHUB_OUTPUT
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
