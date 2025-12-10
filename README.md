@@ -19,6 +19,8 @@
 
 A customizable, minimalist New Tab extension for **Chrome**, **Edge**, **Brave**, and **Firefox**. Features a unique "clock of clocks" display and optional productivity widgets—clean, fast, works offline.
 
+![tabula-themes](https://github.com/user-attachments/assets/68b45fd5-8235-4d26-aaf5-b5fe4b2896ed)
+
 ## ✨ Features
 
 ### Core
