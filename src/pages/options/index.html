@@ -682,6 +682,20 @@
               <p class="section__hint">
                 Collect your favourite sites for one-click access.
               </p>
+              <label class="field field--toggle">
+                <span class="field__text">Show website icons</span>
+                <span class="toggle">
+                  <input
+                    type="checkbox"
+                    id="pinnedTabsShowIcons"
+                    name="pinnedTabsShowIcons"
+                    class="toggle__input"
+                  />
+                  <span class="toggle__track" aria-hidden="true">
+                    <span class="toggle__thumb"></span>
+                  </span>
+                </span>
+              </label>
               <div
                 class="pinned-manager__list tabula-card tabula-card--subtle"
                 id="pinnedList"
@@ -694,46 +708,29 @@
                 </p>
               </div>
               <div class="pinned-manager__form">
-                <div class="field">
-                  <span class="field__label">Title</span>
-                  <input
-                    type="text"
-                    id="pinnedAddTitle"
-                    name="pinnedAddTitle"
-                    class="field__control"
-                    maxlength="40"
-                    placeholder="My Site"
-                  />
-                </div>
-                <div class="field">
-                  <span class="field__label">URL</span>
-                  <input
-                    type="url"
-                    id="pinnedAddUrl"
-                    name="pinnedAddUrl"
-                    class="field__control"
-                    placeholder="https://example.com"
-                  />
-                </div>
-                <div class="field">
-                  <span class="field__label">Icon URL (optional)</span>
-                  <input
-                    type="url"
-                    id="pinnedAddIcon"
-                    name="pinnedAddIcon"
-                    class="field__control"
-                    placeholder="https://example.com/icon.png"
-                  />
-                </div>
-                <div class="pinned-manager__actions">
-                  <button
-                    type="button"
-                    id="pinnedAddButton"
-                    class="tabula-button tabula-button--primary"
-                  >
-                    Add pinned tab
-                  </button>
-                </div>
+                <input
+                  type="url"
+                  id="pinnedAddUrl"
+                  name="pinnedAddUrl"
+                  class="field__control"
+                  placeholder="https://example.com"
+                />
+                <input
+                  type="text"
+                  id="pinnedAddTitle"
+                  name="pinnedAddTitle"
+                  class="field__control"
+                  maxlength="40"
+                  placeholder="Title (optional)"
+                />
+                <input type="hidden" id="pinnedAddIcon" name="pinnedAddIcon" />
+                <button
+                  type="button"
+                  id="pinnedAddButton"
+                  class="tabula-button tabula-button--primary"
+                >
+                  Add
+                </button>
               </div>
             </div>
           </section>

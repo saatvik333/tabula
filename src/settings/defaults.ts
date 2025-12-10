@@ -406,6 +406,7 @@ const BASE_DEFAULT_SETTINGS: Settings = {
   tagline: DEFAULT_TAGLINE,
   taglineEnabled: true,
   pinnedTabs: [],
+  pinnedTabsShowIcons: true,
   search: {
     enabled: false,
     engine: "google",
@@ -523,6 +524,7 @@ export const mergeWithDefaults = (partial: PartialSettings | undefined): Setting
     tagline,
     taglineEnabled: sanitizeBoolean(source.taglineEnabled, DEFAULT_SETTINGS.taglineEnabled),
     pinnedTabs,
+    pinnedTabsShowIcons: sanitizeBoolean(source.pinnedTabsShowIcons, DEFAULT_SETTINGS.pinnedTabsShowIcons),
   };
 
   if (!presetProvided && typeof partial === "undefined") {

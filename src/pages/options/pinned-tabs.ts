@@ -42,6 +42,15 @@ const resolveLabel = (tab: PinnedTab): string => {
   }
 };
 
+const getFaviconUrl = (url: string): string => {
+  try {
+    const { hostname } = new URL(url);
+    return `https://www.google.com/s2/favicons?domain=${hostname}&sz=64`;
+  } catch {
+    return '';
+  }
+};
+
 const firstSymbol = (value: string): string => {
   const trimmed = value.trim();
   return trimmed ? trimmed.charAt(0).toUpperCase() : "•";
@@ -328,7 +337,8 @@ export const createPinnedTabsController = (
 
     const label = titleRaw || resolveLabel({ id: "", title: "", url: urlRaw });
     const id = options.generateId();
-    const next: PinnedTab = iconRaw ? { id, title: label, url: urlRaw, icon: iconRaw } : { id, title: label, url: urlRaw };
+    const iconUrl = iconRaw || getFaviconUrl(urlRaw);
+    const next: PinnedTab = iconUrl ? { id, title: label, url: urlRaw, icon: iconUrl } : { id, title: label, url: urlRaw };
 
     commit((current) => [...current, next], "Pinned tab added");
     resetAddForm();

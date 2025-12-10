@@ -47,6 +47,15 @@ type WidgetPosition = {
 
 const EDGE_ANCHOR_THRESHOLD = 32;
 
+const getFaviconUrl = (url: string): string => {
+  try {
+    const { hostname } = new URL(url);
+    return `https://www.google.com/s2/favicons?domain=${hostname}&sz=64`;
+  } catch {
+    return '';
+  }
+};
+
 export class ClockApp {
   private readonly timeSource: TimeSource;
 
@@ -59,6 +68,8 @@ export class ClockApp {
   private currentTime: Time | null = null;
 
   private settings: Settings | null = null;
+
+  private previousSettings: Settings | null = null;
 
   private systemPrefersDark = getSystemPrefersDark();
 
@@ -94,6 +105,8 @@ export class ClockApp {
   private widgetElements: Partial<Record<WidgetId, HTMLElement>> = {};
 
   private widgetLayout = new Map<WidgetId, WidgetPosition>();
+
+  private isPersistingLayout = false;
 
   private activeDrag: {
     id: WidgetId;
@@ -809,6 +822,7 @@ export class ClockApp {
       widgets,
     };
 
+    this.isPersistingLayout = true;
     try {
       await updateSettings({
         widgets: {
@@ -819,6 +833,8 @@ export class ClockApp {
       });
     } catch (error) {
       console.warn("Failed to persist widget layout", error);
+    } finally {
+      this.isPersistingLayout = false;
     }
   }
 
@@ -844,11 +860,72 @@ export class ClockApp {
     }
   }
 
+  private hasAppearanceChanged(newSettings: Settings): boolean {
+    if (!this.previousSettings) return true;
+    const prev = this.previousSettings;
+    // Check theme mode
+    if (prev.themeMode !== newSettings.themeMode) return true;
+    // Check background
+    if (prev.background.type !== newSettings.background.type) return true;
+    if (prev.background.imageUrl !== newSettings.background.imageUrl) return true;
+    if (prev.background.imageData !== newSettings.background.imageData) return true;
+    if (prev.background.blur !== newSettings.background.blur) return true;
+    if (prev.background.color !== newSettings.background.color) return true;
+    // Check clock settings
+    if (prev.clock.scale !== newSettings.clock.scale) return true;
+    if (prev.clock.rimWidth !== newSettings.clock.rimWidth) return true;
+    if (prev.clock.handWidth !== newSettings.clock.handWidth) return true;
+    if (prev.clock.dotSize !== newSettings.clock.dotSize) return true;
+    // Check palettes
+    const prevLight = prev.palettes.light;
+    const newLight = newSettings.palettes.light;
+    if (prevLight.background !== newLight.background || prevLight.face !== newLight.face ||
+        prevLight.rim !== newLight.rim || prevLight.hand !== newLight.hand ||
+        prevLight.accent !== newLight.accent) return true;
+    const prevDark = prev.palettes.dark;
+    const newDark = newSettings.palettes.dark;
+    if (prevDark.background !== newDark.background || prevDark.face !== newDark.face ||
+        prevDark.rim !== newDark.rim || prevDark.hand !== newDark.hand ||
+        prevDark.accent !== newDark.accent) return true;
+    return false;
+  }
+
+  private hasLayoutChanged(newLayout: WidgetLayoutEntry[]): boolean {
+    // If we don't have any in-memory layout yet, it has "changed"
+    if (this.widgetLayout.size === 0) {
+      return true;
+    }
+
+    // Compare each entry
+    for (const entry of newLayout) {
+      const current = this.widgetLayout.get(entry.id);
+      if (!current) return true;
+      if (Math.round(current.x) !== Math.round(entry.x) || Math.round(current.y) !== Math.round(entry.y)) return true;
+      // Compare anchors
+      const currentAnchor = current.anchor;
+      const newAnchor = entry.anchor;
+      if (!currentAnchor && !newAnchor) continue;
+      if (!currentAnchor || !newAnchor) return true;
+      if (currentAnchor.horizontal !== newAnchor.horizontal) return true;
+      if (currentAnchor.vertical !== newAnchor.vertical) return true;
+      if (Math.round(currentAnchor.offsetX ?? -1) !== Math.round(newAnchor.offsetX ?? -1)) return true;
+      if (Math.round(currentAnchor.offsetY ?? -1) !== Math.round(newAnchor.offsetY ?? -1)) return true;
+    }
+
+    return false;
+  }
+
   private onSettingsChanged(settings: Settings): void {
+    const layoutChanged = this.hasLayoutChanged(settings.widgets.layout);
+    const appearanceChanged = this.hasAppearanceChanged(settings);
     this.settings = settings;
-    this.loadWidgetLayout(settings.widgets.layout);
+    if (layoutChanged) {
+      this.loadWidgetLayout(settings.widgets.layout);
+    }
     this.configureSystemWatcher(settings.themeMode);
-    this.refreshTheme();
+    if (appearanceChanged && !this.isPersistingLayout) {
+      this.refreshTheme();
+    }
    this.updateSearch(settings);
    this.updateTagline(settings);
    this.updateClockVisibility(settings);
@@ -858,6 +935,8 @@ export class ClockApp {
     }
     this.updateWidgets(settings);
     this.render(true);
+    // Track this settings state for next comparison
+    this.previousSettings = settings;
   }
 
   private configureSystemWatcher(mode: Settings["themeMode"]): void {
@@ -926,29 +1005,41 @@ export class ClockApp {
     const fragment = document.createDocumentFragment();
 
     tabs.forEach((tab) => {
-      const item = createElement<HTMLAnchorElement>("a", { className: "tabula-pinned__item tabula-card tabula-card--subtle" });
+      const item = createElement<HTMLAnchorElement>("a", { className: "tabula-pinned__item" });
       item.href = tab.url;
-      item.target = "_blank";
-      item.rel = "noreferrer noopener";
       item.title = tab.title;
+      item.setAttribute("aria-label", tab.title);
 
       const iconWrapper = createElement("span", { className: "tabula-pinned__icon" });
-      if (tab.icon) {
-        const image = createElement<HTMLImageElement>("img", { className: "tabula-pinned__icon-image" });
-        image.src = tab.icon;
-        image.alt = "";
-        image.loading = "lazy";
-        iconWrapper.append(image);
+      
+      const showIcons = settings.pinnedTabsShowIcons;
+      if (showIcons) {
+        const iconSrc = tab.icon || getFaviconUrl(tab.url);
+        if (iconSrc) {
+          const image = createElement<HTMLImageElement>("img", { className: "tabula-pinned__icon-image" });
+          image.src = iconSrc;
+          image.alt = "";
+          image.loading = "lazy";
+          image.onerror = () => {
+            // Fallback to letter if image fails
+            iconWrapper.replaceChildren();
+            const fallback = createElement("span", { className: "tabula-pinned__icon-fallback" });
+            fallback.textContent = tab.title.slice(0, 1).toUpperCase();
+            iconWrapper.append(fallback);
+          };
+          iconWrapper.append(image);
+        } else {
+          const fallback = createElement("span", { className: "tabula-pinned__icon-fallback" });
+          fallback.textContent = tab.title.slice(0, 1).toUpperCase();
+          iconWrapper.append(fallback);
+        }
       } else {
         const fallback = createElement("span", { className: "tabula-pinned__icon-fallback" });
         fallback.textContent = tab.title.slice(0, 1).toUpperCase();
         iconWrapper.append(fallback);
       }
 
-      const label = createElement("span", { className: "tabula-pinned__label" });
-      label.textContent = tab.title;
-
-      item.append(iconWrapper, label);
+      item.append(iconWrapper);
       fragment.appendChild(item);
     });
 

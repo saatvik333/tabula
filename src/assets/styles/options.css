@@ -1,7 +1,13 @@
 @import "./tokens.css";
 
+/* ==========================================================================
+   CSS Custom Properties - Unified Design Tokens
+   ========================================================================== */
+
 :root {
   color-scheme: light dark;
+
+  /* Surface colors */
   --md-surface: #0f172a;
   --md-surface-container: rgba(15, 23, 42, 0.82);
   --md-outline: rgba(148, 163, 184, 0.35);
@@ -9,23 +15,52 @@
   --md-on-primary: #041221;
   --md-on-surface: #e2e8f0;
   --md-on-surface-variant: rgba(226, 232, 240, 0.62);
-  --md-shadow-1: 0 22px 60px rgba(var(--tabula-shadow-base-rgb, 4, 18, 33), 0.5);
+  --md-shadow-1: 0 22px 60px rgba(var(--tabula-shadow-base-rgb), 0.5);
+
+  /* RGB values for alpha compositing */
   --tabula-shadow-base-rgb: 4, 18, 33;
   --tabula-accent-color-rgb: 56, 189, 248;
-  --tabula-background-image: none;
-  --tabula-background-blur: 0px;
-  --tabula-field-gap: clamp(1rem, 2vw, 1.5rem);
-  --tabula-panel-gap: clamp(1.5rem, 3vw, 2.25rem);
   --tabula-background-color-rgb: 15, 23, 42;
   --tabula-face-color-rgb: 30, 41, 59;
   --tabula-rim-color-rgb: 71, 85, 105;
   --tabula-hand-color-rgb: 226, 232, 240;
+
+  /* Background */
+  --tabula-background-image: none;
+  --tabula-background-blur: 0px;
+
+  /* Unified component values */
+  --field-bg: rgba(var(--tabula-background-color-rgb), 0.35);
+  --field-bg-hover: rgba(var(--tabula-background-color-rgb), 0.5);
+  --field-border: rgba(var(--tabula-rim-color-rgb), 0.2);
+  --field-border-hover: rgba(var(--tabula-rim-color-rgb), 0.35);
+  --focus-ring: 0 0 0 2px rgba(var(--tabula-accent-color-rgb), 0.3);
+  --transition-fast: 150ms ease;
+  --transition-medium: 200ms ease;
 }
+
+:root[data-theme="light"] {
+  --md-surface: rgba(248, 250, 252, 0.96);
+  --md-surface-container: rgba(255, 255, 255, 0.94);
+  --md-outline: rgba(15, 23, 42, 0.14);
+  --md-on-surface: #0f172a;
+  --md-on-surface-variant: rgba(15, 23, 42, 0.58);
+  --md-on-primary: #f8fafc;
+  --md-shadow-1: 0 20px 48px rgba(var(--tabula-shadow-base-rgb), 0.14);
+  --tabula-shadow-base-rgb: 15, 23, 42;
+  --tabula-background-color-rgb: 245, 247, 255;
+  --tabula-face-color-rgb: 236, 245, 255;
+  --tabula-rim-color-rgb: 199, 210, 221;
+  --tabula-hand-color-rgb: 30, 41, 59;
+}
+
+/* ==========================================================================
+   Base Reset
+   ========================================================================== */
 
 * {
   box-sizing: border-box;
 }
-
 html,
 body {
   margin: 0;
@@ -53,23 +88,10 @@ body::before {
   transform: scale(1.02);
 }
 
-:root[data-theme="light"] {
-  --md-surface: rgba(248, 250, 252, 0.96);
-  --md-surface-container: rgba(255, 255, 255, 0.94);
-  --md-outline: rgba(15, 23, 42, 0.14);
-  --md-on-surface: #0f172a;
-  --md-on-surface-variant: rgba(15, 23, 42, 0.58);
-  --md-on-primary: #f8fafc;
-  --md-shadow-1: 0 20px 48px
-    rgba(var(--tabula-shadow-base-rgb, 15, 23, 42), 0.14);
-  --tabula-shadow-base-rgb: 15, 23, 42;
-  --tabula-background-color-rgb: 245, 247, 255;
-  --tabula-face-color-rgb: 236, 245, 255;
-  --tabula-rim-color-rgb: 199, 210, 221;
-  --tabula-hand-color-rgb: 30, 41, 59;
-}
+/* ==========================================================================
+   Layout
+   ========================================================================== */
 
-/* Settings Layout */
 .settings {
   position: relative;
   z-index: 1;
@@ -102,7 +124,19 @@ body::before {
   align-items: start;
 }
 
-/* Sidebar Navigation */
+/* ==========================================================================
+   Glass Panel - Reusable mixin-like class
+   ========================================================================== */
+
+.settings__nav,
+.settings__content {
+  background: var(--field-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: var(--tabula-radius-lg);
+  border: 1px solid var(--md-outline);
+}
+
 .settings__nav {
   position: sticky;
   top: 1.5rem;
@@ -110,12 +144,16 @@ body::before {
   flex-direction: column;
   gap: 0.25rem;
   padding: 1rem;
-  background: rgba(var(--tabula-background-color-rgb), 0.6);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-radius: var(--tabula-radius-lg);
-  border: 1px solid var(--md-outline);
 }
+
+.settings__content {
+  padding: 2rem;
+  min-height: 600px;
+}
+
+/* ==========================================================================
+   Navigation
+   ========================================================================== */
 
 .nav-item {
   display: flex;
@@ -130,7 +168,8 @@ body::before {
   text-align: left;
   cursor: pointer;
   border-radius: var(--tabula-radius-sm);
-  transition: background-color 150ms ease, color 150ms ease;
+  transition: background-color var(--transition-fast),
+    color var(--transition-fast);
 }
 
 .nav-item:hover {
@@ -147,18 +186,10 @@ body::before {
   font-size: 20px;
 }
 
-/* Content Area */
-.settings__content {
-  background: rgba(var(--tabula-background-color-rgb), 0.4);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-radius: var(--tabula-radius-lg);
-  border: 1px solid var(--md-outline);
-  padding: 2rem;
-  min-height: 600px;
-}
+/* ==========================================================================
+   Sections
+   ========================================================================== */
 
-/* Sections */
 .section {
   display: none;
   flex-direction: column;
@@ -175,9 +206,12 @@ body::before {
   font-weight: 600;
 }
 
-.section__header p {
+.section__header p,
+.section__hint {
   margin: 0;
+  font-size: 0.85rem;
   color: var(--md-on-surface-variant);
+  line-height: 1.4;
 }
 
 .section__group {
@@ -187,7 +221,7 @@ body::before {
   padding: 1.5rem;
   background: rgba(var(--tabula-background-color-rgb), 0.25);
   border-radius: var(--tabula-radius-sm);
-  border: 1px solid rgba(var(--tabula-rim-color-rgb), 0.15);
+  border: 1px solid var(--field-border);
 }
 
 .section__group + .section__group {
@@ -202,18 +236,20 @@ body::before {
   letter-spacing: -0.01em;
 }
 
-.section__hint {
-  margin: 0;
-  font-size: 0.85rem;
-  color: var(--md-on-surface-variant);
-  line-height: 1.4;
-}
+/* ==========================================================================
+   Fields - Base
+   ========================================================================== */
 
-/* Field Styles */
 .field {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+fieldset.field {
+  border: none;
+  padding: 0;
+  margin: 0;
 }
 
 .field + .field {
@@ -230,24 +266,19 @@ body::before {
 .field-row .field {
   margin-top: 0;
 }
-
 .field-row + .field-row {
   margin-top: 1rem;
 }
 
-/* Remove margin when inside data-widget wrapper */
 [data-widget] .field {
   margin-top: 0;
 }
-
 [data-widget] .field + .field {
   margin-top: 0.75rem;
 }
-
 [data-widget] .field-row {
   margin-top: 1rem;
 }
-
 [data-widget] .field-row:first-child {
   margin-top: 0;
 }
@@ -259,26 +290,40 @@ body::before {
   letter-spacing: 0.01em;
 }
 
+.field__hint {
+  font-size: 0.8rem;
+  color: var(--md-on-surface-variant);
+}
+
+.field__hint[data-tone="active"] {
+  color: var(--md-primary);
+}
+
+/* ==========================================================================
+   Field Controls - Text/Select Inputs
+   ========================================================================== */
+
 .field__control {
   width: 100%;
   padding: 0.75rem 1rem;
   border-radius: var(--tabula-radius-sm);
   border: 1px solid var(--md-outline);
-  background: rgba(var(--tabula-background-color-rgb), 0.5);
+  background: var(--field-bg);
   color: var(--md-on-surface);
   font-size: 0.9rem;
   outline: none;
-  transition: border 150ms ease, box-shadow 150ms ease, background 150ms ease;
+  transition: border var(--transition-fast), box-shadow var(--transition-fast),
+    background var(--transition-fast);
 }
 
 .field__control:hover {
-  background: rgba(var(--tabula-background-color-rgb), 0.7);
+  background: var(--field-bg-hover);
 }
 
 .field__control:focus {
   border-color: var(--md-primary);
-  background: rgba(var(--tabula-background-color-rgb), 0.8);
-  box-shadow: 0 0 0 3px rgba(var(--tabula-accent-color-rgb), 0.15);
+  background: var(--field-bg-hover);
+  box-shadow: var(--focus-ring);
 }
 
 .field__control::placeholder {
@@ -291,22 +336,26 @@ body::before {
   cursor: pointer;
 }
 
-/* Toggle Fields */
+/* ==========================================================================
+   Toggle Switch
+   ========================================================================== */
+
 .field--toggle {
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
   padding: 1rem 1.25rem;
   margin-top: 0;
-  background: rgba(var(--tabula-background-color-rgb), 0.35);
+  background: var(--field-bg);
   border-radius: var(--tabula-radius-sm);
-  border: 1px solid rgba(var(--tabula-rim-color-rgb), 0.2);
-  transition: background 150ms ease, border-color 150ms ease;
+  border: 1px solid var(--field-border);
+  transition: background var(--transition-fast),
+    border-color var(--transition-fast);
 }
 
 .field--toggle:hover {
-  background: rgba(var(--tabula-background-color-rgb), 0.5);
-  border-color: rgba(var(--tabula-rim-color-rgb), 0.35);
+  background: var(--field-bg-hover);
+  border-color: var(--field-border-hover);
 }
 
 .field--toggle + .field--toggle {
@@ -321,8 +370,8 @@ body::before {
 
 .toggle {
   position: relative;
-  width: 48px;
-  height: 26px;
+  width: 52px;
+  height: 28px;
 }
 
 .toggle__input {
@@ -330,37 +379,135 @@ body::before {
   inset: 0;
   opacity: 0;
   cursor: pointer;
+  z-index: 1;
 }
 
 .toggle__track {
   width: 100%;
   height: 100%;
   border-radius: 999px;
-  background: rgba(var(--tabula-rim-color-rgb), 0.35);
+  background: rgba(var(--tabula-rim-color-rgb), 0.4);
   display: flex;
   align-items: center;
-  padding: 0 4px;
-  transition: background 150ms ease;
+  padding: 0 3px;
+  transition: background var(--transition-medium),
+    box-shadow var(--transition-medium);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 .toggle__thumb {
-  width: 18px;
-  height: 18px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   background: var(--md-on-surface);
-  transition: transform 150ms ease, background 150ms ease;
+  transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
+    background var(--transition-medium), box-shadow var(--transition-medium);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggle__input:hover + .toggle__track {
+  background: rgba(var(--tabula-rim-color-rgb), 0.55);
+}
+.toggle__input:focus-visible + .toggle__track {
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15), var(--focus-ring);
 }
 
 .toggle__input:checked + .toggle__track {
   background: var(--md-primary);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .toggle__input:checked + .toggle__track .toggle__thumb {
-  transform: translateX(22px);
+  transform: translateX(24px);
   background: var(--md-on-primary);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
 }
 
-/* Color Fields */
+/* ==========================================================================
+   Choice Groups (Radio/Checkbox)
+   ========================================================================== */
+
+.choice-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.choice {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.625rem 1rem;
+  background: var(--field-bg);
+  border: 1px solid var(--field-border);
+  border-radius: var(--tabula-radius-sm);
+  cursor: pointer;
+  transition: background var(--transition-fast),
+    border-color var(--transition-fast), box-shadow var(--transition-fast);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--md-on-surface);
+}
+
+.choice:hover {
+  background: var(--field-bg-hover);
+  border-color: rgba(var(--tabula-accent-color-rgb), 0.5);
+}
+
+.choice:has(input:focus-visible) {
+  box-shadow: var(--focus-ring);
+  border-color: var(--md-primary);
+}
+
+.choice:has(input:checked) {
+  background: rgba(var(--tabula-accent-color-rgb), 0.15);
+  border-color: rgba(var(--tabula-accent-color-rgb), 0.6);
+}
+
+/* Custom radio/checkbox indicators */
+.choice input[type="radio"],
+.choice input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  border: 2px solid rgba(var(--tabula-rim-color-rgb), 0.5);
+  background: var(--field-bg);
+  cursor: pointer;
+  transition: border-color var(--transition-fast),
+    background var(--transition-fast), box-shadow var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.choice input[type="radio"] {
+  border-radius: 50%;
+}
+.choice input[type="checkbox"] {
+  border-radius: 4px;
+}
+
+.choice input[type="radio"]:checked,
+.choice input[type="checkbox"]:checked {
+  border-color: var(--md-primary);
+  background: var(--md-primary);
+}
+
+.choice input[type="radio"]:checked {
+  box-shadow: inset 0 0 0 3px var(--md-surface-container);
+}
+
+.choice input[type="checkbox"]:checked {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23041221' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
+  background-size: 12px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* ==========================================================================
+   Color & Range Fields
+   ========================================================================== */
+
 .field--color {
   flex-direction: row;
   align-items: center;
@@ -382,7 +529,6 @@ body::before {
   gap: 0.75rem;
 }
 
-/* Range Fields */
 .field__range {
   display: flex;
   align-items: center;
@@ -403,34 +549,10 @@ body::before {
   font-variant-numeric: tabular-nums;
 }
 
-/* Choice Groups */
-.choice-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
+/* ==========================================================================
+   Preset Chips
+   ========================================================================== */
 
-.choice {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.875rem;
-  background: rgba(var(--tabula-background-color-rgb), 0.4);
-  border: 1px solid var(--md-outline);
-  border-radius: var(--tabula-radius-sm);
-  cursor: pointer;
-  transition: border-color 150ms ease;
-}
-
-.choice:hover {
-  border-color: var(--md-primary);
-}
-
-.choice input {
-  accent-color: var(--md-primary);
-}
-
-/* Preset Grid */
 .preset-grid {
   display: flex;
   flex-wrap: wrap;
@@ -441,13 +563,13 @@ body::before {
   border: 1px solid var(--md-outline);
   border-radius: var(--tabula-radius-full);
   padding: 0.5rem 1rem;
-  background: rgba(var(--tabula-background-color-rgb), 0.4);
+  background: var(--field-bg);
   color: var(--md-on-surface);
   font-size: 0.875rem;
   font-weight: 500;
   text-transform: capitalize;
   cursor: pointer;
-  transition: all 150ms ease;
+  transition: all var(--transition-fast);
 }
 
 .preset-chip:hover {
@@ -461,7 +583,10 @@ body::before {
   border-color: transparent;
 }
 
-/* Upload Area */
+/* ==========================================================================
+   Upload Area
+   ========================================================================== */
+
 .upload-area {
   display: flex;
   flex-direction: column;
@@ -472,17 +597,10 @@ body::before {
   border: 1px dashed var(--md-outline);
 }
 
-/* Field Hints */
-.field__hint {
-  font-size: 0.8rem;
-  color: var(--md-on-surface-variant);
-}
+/* ==========================================================================
+   Pinned Tabs Manager
+   ========================================================================== */
 
-.field__hint[data-tone="active"] {
-  color: var(--md-primary);
-}
-
-/* Pinned Tabs */
 .pinned-manager__list {
   display: flex;
   flex-direction: column;
@@ -501,37 +619,45 @@ body::before {
 }
 
 .pinned-manager__form {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 1rem;
+  display: flex;
+  gap: 0.75rem;
   margin-top: 1rem;
+  flex-wrap: wrap;
 }
 
-.pinned-manager__actions {
-  display: flex;
-  align-items: flex-end;
+.pinned-manager__form .field__control {
+  flex: 1;
+  min-width: 150px;
 }
 
 .pinned-item {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 0.75rem;
+  display: flex;
   align-items: center;
+  gap: 0.75rem;
   padding: 0.75rem 1rem;
-  background: rgba(var(--tabula-background-color-rgb), 0.4);
+  background: var(--field-bg);
   border-radius: var(--tabula-radius-sm);
   border: 1px solid var(--md-outline);
+}
+
+.pinned-item__preview {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
 }
 
 .pinned-item__icon {
   width: 36px;
   height: 36px;
-  border-radius: 8px;
+  border-radius: var(--tabula-radius-sm);
   background: rgba(var(--tabula-accent-color-rgb), 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .pinned-item__icon-image {
@@ -539,7 +665,6 @@ body::before {
   height: 100%;
   object-fit: cover;
 }
-
 .pinned-item__icon-fallback {
   font-weight: 600;
   font-size: 0.875rem;
@@ -552,12 +677,22 @@ body::before {
   white-space: nowrap;
 }
 
+.pinned-item__inputs {
+  display: none;
+}
 .pinned-item__actions {
   display: flex;
   gap: 0.25rem;
+  flex-shrink: 0;
+}
+.pinned-item__action--remove:hover {
+  color: #ef4444;
 }
 
-/* Footer Actions */
+/* ==========================================================================
+   Footer Actions
+   ========================================================================== */
+
 .settings__actions {
   display: flex;
   justify-content: space-between;
@@ -576,9 +711,8 @@ body::before {
 .settings__status[data-tone="success"] {
   color: rgba(var(--tabula-accent-color-rgb), 0.9);
 }
-
 .settings__status[data-tone="error"] {
-  color: #f44336;
+  color: #ef4444;
 }
 
 .settings__buttons {
@@ -586,14 +720,20 @@ body::before {
   gap: 0.75rem;
 }
 
-/* Widget Disabled State */
+/* ==========================================================================
+   States
+   ========================================================================== */
+
 [data-widget][data-disabled="true"],
 [data-depends][data-disabled="true"] {
   opacity: 0.4;
   pointer-events: none;
 }
 
-/* Responsive */
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+
 @media (max-width: 800px) {
   .settings__layout {
     grid-template-columns: 1fr;
@@ -610,7 +750,6 @@ body::before {
     padding: 0.625rem 0.875rem;
     font-size: 0.85rem;
   }
-
   .nav-item span:not(.material-symbols-outlined) {
     display: none;
   }
@@ -620,11 +759,9 @@ body::before {
   .settings {
     padding: 1rem;
   }
-
   .settings__content {
     padding: 1.25rem;
   }
-
   .field-row {
     grid-template-columns: 1fr;
   }
@@ -633,17 +770,11 @@ body::before {
     flex-direction: column;
     align-items: stretch;
   }
-
   .settings__buttons {
     justify-content: flex-end;
   }
 
-  .pinned-item {
-    grid-template-columns: 1fr;
-    gap: 0.5rem;
-  }
-
   .pinned-manager__form {
-    grid-template-columns: 1fr;
+    flex-direction: column;
   }
 }

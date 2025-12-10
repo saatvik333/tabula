@@ -97,6 +97,7 @@ const pinnedAddTitleInput = getElement<HTMLInputElement>("pinnedAddTitle");
 const pinnedAddUrlInput = getElement<HTMLInputElement>("pinnedAddUrl");
 const pinnedAddIconInput = getElement<HTMLInputElement>("pinnedAddIcon");
 const pinnedAddButton = getElement<HTMLButtonElement>("pinnedAddButton");
+const pinnedTabsShowIconsInput = getElement<HTMLInputElement>("pinnedTabsShowIcons");
 const settingsNav = getElement<HTMLElement>("settingsNav");
 
 const setStatus = (text: string, tone: "default" | "success" | "error" = "default") => {
@@ -499,6 +500,7 @@ const syncForm = (settings: Settings) => {
   updateRangeOutputs();
   updateSearchFieldState(state.search.enabled);
   pinnedTabsController.sync(state.pinnedTabs);
+  pinnedTabsShowIconsInput.checked = Boolean(state.pinnedTabsShowIcons);
   applyPreview();
   markPresetActive(state.preset ?? "custom");
 
@@ -545,6 +547,11 @@ taglineEnabledInput.addEventListener("change", () => {
   state.taglineEnabled = taglineEnabledInput.checked;
   taglineInput.disabled = !state.taglineEnabled;
   schedule(() => setStatus(`Tagline ${state.taglineEnabled ? "shown" : "hidden"}`));
+});
+
+pinnedTabsShowIconsInput.addEventListener("change", () => {
+  state.pinnedTabsShowIcons = pinnedTabsShowIconsInput.checked;
+  schedule(() => setStatus(`Website icons ${state.pinnedTabsShowIcons ? "shown" : "hidden"}`));
 });
 
 timeFormat24Input.addEventListener("change", () => {

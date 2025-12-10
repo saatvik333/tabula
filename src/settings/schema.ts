@@ -121,6 +121,7 @@ export type Settings = {
   tagline: string;
   taglineEnabled: boolean;
   pinnedTabs: PinnedTab[];
+  pinnedTabsShowIcons: boolean;
   search: {
     enabled: boolean;
     engine: SearchEngine;
