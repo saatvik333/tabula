@@ -1,7 +1,12 @@
 {
   "version": {
+    "license": "MIT",
     "release_notes": {
-      "en-US": "See release notes at https://github.com/user/tabula/releases"
+      "en-US": "v1.2.0: New Quick Notes and Quote of the Day widgets, drag-and-drop for pinned tabs, performance improvements. Full changelog: https://github.com/saatvik333/tabula/releases"
     }
+  },
+  "categories": ["other"],
+  "summary": {
+    "en-US": "A customizable, minimalist New Tab with a unique clock display and productivity widgets."
   }
 }
