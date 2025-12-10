@@ -16,7 +16,7 @@
     "lint:firefox": "web-ext lint -s dist",
     "pack:chrome": "bun scripts/package.mjs",
     "sign:firefox": "web-ext sign -s dist -a web-ext-artifacts",
-    "publish:firefox": "web-ext sign -s dist -a web-ext-artifacts --channel=listed --amo-metadata=.amo-metadata.json",
+    "publish:firefox": "web-ext sign -s dist -a web-ext-artifacts --channel=listed --amo-metadata=.amo-metadata.json --use-submission-api",
     "version": "bun scripts/version.mjs",
     "publish:chrome": "bun scripts/version.mjs | xargs -I{} bash -lc 'bunx chrome-webstore-upload-cli upload --source tabula-{}-chrome.zip --extension-id $CHROME_EXTENSION_ID && bunx chrome-webstore-upload-cli publish --extension-id $CHROME_EXTENSION_ID'"
   },
