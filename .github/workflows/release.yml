@@ -32,6 +32,8 @@ jobs:
         run: bun test
 
       - name: Build
+        env:
+          VITE_WEATHER_API_KEY: ${{ secrets.VITE_WEATHER_API_KEY }}
         run: RELEASE_BUILD=1 bun run build
 
       - name: Lint (Firefox)

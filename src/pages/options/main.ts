@@ -90,6 +90,8 @@ const pomodoroShortBreakBodyInput = getElement<HTMLInputElement>("pomodoroShortB
 const pomodoroLongBreakTitleInput = getElement<HTMLInputElement>("pomodoroLongBreakTitle");
 const pomodoroLongBreakBodyInput = getElement<HTMLInputElement>("pomodoroLongBreakBody");
 const tasksEnabledInput = getElement<HTMLInputElement>("tasksEnabled");
+const notesEnabledInput = getElement<HTMLInputElement>("notesEnabled");
+const quotesEnabledInput = getElement<HTMLInputElement>("quotesEnabled");
 const presetContainer = getElement<HTMLDivElement>("presetChips");
 const pinnedListContainer = getElement<HTMLDivElement>("pinnedList");
 const pinnedEmptyState = getElement<HTMLParagraphElement>("pinnedEmpty");
@@ -496,6 +498,8 @@ const syncForm = (settings: Settings) => {
   updatePomodoroFieldState(state.widgets.pomodoro.enabled);
   tasksEnabledInput.checked = state.widgets.tasks.enabled;
   updateTasksFieldState(state.widgets.tasks.enabled);
+  notesEnabledInput.checked = state.widgets.notes.enabled;
+  quotesEnabledInput.checked = state.widgets.quotes.enabled;
 
   updateRangeOutputs();
   updateSearchFieldState(state.search.enabled);
@@ -801,6 +805,16 @@ tasksEnabledInput.addEventListener("change", () => {
   state.widgets.tasks.enabled = tasksEnabledInput.checked;
   updateTasksFieldState(state.widgets.tasks.enabled);
   schedule(() => setStatus("Tasks widget preference updated"));
+});
+
+notesEnabledInput.addEventListener("change", () => {
+  state.widgets.notes.enabled = notesEnabledInput.checked;
+  schedule(() => setStatus("Notes widget preference updated"));
+});
+
+quotesEnabledInput.addEventListener("change", () => {
+  state.widgets.quotes.enabled = quotesEnabledInput.checked;
+  schedule(() => setStatus("Quotes widget preference updated"));
 });
 
 // Notification settings handlers

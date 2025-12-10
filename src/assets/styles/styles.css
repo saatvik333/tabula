@@ -228,6 +228,57 @@ body::after {
   gap: 0.5rem;
 }
 
+.tabula-widget--notes {
+  gap: 0.5rem;
+  padding-bottom: 1rem;
+}
+
+.tabula-widget__textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 0.75rem;
+  border: 1px solid rgba(var(--tabula-rim-color-rgb), 0.3);
+  border-radius: var(--tabula-radius-sm);
+  background: rgba(var(--tabula-background-color-rgb), 0.4);
+  color: var(--md-on-surface);
+  font-family: var(--tabula-font-family);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  resize: vertical;
+  outline: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.tabula-widget__textarea::placeholder {
+  color: var(--md-on-surface-variant);
+  opacity: 0.7;
+}
+
+.tabula-widget__textarea:focus {
+  border-color: var(--md-primary);
+  box-shadow: 0 0 0 2px rgba(var(--tabula-accent-color-rgb), 0.15);
+}
+
+.tabula-widget--quotes {
+  gap: 0.5rem;
+  text-align: center;
+  padding: 1.5rem 1.25rem;
+}
+
+.tabula-widget__quote {
+  margin: 0;
+  font-size: 1.1rem;
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--md-on-surface);
+}
+
+.tabula-widget__author {
+  margin: 0.5rem 0 0;
+  font-size: 0.85rem;
+  color: var(--md-on-surface-variant);
+}
+
 .tabula-widget--tasks {
   gap: 0.75rem;
 }

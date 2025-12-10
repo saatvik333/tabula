@@ -22,6 +22,8 @@ import { getSystemPrefersDark, resolveTheme, watchSystemTheme, type ThemeVariant
 import { createWeatherWidget, type WeatherWidgetController } from "$src/widgets/weather-widget";
 import { createPomodoroWidget, type PomodoroWidgetController } from "$src/widgets/pomodoro-widget";
 import { createTasksWidget, type TasksWidgetController } from "$src/widgets/tasks-widget";
+import { createNotesWidget, type NotesWidgetController } from "$src/widgets/notes-widget";
+import { createQuotesWidget, type QuotesWidgetController } from "$src/widgets/quotes-widget";
 
 // Firefox uses `browser` namespace for WebExtension APIs
 declare const browser: typeof chrome | undefined;
@@ -37,7 +39,7 @@ const SEARCH_ENGINES: Record<SearchEngine, (query: string) => string> = {
   brave: (query) => `https://search.brave.com/search?q=${encodeURIComponent(query)}`,
 };
 
-const WIDGET_IDS: WidgetId[] = ["weather", "pomodoro", "tasks"];
+const WIDGET_IDS: WidgetId[] = ["weather", "pomodoro", "tasks", "notes", "quotes"];
 
 type WidgetPosition = {
   x: number;
@@ -98,9 +100,10 @@ export class ClockApp {
   private widgetsContainer: HTMLElement | null = null;
 
   private weatherWidget: WeatherWidgetController | null = null;
-
   private pomodoroWidget: PomodoroWidgetController | null = null;
   private tasksWidget: TasksWidgetController | null = null;
+  private notesWidget: NotesWidgetController | null = null;
+  private quotesWidget: QuotesWidgetController | null = null;
 
   private widgetElements: Partial<Record<WidgetId, HTMLElement>> = {};
 
@@ -185,6 +188,38 @@ export class ClockApp {
         tasks: {
           enabled: this.settings.widgets.tasks.enabled,
           items: nextItems,
+        },
+      },
+    });
+  };
+
+  private readonly handleNotesChange = (content: string): void => {
+    if (!this.settings) {
+      return;
+    }
+
+    if (!this.settings.widgets.notes.enabled) {
+      return;
+    }
+
+    const widgets = {
+      ...this.settings.widgets,
+      notes: {
+        ...this.settings.widgets.notes,
+        content,
+      },
+    };
+
+    this.settings = {
+      ...this.settings,
+      widgets,
+    };
+
+    void updateSettings({
+      widgets: {
+        notes: {
+          enabled: this.settings.widgets.notes.enabled,
+          content,
         },
       },
     });
@@ -297,10 +332,22 @@ export class ClockApp {
     const tasksWidget = createTasksWidget({
       onChange: (items) => this.handleTasksChange(items),
     });
+    const notesWidget = createNotesWidget();
+    notesWidget.setChangeHandler((content) => this.handleNotesChange(content));
+    const quotesWidget = createQuotesWidget();
+    
     this.prepareWidget(weatherWidget.element, "weather");
     this.prepareWidget(pomodoroWidget.element, "pomodoro");
     this.prepareWidget(tasksWidget.element, "tasks");
-    widgetsContainer.append(weatherWidget.element, pomodoroWidget.element, tasksWidget.element);
+    this.prepareWidget(notesWidget.element, "notes");
+    this.prepareWidget(quotesWidget.element, "quotes");
+    widgetsContainer.append(
+      weatherWidget.element,
+      pomodoroWidget.element,
+      tasksWidget.element,
+      notesWidget.element,
+      quotesWidget.element
+    );
 
     root.append(controls, clockShell, pinnedSection, tagline);
     root.insertBefore(searchForm, clockShell);
@@ -319,6 +366,8 @@ export class ClockApp {
     this.weatherWidget = weatherWidget;
     this.pomodoroWidget = pomodoroWidget;
     this.tasksWidget = tasksWidget;
+    this.notesWidget = notesWidget;
+    this.quotesWidget = quotesWidget;
 
     this.initializeDefaultWidgetLayout();
   }
@@ -915,9 +964,31 @@ export class ClockApp {
     return false;
   }
 
+  private hasPinnedTabsChanged(newSettings: Settings): boolean {
+    if (!this.previousSettings) return true;
+    const prevTabs = this.previousSettings.pinnedTabs;
+    const newTabs = newSettings.pinnedTabs;
+    const prevShowIcons = this.previousSettings.pinnedTabsShowIcons;
+    const newShowIcons = newSettings.pinnedTabsShowIcons;
+    // Check if show icons setting changed
+    if (prevShowIcons !== newShowIcons) return true;
+    // Check array length
+    if (prevTabs.length !== newTabs.length) return true;
+    // Compare each tab
+    for (let i = 0; i < prevTabs.length; i++) {
+      const prev = prevTabs[i];
+      const next = newTabs[i];
+      if (!prev || !next) return true;
+      if (prev.id !== next.id || prev.url !== next.url ||
+          prev.title !== next.title || prev.icon !== next.icon) return true;
+    }
+    return false;
+  }
+
   private onSettingsChanged(settings: Settings): void {
     const layoutChanged = this.hasLayoutChanged(settings.widgets.layout);
     const appearanceChanged = this.hasAppearanceChanged(settings);
+    const pinnedTabsChanged = this.hasPinnedTabsChanged(settings);
     this.settings = settings;
     if (layoutChanged) {
       this.loadWidgetLayout(settings.widgets.layout);
@@ -929,7 +1000,9 @@ export class ClockApp {
    this.updateSearch(settings);
    this.updateTagline(settings);
    this.updateClockVisibility(settings);
-    this.updatePinnedTabs(settings);
+    if (pinnedTabsChanged) {
+      this.updatePinnedTabs(settings);
+    }
     if (this.display) {
       this.display.setSecondsVisible(Boolean(settings.clock.showSeconds));
     }
@@ -1107,16 +1180,18 @@ export class ClockApp {
   }
 
   private updateWidgets(settings: Settings): void {
-    if (!this.widgetsContainer || !this.weatherWidget || !this.pomodoroWidget || !this.tasksWidget) return;
+    if (!this.widgetsContainer || !this.weatherWidget || !this.pomodoroWidget || !this.tasksWidget || !this.notesWidget || !this.quotesWidget) return;
 
     const { widgets } = settings;
     this.weatherWidget.update(widgets.weather);
     this.pomodoroWidget.update(widgets.pomodoro);
     this.tasksWidget.update(widgets.tasks);
+    this.notesWidget.update(widgets.notes);
+    this.quotesWidget.update(widgets.quotes);
 
     this.applyWidgetLayout();
 
-    const allDisabled = !widgets.weather.enabled && !widgets.pomodoro.enabled && !widgets.tasks.enabled;
+    const allDisabled = !widgets.weather.enabled && !widgets.pomodoro.enabled && !widgets.tasks.enabled && !widgets.notes.enabled && !widgets.quotes.enabled;
     this.widgetsContainer.classList.toggle("is-hidden", allDisabled);
   }
 

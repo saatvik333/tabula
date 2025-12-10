@@ -60,6 +60,7 @@ export const createPinnedTabsController = (
   options: PinnedTabsControllerOptions,
 ): PinnedTabsController => {
   let tabs: PinnedTab[] = [];
+  let draggedIndex: number | null = null;
 
   const emitChange = (): void => {
     options.onChange(cloneTabs(tabs));
@@ -119,6 +120,63 @@ export const createPinnedTabsController = (
     const row = document.createElement("div");
     row.className = "pinned-item";
     row.dataset["id"] = tab.id;
+    row.draggable = true;
+
+    // Drag handle
+    const dragHandle = document.createElement("span");
+    dragHandle.className = "pinned-item__drag-handle material-symbols-outlined";
+    dragHandle.textContent = "drag_indicator";
+    dragHandle.setAttribute("aria-hidden", "true");
+
+    // Drag event handlers
+    row.addEventListener("dragstart", (e) => {
+      draggedIndex = index;
+      row.classList.add("pinned-item--dragging");
+      if (e.dataTransfer) {
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", String(index));
+      }
+    });
+
+    row.addEventListener("dragend", () => {
+      draggedIndex = null;
+      row.classList.remove("pinned-item--dragging");
+      // Clean up all drag-over states
+      options.list.querySelectorAll(".pinned-item--drag-over").forEach((el) => {
+        el.classList.remove("pinned-item--drag-over");
+      });
+    });
+
+    row.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      if (e.dataTransfer) {
+        e.dataTransfer.dropEffect = "move";
+      }
+      if (draggedIndex !== null && draggedIndex !== index) {
+        row.classList.add("pinned-item--drag-over");
+      }
+    });
+
+    row.addEventListener("dragleave", () => {
+      row.classList.remove("pinned-item--drag-over");
+    });
+
+    row.addEventListener("drop", (e) => {
+      e.preventDefault();
+      row.classList.remove("pinned-item--drag-over");
+      if (draggedIndex === null || draggedIndex === index) return;
+
+      const fromIndex = draggedIndex;
+      const toIndex = index;
+
+      commit((current) => {
+        const next = [...current];
+        const [moved] = next.splice(fromIndex, 1);
+        if (!moved) return current;
+        next.splice(toIndex, 0, moved);
+        return next;
+      }, "Pinned tabs reordered");
+    });
 
     const preview = document.createElement("div");
     preview.className = "pinned-item__preview";
@@ -260,40 +318,14 @@ export const createPinnedTabsController = (
       return button;
     };
 
-    const moveUp = createActionButton("arrow_upward", "Move pinned tab up", () => {
-      if (index === 0) return;
-      commit((current) => {
-        const next = [...current];
-        const [entry] = next.splice(index, 1);
-        if (!entry) {
-          return current;
-        }
-        next.splice(index - 1, 0, entry);
-        return next;
-      }, "Pinned tabs reordered");
-    }, index === 0);
-
-    const moveDown = createActionButton("arrow_downward", "Move pinned tab down", () => {
-      commit((current) => {
-        const next = [...current];
-        if (index >= next.length - 1) return next;
-        const [entry] = next.splice(index, 1);
-        if (!entry) {
-          return current;
-        }
-        next.splice(index + 1, 0, entry);
-        return next;
-      }, "Pinned tabs reordered");
-    }, index === tabs.length - 1);
-
     const remove = createActionButton("delete", "Remove pinned tab", () => {
       commit((current) => current.filter((candidate) => candidate.id !== tab.id), "Pinned tab removed");
     }, false);
     remove.classList.add("pinned-item__action--remove");
 
-    actions.append(moveUp, moveDown, remove);
+    actions.append(remove);
 
-    row.append(preview, inputs, actions);
+    row.append(dragHandle, preview, inputs, actions);
     updatePreview();
     return row;
   };

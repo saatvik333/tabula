@@ -31,7 +31,7 @@ export type TaskItem = {
   text: string;
 };
 
-export type WidgetId = "weather" | "pomodoro" | "tasks";
+export type WidgetId = "weather" | "pomodoro" | "tasks" | "notes" | "quotes";
 
 export type WidgetAnchor = {
   horizontal?: "left" | "right";
@@ -85,6 +85,16 @@ export type PomodoroWidgetSettings = {
   };
 };
 
+export type NotesWidgetSettings = {
+  enabled: boolean;
+  content: string;
+};
+
+export type QuotesWidgetSettings = {
+  enabled: boolean;
+  customQuotes: string[];
+};
+
 export type WidgetsSettings = {
   layout: WidgetLayoutEntry[];
   weather: WeatherWidgetSettings;
@@ -93,6 +103,8 @@ export type WidgetsSettings = {
     enabled: boolean;
     items: TaskItem[];
   };
+  notes: NotesWidgetSettings;
+  quotes: QuotesWidgetSettings;
 };
 
 export type Settings = {

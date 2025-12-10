@@ -26,7 +26,7 @@ type WeatherApiResponse = {
   };
 };
 
-const WEATHER_API_KEY = "c921752e6e4a4d68b04162048252210";
+const WEATHER_API_KEY = import.meta.env["VITE_WEATHER_API_KEY"] ?? "";
 const WEATHER_ENDPOINT = "https://api.weatherapi.com/v1/current.json";
 const REFRESH_INTERVAL_MS = 15 * 60 * 1000;
 

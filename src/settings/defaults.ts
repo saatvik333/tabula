@@ -94,7 +94,7 @@ const coerceTimeFormat = (value: unknown, fallback: TimeFormat): TimeFormat => {
   return fallback;
 };
 
-const KNOWN_WIDGET_IDS: readonly WidgetId[] = ["weather", "pomodoro", "tasks"];
+const KNOWN_WIDGET_IDS: readonly WidgetId[] = ["weather", "pomodoro", "tasks", "notes", "quotes"];
 
 const normaliseOffset = (value: unknown): number | undefined => {
   const numeric = Number(value);
@@ -355,6 +355,16 @@ const mergeWidgets = (
   weather: sanitizeWeather(value?.weather, fallback.weather),
   pomodoro: sanitizePomodoro(value?.pomodoro, fallback.pomodoro),
   tasks: sanitizeTasks(value?.tasks, fallback.tasks),
+  notes: {
+    enabled: sanitizeBoolean(value?.notes?.enabled, fallback.notes.enabled),
+    content: typeof value?.notes?.content === "string" ? value.notes.content : fallback.notes.content,
+  },
+  quotes: {
+    enabled: sanitizeBoolean(value?.quotes?.enabled, fallback.quotes.enabled),
+    customQuotes: Array.isArray(value?.quotes?.customQuotes)
+      ? value.quotes.customQuotes.filter((q): q is string => typeof q === "string" && q.trim().length > 0)
+      : fallback.quotes.customQuotes,
+  },
 });
 const MATERIAL_LIGHT: Palette = {
   background: "#fafafa",
@@ -376,6 +386,8 @@ const DEFAULT_WIDGET_LAYOUT: WidgetLayoutEntry[] = [
   { id: "weather", x: 0, y: 0 },
   { id: "pomodoro", x: 0, y: 260 },
   { id: "tasks", x: 0, y: 520 },
+  { id: "notes", x: 0, y: 780 },
+  { id: "quotes", x: 0, y: 1040 },
 ];
 
 export const DEFAULT_PALETTE_LIGHT: Palette = MATERIAL_LIGHT;
@@ -444,6 +456,14 @@ const BASE_DEFAULT_SETTINGS: Settings = {
     tasks: {
       enabled: true,
       items: [],
+    },
+    notes: {
+      enabled: true,
+      content: "",
+    },
+    quotes: {
+      enabled: true,
+      customQuotes: [],
     },
   },
 };

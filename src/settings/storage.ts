@@ -288,6 +288,14 @@ const combineWithCurrent = (current: Settings, partial: PartialSettings): Partia
         ? partial.widgets.tasks.items.map((item) => ({ ...item }))
         : current.widgets.tasks.items.map((item) => ({ ...item })),
     },
+    notes: {
+      ...current.widgets.notes,
+      ...(partial.widgets?.notes ?? {}),
+    },
+    quotes: {
+      ...current.widgets.quotes,
+      ...(partial.widgets?.quotes ?? {}),
+    },
   },
   palettes: {
     light: {

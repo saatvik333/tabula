@@ -27,7 +27,7 @@ A customizable, minimalist New Tab extension for **Chrome**, **Edge**, **Brave**
 
 - **Clock of Clocks** — Unique 24-cell digit display with 12/24h formats
 - **Customizable Tagline** — Personalized greeting message
-- **Pinned Tabs** — Quick access to frequently used sites
+- **Pinned Tabs** — Quick access to favorite sites with drag-and-drop reordering
 - **Built-in Search** — Configurable search engine integration
 
 ### Widgets
@@ -35,6 +35,8 @@ A customizable, minimalist New Tab extension for **Chrome**, **Edge**, **Brave**
 - **Pomodoro Timer** — Focus sessions with browser notifications
 - **Tasks** — Simple todo list that persists across tabs
 - **Weather** — Current conditions at a glance
+- **Quick Notes** — Persistent scratchpad for quick thoughts
+- **Quote of the Day** — Daily motivational quotes from ZenQuotes API
 
 ### Appearance
 
@@ -82,7 +84,7 @@ src/
 ├── core/       # Utilities (time, DOM, ticker)
 ├── pages/      # Page entrypoints
 ├── settings/   # Schema, defaults, storage
-├── widgets/    # Pomodoro, tasks, weather
+├── widgets/    # Pomodoro, tasks, weather, notes, quotes
 └── assets/     # Icons, styles
 ```
 

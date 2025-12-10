@@ -638,6 +638,38 @@ fieldset.field {
   background: var(--field-bg);
   border-radius: var(--tabula-radius-sm);
   border: 1px solid var(--md-outline);
+  transition: transform 0.15s ease, opacity 0.15s ease, border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.pinned-item__drag-handle {
+  cursor: grab;
+  color: var(--md-on-surface-variant);
+  opacity: 0.6;
+  transition: opacity 0.15s ease, color 0.15s ease;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.pinned-item__drag-handle:hover {
+  opacity: 1;
+  color: var(--md-on-surface);
+}
+
+.pinned-item__drag-handle:active {
+  cursor: grabbing;
+}
+
+.pinned-item--dragging {
+  opacity: 0.5;
+  transform: scale(0.98);
+  border-color: var(--tabula-accent-color);
+}
+
+.pinned-item--drag-over {
+  border-color: var(--tabula-accent-color);
+  box-shadow: 0 0 0 2px rgba(var(--tabula-accent-color-rgb), 0.3);
 }
 
 .pinned-item__preview {
