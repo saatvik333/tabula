@@ -2,7 +2,7 @@ import { createElement } from "$src/core/dom";
 import type { QuotesWidgetSettings } from "$src/settings/schema";
 
 const QUOTES_CACHE_KEY = "tabula:quote-of-day";
-const ZENQUOTES_API = "https://zenquotes.io/api/today";
+const ON_THIS_DAY_API = "https://today.zenquotes.io/api";
 
 type QuoteCache = {
   date: string;
@@ -10,9 +10,18 @@ type QuoteCache = {
   author: string;
 };
 
-type ZenQuoteResponse = {
-  q: string;
-  a: string;
+type OnThisDayEvent = {
+  text: string;
+  html: string;
+};
+
+type OnThisDayResponse = {
+  info: string;
+  date: string;
+  data: {
+    Events?: OnThisDayEvent[];
+    Births?: OnThisDayEvent[];
+  };
 };
 
 const getTodayString = (): string => {
@@ -41,19 +50,57 @@ const saveCachedQuote = (quote: string, author: string): void => {
   }
 };
 
-const fetchQuoteOfDay = async (signal?: AbortSignal): Promise<{ quote: string; author: string } | null> => {
+/**
+ * Clean HTML entities and citation references from the text.
+ */
+const cleanText = (text: string): string => {
+  return text
+    .replace(/&#8211;/g, "–")
+    .replace(/&#91;\d+&#93;/g, "") // Remove [1], [2] style citations
+    .replace(/&#\d+;/g, "") // Remove other HTML entities
+    .replace(/\s+/g, " ")
+    .trim();
+};
+
+/**
+ * Extract year and event description from OnThisDay text.
+ * Format: "1642 – Abel Tasman is the first recorded European to sight New Zealand."
+ */
+const parseEvent = (text: string): { year: string; event: string } | null => {
+  const cleaned = cleanText(text);
+  const match = cleaned.match(/^(\d{4})\s*[–-]\s*(.+)$/);
+  if (!match || !match[1] || !match[2]) return null;
+  return { year: match[1], event: match[2] };
+};
+
+const fetchOnThisDay = async (signal?: AbortSignal): Promise<{ quote: string; author: string } | null> => {
   try {
     const init: RequestInit = signal ? { signal } : {};
-    const response = await fetch(ZENQUOTES_API, init);
+    const response = await fetch(ON_THIS_DAY_API, init);
     if (!response.ok) return null;
 
-    const data = (await response.json()) as ZenQuoteResponse[];
-    if (!Array.isArray(data) || data.length === 0) return null;
+    const data = (await response.json()) as OnThisDayResponse;
+    if (!data?.data) return null;
 
-    const first = data[0];
-    if (!first || typeof first.q !== "string" || typeof first.a !== "string") return null;
+    // Combine events and births, pick a random one
+    const events = data.data.Events ?? [];
+    const births = data.data.Births ?? [];
+    const allItems = [...events.slice(0, 20), ...births.slice(0, 10)];
 
-    return { quote: first.q, author: first.a };
+    if (allItems.length === 0) return null;
+
+    // Pick a random item
+    const randomIndex = Math.floor(Math.random() * allItems.length);
+    const item = allItems[randomIndex];
+    if (!item?.text) return null;
+
+    const parsed = parseEvent(item.text);
+    if (!parsed) return null;
+
+    return {
+      quote: parsed.event,
+      author: `On this day, ${parsed.year}`,
+    };
   } catch {
     return null;
   }
@@ -102,7 +149,7 @@ class QuotesWidget {
       return;
     }
 
-    // Fetch a new quote from ZenQuotes API
+    // Fetch a new quote from OnThisDay API
     this.loadQuote();
   }
 
@@ -122,14 +169,14 @@ class QuotesWidget {
   }
 
   private async loadQuote(): Promise<void> {
-    this.statusEl.textContent = "Loading quote...";
+    this.statusEl.textContent = "Loading...";
     this.renderQuote("", "");
 
     this.abortCurrentRequest();
     this.abortController = new AbortController();
 
     try {
-      const result = await fetchQuoteOfDay(this.abortController.signal);
+      const result = await fetchOnThisDay(this.abortController.signal);
       const { quote, author } = result ?? FALLBACK_QUOTE;
       saveCachedQuote(quote, author);
       this.renderQuote(quote, author);
@@ -146,7 +193,7 @@ class QuotesWidget {
   }
 
   private renderQuote(quote: string, author: string): void {
-    this.quoteEl.textContent = quote ? `"${quote}"` : "";
+    this.quoteEl.textContent = quote || "";
     this.authorEl.textContent = author ? `— ${author}` : "";
   }
 }

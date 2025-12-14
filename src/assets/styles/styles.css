@@ -489,6 +489,8 @@ body::after {
   box-shadow: inset 0 0 18px
       rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.45),
     0 12px 32px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.38);
+  isolation: isolate;
+  overflow: hidden;
 }
 
 .hand {
@@ -497,17 +499,11 @@ body::after {
   left: 50%;
   width: 48%;
   height: var(--tabula-clock-hand-width);
-  background: rgba(
-    var(--tabula-hand-color-rgb, 255, 255, 255),
-    var(--tabula-glass-alpha-highlight, 0.9)
-  );
+  background: rgb(var(--tabula-hand-color-rgb, 255, 255, 255));
   border-radius: 999px;
   transform-origin: center left;
   transform: translateY(-50%) rotate(var(--hand-angle, 135deg));
   transition: transform 260ms cubic-bezier(0.26, 0.68, 0.48, 1);
-  will-change: transform;
-  box-shadow: 0 0 10px
-    rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.35);
 }
 
 .cell--inactive .hand {
@@ -516,7 +512,7 @@ body::after {
     var(--tabula-glass-alpha-highlight-muted, 0.28)
   );
   opacity: 0.55;
-  box-shadow: 0 0 6px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.18);
+  box-shadow: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -530,13 +526,9 @@ body::after {
   width: var(--tabula-clock-dot-size);
   height: var(--tabula-clock-dot-size);
   border-radius: 50%;
-  background: rgba(
-    var(--tabula-hand-color-rgb, 255, 255, 255),
-    var(--tabula-glass-alpha-highlight, 0.9)
-  );
+  background: rgb(var(--tabula-hand-color-rgb, 255, 255, 255));
   inset: 50% auto auto 50%;
   translate: -50% -50%;
-  box-shadow: 0 0 14px rgba(var(--tabula-hand-color-rgb, 255, 255, 255), 0.35);
 }
 
 .tabula-search {
@@ -638,7 +630,7 @@ body::after {
       var(--tabula-glass-alpha-subtle-bottom, 0.1)
     )
   );
-  border-radius: var(--tabula-radius-lg);
+  border-radius: var(--tabula-radius-full);
   border: 1px solid rgba(var(--tabula-rim-color-rgb, 148, 163, 184), 0.2);
   backdrop-filter: blur(16px) saturate(140%);
   -webkit-backdrop-filter: blur(16px) saturate(140%);

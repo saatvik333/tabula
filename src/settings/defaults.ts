@@ -478,7 +478,7 @@ const mergeClock = (
   scale: clamp(Number(value?.scale), fallback.scale, 0.5, 2),
   rimWidth: clamp(Number(value?.rimWidth), fallback.rimWidth, 1, 12),
   handWidth: clamp(Number(value?.handWidth), fallback.handWidth, 2, 14),
-  dotSize: clamp(Number(value?.dotSize), fallback.dotSize, 4, 24),
+  dotSize: clamp(Number(value?.dotSize), fallback.dotSize, 2, 32),
   format: coerceTimeFormat(value?.format, fallback.format),
   showSeconds: sanitizeBoolean(value?.showSeconds, fallback.showSeconds),
 });

@@ -22,7 +22,7 @@ describe("mergeWithDefaults", () => {
     expect(result.clock.scale).toBeCloseTo(2);
     expect(result.clock.rimWidth).toBeCloseTo(1);
     expect(result.clock.handWidth).toBeCloseTo(3);
-    expect(result.clock.dotSize).toBeCloseTo(24);
+    expect(result.clock.dotSize).toBeCloseTo(32);
     expect(result.preset).toBe(DEFAULT_SETTINGS.preset);
     expect(result.clock.format).toBe(DEFAULT_SETTINGS.clock.format);
   });
