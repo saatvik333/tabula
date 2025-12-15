@@ -2,7 +2,7 @@ import { createElement } from "$src/core/dom";
 import type { QuotesWidgetSettings } from "$src/settings/schema";
 
 const QUOTES_CACHE_KEY = "tabula:quote-of-day";
-const ON_THIS_DAY_API = "https://today.zenquotes.io/api";
+const QUOTESLATE_API = "https://quoteslate.vercel.app/api/quotes/random";
 
 type QuoteCache = {
   date: string;
@@ -10,18 +10,13 @@ type QuoteCache = {
   author: string;
 };
 
-type OnThisDayEvent = {
-  text: string;
-  html: string;
-};
-
-type OnThisDayResponse = {
-  info: string;
-  date: string;
-  data: {
-    Events?: OnThisDayEvent[];
-    Births?: OnThisDayEvent[];
-  };
+// QuoteSlate returns a single object
+type QuoteSlateResponse = {
+  id: number;
+  quote: string;
+  author: string;
+  length: number;
+  tags: string[];
 };
 
 const getTodayString = (): string => {
@@ -50,56 +45,18 @@ const saveCachedQuote = (quote: string, author: string): void => {
   }
 };
 
-/**
- * Clean HTML entities and citation references from the text.
- */
-const cleanText = (text: string): string => {
-  return text
-    .replace(/&#8211;/g, "–")
-    .replace(/&#91;\d+&#93;/g, "") // Remove [1], [2] style citations
-    .replace(/&#\d+;/g, "") // Remove other HTML entities
-    .replace(/\s+/g, " ")
-    .trim();
-};
-
-/**
- * Extract year and event description from OnThisDay text.
- * Format: "1642 – Abel Tasman is the first recorded European to sight New Zealand."
- */
-const parseEvent = (text: string): { year: string; event: string } | null => {
-  const cleaned = cleanText(text);
-  const match = cleaned.match(/^(\d{4})\s*[–-]\s*(.+)$/);
-  if (!match || !match[1] || !match[2]) return null;
-  return { year: match[1], event: match[2] };
-};
-
-const fetchOnThisDay = async (signal?: AbortSignal): Promise<{ quote: string; author: string } | null> => {
+const fetchQuote = async (signal?: AbortSignal): Promise<{ quote: string; author: string } | null> => {
   try {
     const init: RequestInit = signal ? { signal } : {};
-    const response = await fetch(ON_THIS_DAY_API, init);
+    const response = await fetch(QUOTESLATE_API, init);
     if (!response.ok) return null;
 
-    const data = (await response.json()) as OnThisDayResponse;
-    if (!data?.data) return null;
-
-    // Combine events and births, pick a random one
-    const events = data.data.Events ?? [];
-    const births = data.data.Births ?? [];
-    const allItems = [...events.slice(0, 20), ...births.slice(0, 10)];
-
-    if (allItems.length === 0) return null;
-
-    // Pick a random item
-    const randomIndex = Math.floor(Math.random() * allItems.length);
-    const item = allItems[randomIndex];
-    if (!item?.text) return null;
-
-    const parsed = parseEvent(item.text);
-    if (!parsed) return null;
+    const data = (await response.json()) as QuoteSlateResponse;
+    if (!data?.quote || !data?.author) return null;
 
     return {
-      quote: parsed.event,
-      author: `On this day, ${parsed.year}`,
+      quote: data.quote,
+      author: data.author,
     };
   } catch {
     return null;
@@ -118,9 +75,12 @@ class QuotesWidget {
   private readonly authorEl: HTMLElement;
   private readonly statusEl: HTMLElement;
   private abortController: AbortController | null = null;
+  private isLoading = false;
 
   constructor() {
     this.element = createElement("div", { className: "tabula-card tabula-widget tabula-widget--quotes" });
+    this.element.style.cursor = "pointer";
+    this.element.title = "Click for a new quote";
 
     this.quoteEl = createElement("p", { className: "tabula-widget__quote" });
     this.authorEl = createElement("p", { className: "tabula-widget__author" });
@@ -129,6 +89,13 @@ class QuotesWidget {
     this.element.append(this.quoteEl, this.authorEl, this.statusEl);
     this.element.hidden = true;
     this.element.style.display = "none";
+
+    // Click to get a new random quote
+    this.element.addEventListener("click", () => {
+      if (!this.isLoading) {
+        this.loadQuote();
+      }
+    });
   }
 
   update(settings: QuotesWidgetSettings): void {
@@ -149,7 +116,7 @@ class QuotesWidget {
       return;
     }
 
-    // Fetch a new quote from OnThisDay API
+    // Fetch a new quote from Quotable API
     this.loadQuote();
   }
 
@@ -169,14 +136,14 @@ class QuotesWidget {
   }
 
   private async loadQuote(): Promise<void> {
+    this.isLoading = true;
     this.statusEl.textContent = "Loading...";
-    this.renderQuote("", "");
 
     this.abortCurrentRequest();
     this.abortController = new AbortController();
 
     try {
-      const result = await fetchOnThisDay(this.abortController.signal);
+      const result = await fetchQuote(this.abortController.signal);
       const { quote, author } = result ?? FALLBACK_QUOTE;
       saveCachedQuote(quote, author);
       this.renderQuote(quote, author);
@@ -189,6 +156,7 @@ class QuotesWidget {
       this.statusEl.textContent = "";
     } finally {
       this.abortController = null;
+      this.isLoading = false;
     }
   }
 

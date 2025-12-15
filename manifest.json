@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Tabula",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Tabula – Your space, no noise.",
   "icons": {
     "16": "icons/icon16.png",
@@ -10,6 +10,7 @@
     "128": "icons/icon128.png"
   },
   "permissions": ["storage", "notifications"],
+  "host_permissions": ["https://quoteslate.vercel.app/*"],
   "options_ui": {
     "page": "options.html",
     "open_in_tab": true

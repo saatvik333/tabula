@@ -21,9 +21,9 @@
   --tabula-background-blur: 0px;
   --tabula-clock-scale: 1;
   --tabula-clock-rim-width: 2px;
-  --tabula-clock-hand-width: 5px;
-  --tabula-clock-dot-size: 8px;
-  --tabula-base-cell-size: 2rem;
+  --tabula-clock-hand-width: 4px;
+  --tabula-clock-dot-size: 6px;
+  --tabula-base-cell-size: 1.6rem;
   --tabula-base-field-gap: 1.35rem;
   --tabula-cell-gap: 0.25rem;
   --tabula-search-max: 640px;
@@ -230,7 +230,6 @@ body::after {
 
 .tabula-widget--notes {
   gap: 0.5rem;
-  padding-bottom: 1rem;
 }
 
 .tabula-widget__textarea {

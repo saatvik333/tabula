@@ -405,8 +405,8 @@ const BASE_DEFAULT_SETTINGS: Settings = {
     enabled: true,
     scale: 1,
     rimWidth: 2,
-    handWidth: 5,
-    dotSize: 8,
+    handWidth: 4,
+    dotSize: 6,
     format: "24h",
     showSeconds: true,
   },
@@ -438,7 +438,7 @@ const BASE_DEFAULT_SETTINGS: Settings = {
       unit: "metric",
     },
     pomodoro: {
-      enabled: true,
+      enabled: false,
       focusMinutes: 25,
       breakMinutes: 5,
       longBreakMinutes: 15,
@@ -454,15 +454,15 @@ const BASE_DEFAULT_SETTINGS: Settings = {
       },
     },
     tasks: {
-      enabled: true,
+      enabled: false,
       items: [],
     },
     notes: {
-      enabled: true,
+      enabled: false,
       content: "",
     },
     quotes: {
-      enabled: true,
+      enabled: false,
       customQuotes: [],
     },
   },

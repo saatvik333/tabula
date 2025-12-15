@@ -1,5 +1,6 @@
 :root {
-  --tabula-font-family: "Roboto", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --tabula-font-family: "Roboto", "Inter", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
   --tabula-weight-regular: 400;
   --tabula-weight-medium: 500;
   --tabula-weight-semibold: 600;
@@ -11,10 +12,14 @@
   --tabula-radius-xl: 32px;
   --tabula-radius-full: 999px;
 
-  --tabula-shadow-xs: 0 6px 16px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.18);
-  --tabula-shadow-sm: 0 12px 28px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.22);
-  --tabula-shadow-md: 0 20px 48px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.32);
-  --tabula-shadow-lg: 0 32px 72px rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.48);
+  --tabula-shadow-xs: 0 6px 16px
+    rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.18);
+  --tabula-shadow-sm: 0 12px 28px
+    rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.22);
+  --tabula-shadow-md: 0 20px 48px
+    rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.32);
+  --tabula-shadow-lg: 0 32px 72px
+    rgba(var(--tabula-background-color-rgb, 17, 23, 42), 0.48);
 
   --tabula-glass-alpha-strong-top: 0.42;
   --tabula-glass-alpha-strong-bottom: 0.18;
@@ -51,13 +56,18 @@
   --tabula-shadow-lg: none;
 }
 
-
 .tabula-card {
   border-radius: var(--tabula-radius-lg);
   background: linear-gradient(
     135deg,
-    rgba(var(--tabula-face-color-rgb, 255, 255, 255), var(--tabula-glass-alpha-strong-top, 0.42)),
-    rgba(var(--tabula-background-color-rgb, 17, 23, 42), var(--tabula-glass-alpha-strong-bottom, 0.18))
+    rgba(
+      var(--tabula-face-color-rgb, 255, 255, 255),
+      var(--tabula-glass-alpha-strong-top, 0.42)
+    ),
+    rgba(
+      var(--tabula-background-color-rgb, 17, 23, 42),
+      var(--tabula-glass-alpha-strong-bottom, 0.18)
+    )
   );
   border: 1px solid rgba(var(--tabula-rim-color-rgb, 148, 163, 184), 0.32);
   backdrop-filter: blur(24px) saturate(160%);
@@ -69,8 +79,14 @@
 .tabula-card--subtle {
   background: linear-gradient(
     135deg,
-    rgba(var(--tabula-face-color-rgb, 255, 255, 255), var(--tabula-glass-alpha-subtle-top, 0.28)),
-    rgba(var(--tabula-background-color-rgb, 17, 23, 42), var(--tabula-glass-alpha-subtle-bottom, 0.12))
+    rgba(
+      var(--tabula-face-color-rgb, 255, 255, 255),
+      var(--tabula-glass-alpha-subtle-top, 0.28)
+    ),
+    rgba(
+      var(--tabula-background-color-rgb, 17, 23, 42),
+      var(--tabula-glass-alpha-subtle-bottom, 0.12)
+    )
   );
   border: 1px solid rgba(var(--tabula-rim-color-rgb, 148, 163, 184), 0.22);
   box-shadow: var(--tabula-shadow-sm);
@@ -82,17 +98,22 @@
   justify-content: center;
   gap: var(--tabula-button-gap);
   min-height: var(--tabula-button-height);
-  padding: 0 calc(var(--tabula-button-padding-x)) 0 calc(var(--tabula-button-padding-x));
+  padding: 0 calc(var(--tabula-button-padding-x)) 0
+    calc(var(--tabula-button-padding-x));
   border-radius: var(--tabula-radius-full);
   border: 1px solid rgba(var(--tabula-rim-color-rgb, 148, 163, 184), 0.34);
-  background-color: rgba(var(--tabula-face-color-rgb, 255, 255, 255), var(--tabula-glass-alpha-surface, 0.22));
+  background-color: rgba(
+    var(--tabula-face-color-rgb, 255, 255, 255),
+    var(--tabula-glass-alpha-surface, 0.22)
+  );
   color: var(--md-on-surface);
   font-family: var(--tabula-font-family);
   font-weight: var(--tabula-weight-medium);
   font-size: 0.92rem;
   line-height: 1;
   cursor: pointer;
-  transition: background-color var(--tabula-transition-duration) var(--tabula-transition-timing),
+  transition: background-color var(--tabula-transition-duration)
+      var(--tabula-transition-timing),
     border var(--tabula-transition-duration) var(--tabula-transition-timing),
     box-shadow 220ms ease,
     color var(--tabula-transition-duration) var(--tabula-transition-timing),
@@ -102,7 +123,10 @@
 
 .tabula-button:hover:not(:disabled) {
   border-color: rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.5);
-  background-color: rgba(var(--tabula-face-color-rgb, 255, 255, 255), var(--tabula-glass-alpha-surface-hover, 0.34));
+  background-color: rgba(
+    var(--tabula-face-color-rgb, 255, 255, 255),
+    var(--tabula-glass-alpha-surface-hover, 0.34)
+  );
   box-shadow: none;
 }
 
@@ -124,7 +148,10 @@
 }
 
 .tabula-button--ghost {
-  background-color: rgba(var(--tabula-background-color-rgb, 17, 23, 42), var(--tabula-glass-alpha-surface, 0.22));
+  background-color: rgba(
+    var(--tabula-background-color-rgb, 17, 23, 42),
+    var(--tabula-glass-alpha-surface, 0.22)
+  );
   border-color: rgba(var(--tabula-rim-color-rgb, 148, 163, 184), 0.28);
 }
 
@@ -153,12 +180,17 @@
   padding: var(--tabula-input-padding-y) var(--tabula-input-padding-x);
   border-radius: var(--tabula-input-radius);
   border: 1px solid rgba(var(--tabula-rim-color-rgb, 148, 163, 184), 0.32);
-  background-color: rgba(var(--tabula-background-color-rgb, 17, 23, 42), var(--tabula-glass-alpha-field, 0.18));
+  background-color: rgba(
+    var(--tabula-background-color-rgb, 17, 23, 42),
+    var(--tabula-glass-alpha-field, 0.18)
+  );
   color: var(--md-on-surface);
   font-family: var(--tabula-font-family);
   font-size: 0.95rem;
-  transition: border var(--tabula-transition-duration) var(--tabula-transition-timing),
-    background-color var(--tabula-transition-duration) var(--tabula-transition-timing),
+  transition: border var(--tabula-transition-duration)
+      var(--tabula-transition-timing),
+    background-color var(--tabula-transition-duration)
+      var(--tabula-transition-timing),
     box-shadow 200ms ease;
 }
 
@@ -166,7 +198,10 @@
   outline: none;
   border-color: rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.65);
   box-shadow: 0 0 0 3px rgba(var(--tabula-accent-color-rgb, 56, 189, 248), 0.2);
-  background-color: rgba(var(--tabula-face-color-rgb, 255, 255, 255), var(--tabula-glass-alpha-field-focus, 0.3));
+  background-color: rgba(
+    var(--tabula-face-color-rgb, 255, 255, 255),
+    var(--tabula-glass-alpha-field-focus, 0.3)
+  );
 }
 
 .tabula-input::placeholder {
@@ -193,4 +228,20 @@
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+/* ==========================================================================
+   Hidden Scrollbars - Content still scrollable
+   ========================================================================== */
+
+/* Firefox - hide scrollbar completely */
+* {
+  scrollbar-width: none;
+}
+
+/* Webkit (Chrome, Safari, Edge) - hide scrollbar completely */
+::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
