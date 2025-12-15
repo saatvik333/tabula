@@ -1,5 +1,3 @@
-# Tabula
-
 <p align="center">
   <img src="src/assets/icons/icon128.png" alt="Tabula Logo" width="80" height="80">
 </p>
@@ -9,6 +7,7 @@
 </p>
 
 <p align="center">
+  <a href="https://addons.mozilla.org/en-US/firefox/addon/saatvik333-tabula/"><img src="https://img.shields.io/badge/Firefox-Add--ons-FF7139?style=flat-square&logo=firefox-browser&logoColor=white" alt="Get it on Firefox Add-ons"></a>
   <a href="https://github.com/saatvik333/tabula/releases"><img src="https://img.shields.io/github/v/release/saatvik333/tabula?style=flat-square&color=blue" alt="Release"></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/saatvik333/tabula?style=flat-square" alt="License"></a>
   <a href="https://github.com/saatvik333/tabula/actions"><img src="https://img.shields.io/github/actions/workflow/status/saatvik333/tabula/release.yml?style=flat-square" alt="CI"></a>
@@ -20,10 +19,9 @@
 A customizable, minimalist New Tab extension for **Chrome**, **Edge**, **Brave**, and **Firefox**. Features a unique "clock of clocks" display and optional productivity widgets—clean, fast, works offline.
 
 ![tabula-themes](https://github.com/user-attachments/assets/68b45fd5-8235-4d26-aaf5-b5fe4b2896ed)
-<img width="1861" height="1037" alt="image" src="https://github.com/user-attachments/assets/0185f5e9-7e0b-4e7a-af37-df91e7b590ac" />
-<img width="1861" height="1037" alt="image" src="https://github.com/user-attachments/assets/babe12c1-266a-4b05-9f7e-4ca1537b5b06" />
-<img width="1861" height="1037" alt="image" src="https://github.com/user-attachments/assets/e2b56a16-6764-4a2c-b06a-656927e8f8af" />
-
+![tabula-1](https://github.com/user-attachments/assets/0185f5e9-7e0b-4e7a-af37-df91e7b590ac)
+![tabula-2](https://github.com/user-attachments/assets/babe12c1-266a-4b05-9f7e-4ca1537b5b06)
+![tabula-3](https://github.com/user-attachments/assets/e2b56a16-6764-4a2c-b06a-656927e8f8af)
 
 ## ✨ Features
 
