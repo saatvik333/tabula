@@ -5,6 +5,7 @@
 </p>
 
 <p align="center">
+
   <strong>Your space, no noise.</strong>
 </p>
 
@@ -20,6 +21,10 @@
 A customizable, minimalist New Tab extension for **Chrome**, **Edge**, **Brave**, and **Firefox**. Features a unique "clock of clocks" display and optional productivity widgets—clean, fast, works offline.
 
 ![tabula-themes](https://github.com/user-attachments/assets/68b45fd5-8235-4d26-aaf5-b5fe4b2896ed)
+<img width="1861" height="1037" alt="image" src="https://github.com/user-attachments/assets/0185f5e9-7e0b-4e7a-af37-df91e7b590ac" />
+<img width="1861" height="1037" alt="image" src="https://github.com/user-attachments/assets/babe12c1-266a-4b05-9f7e-4ca1537b5b06" />
+<img width="1861" height="1037" alt="image" src="https://github.com/user-attachments/assets/e2b56a16-6764-4a2c-b06a-656927e8f8af" />
+
 
 ## ✨ Features
 
