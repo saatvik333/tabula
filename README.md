@@ -5,7 +5,6 @@
 </p>
 
 <p align="center">
-
   <strong>Your space, no noise.</strong>
 </p>
 
