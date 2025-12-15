@@ -69,7 +69,7 @@ jobs:
           AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
           WEB_EXT_API_KEY: ${{ secrets.AMO_JWT_ISSUER }}
           WEB_EXT_API_SECRET: ${{ secrets.AMO_JWT_SECRET }}
-        run: bun run publish:firefox
+        run: timeout 2m bun run publish:firefox || [ $? -eq 124 ]
 
       - name: Upload signed XPI
         if: github.event_name == 'release'
