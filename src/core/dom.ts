@@ -19,6 +19,9 @@ export const createElement = <T extends HTMLElement>(
  * Creates a debounced version of the provided function.
  * The debounced function will delay invoking func until after wait milliseconds
  * have elapsed since the last time it was invoked.
+ *
+ * Exported as a shared utility; wire into callers that need debouncing
+ * rather than reimplementing inline.
  */
 export const debounce = <T extends (...args: unknown[]) => void>(
   func: T,

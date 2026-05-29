@@ -1,0 +1,32 @@
+name: Security Vulnerability Report
+description: >
+  Report a security vulnerability privately.
+  DO NOT open a public issue for security bugs — use GitHub's private
+  security advisory feature or email the maintainer directly.
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## ⚠️ Security Vulnerability
+
+        Please **do not** report security vulnerabilities in public GitHub Issues.
+
+        Use one of the private channels below:
+
+        - **GitHub Security Advisory**: Click "Report a vulnerability" on the
+          [Security tab](../../security/advisories/new) of this repository.
+        - **Email**: See `SECURITY.md` for the maintainer contact.
+
+        This template exists only to redirect accidental public disclosures.
+        If you see this issue open, a maintainer will close it and follow up
+        through private channels.
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Confirmation
+      options:
+        - label: >
+            I understand this is a public issue and I have NOT included
+            any sensitive vulnerability details here.
+          required: true

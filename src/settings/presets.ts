@@ -112,20 +112,9 @@ const PRESETS: Record<Exclude<PresetName, "custom">, PresetDefinition> = {
   },
 };
 
+/** Derived from PRESETS keys + "custom" — never needs manual updates. */
 export const presetNames: PresetName[] = [
-  "material",
-  "nord",
-  "catppuccin",
-  "tokyo-night",
-  "gruvbox",
-  "rose-pine",
-  "dracula",
-  "solarized",
-  "one-dark",
-  "monokai",
-  "ayu",
-  "everforest",
-  "pitch-black",
+  ...(Object.keys(PRESETS) as Array<Exclude<PresetName, "custom">>),
   "custom",
 ];
 

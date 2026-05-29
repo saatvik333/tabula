@@ -1,0 +1,7 @@
+# CODEOWNERS
+#
+# Each line maps a file pattern to one or more owners.
+# Owners are automatically requested for review when a PR changes matching files.
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+* @saatvik333

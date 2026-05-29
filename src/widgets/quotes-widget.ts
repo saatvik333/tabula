@@ -80,7 +80,7 @@ class QuotesWidget {
 
   constructor() {
     this.element = createElement("div", { className: "tabula-card tabula-widget tabula-widget--quotes" });
-    this.element.style.cursor = "pointer";
+    // cursor: pointer is set via .tabula-widget--quotes in styles.css
     this.element.title = "Click for a new quote";
 
     this.quoteEl = createElement("p", { className: "tabula-widget__quote" });

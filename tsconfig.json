@@ -6,6 +6,7 @@
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "verbatimModuleSyntax": true,
     "noEmit": true,
 
     // Strict Type-Checking Options
@@ -38,6 +39,8 @@
     "useDefineForClassFields": true,
 
     // Path Mapping
+    // $src/* maps to ./src/* — use this alias for all intra-project imports
+    // instead of relative paths (../../) to keep imports stable on refactor.
     "baseUrl": ".",
     "paths": {
       "$src/*": ["src/*"]

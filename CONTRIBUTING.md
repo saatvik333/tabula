@@ -37,6 +37,29 @@ should be colocated with the source code under test, using `.test.ts` filenames.
 We use the Bun test runner for standard unit tests, and Vitest for coverage and
 jsdom-based environment verification.
 
+**Coverage target**: Aim for ≥50% statement coverage on any new module you add.
+Run `bun run test:coverage` to see the current report.
+
+**Fuzz / property-based testing**: There is no fuzz harness yet. For security-
+sensitive sanitizers (e.g. `sanitizeImageUrl`, `sanitizePinnedUrl`), add
+parametrized `it.each` tables with malicious inputs as a substitute.
+
+**Snapshot tests**: Not used in this project. Prefer explicit DOM assertions
+over snapshot diffs, which are brittle when className strings change.
+
+## Import Conventions
+
+- Always use `import type { ... }` for type-only imports (`verbatimModuleSyntax`
+  is enabled).
+- Use the `$src/` path alias for all cross-directory imports — never `../../`.
+- No default exports; named exports only.
+
+## Pre-commit Hooks
+
+There are no mandatory pre-commit hooks (no Husky/lefthook). CI gates every
+merge via `bun run type-check && bun test && bun run build`. This is intentional
+to keep the contributor setup fast — a single `bun install` is all you need.
+
 ## Sensitive Change Guidance
 
 If you are proposing changes that affect user privacy, data persistence, or external

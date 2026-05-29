@@ -16,6 +16,8 @@ export {
   beforeAll,
   afterAll,
   mock,
+  // vi is Vitest's mock helper — aliased to Bun's `mock` for cross-runner compatibility.
+  // Tests using `vi.fn()`, `vi.spyOn()` etc. work under both runners via this alias.
   mock as vi,
   spyOn,
   jest,

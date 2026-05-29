@@ -17,6 +17,7 @@ import { createPinnedTabsController } from "./pinned-tabs";
 import { clone } from "$src/core/clone";
 import { generateId } from "$src/core/id";
 import { MAX_PINNED_TABS, MAX_IMAGE_BYTES } from "$src/core/limits";
+import type { StatusTone } from "$src/core/types";
 
 const getElement = <T extends HTMLElement>(id: string): T => {
   const element = document.getElementById(id);
@@ -100,7 +101,7 @@ const pinnedAddButton = getElement<HTMLButtonElement>("pinnedAddButton");
 const pinnedTabsShowIconsInput = getElement<HTMLInputElement>("pinnedTabsShowIcons");
 const settingsNav = getElement<HTMLElement>("settingsNav");
 
-const setStatus = (text: string, tone: "default" | "success" | "error" = "default") => {
+const setStatus = (text: string, tone: StatusTone = "default") => {
   statusEl.textContent = text;
   statusEl.dataset["tone"] = tone;
 };

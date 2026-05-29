@@ -93,8 +93,7 @@ const pickConditionIcon = (text: string): string => {
   if (value.includes("snow") || value.includes("sleet") || value.includes("ice")) return "❄️";
   if (value.includes("rain") || value.includes("drizzle") || value.includes("shower")) return "🌧️";
   if (value.includes("fog") || value.includes("mist") || value.includes("haze") || value.includes("smoke")) return "🌫️";
-  if (value.includes("overcast")) return "☁️";
-  if (value.includes("cloud")) return "☁️";
+  if (value.includes("overcast") || value.includes("cloud")) return "☁️";
   if (value.includes("clear") || value.includes("sun")) return "☀️";
   return "🌡️";
 };

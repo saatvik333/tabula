@@ -6,6 +6,11 @@ export { cloneSettings };
 
 type Listener = (settings: Settings) => void;
 
+/** Branded literal type for all `localStorage`/`BroadcastChannel` keys owned by Tabula. */
+type StorageKey = `tabula:${string}`;
+
+const SETTINGS_BROADCAST_KEY: StorageKey = "tabula:settings";
+
 const listeners = new Set<Listener>();
 
 let cachedSettings: Settings | null = null;
@@ -54,7 +59,8 @@ const invokeGet = async (store: StorageArea | null, key: string): Promise<Partia
       });
     });
   } catch (error) {
-    throw error;
+    console.warn("[tabula/storage] invokeGet failed:", error);
+    return undefined;
   }
 };
 
@@ -129,7 +135,7 @@ const writeToLocalStorage = (settings: Settings): void => {
 const getBroadcastChannel = (): BroadcastChannel | null => {
   if (!broadcastChannel && typeof BroadcastChannel === "function") {
     try {
-      broadcastChannel = new BroadcastChannel("tabula:settings");
+      broadcastChannel = new BroadcastChannel(SETTINGS_BROADCAST_KEY);
     } catch (error) {
       console.warn("Failed to initialize BroadcastChannel", error);
     }

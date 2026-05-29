@@ -1,6 +1,6 @@
 import type { PinnedTab } from "$src/settings/schema";
+import type { StatusTone } from "$src/core/types";
 
-type StatusTone = "default" | "success" | "error";
 
 export type PinnedTabsControllerOptions = {
   list: HTMLElement;
@@ -212,6 +212,8 @@ export const createPinnedTabsController = (
     };
 
     const updatePreview = (): void => {
+      // tabs[index] is safe here because reordering calls replaceChildren(),
+      // rebuilding every row closure — so index always reflects current position.
       const current = tabs[index];
       if (!current) return;
       const label = resolveLabel(current);

@@ -1,7 +1,10 @@
-import { createClockDisplay, type ClockDisplay } from "$src/clock/clock-display";
+import { createClockDisplay } from "$src/clock/clock-display";
+import type { ClockDisplay } from "$src/clock/clock-display";
 import { createElement } from "$src/core/dom";
-import { startAlignedSecondTicker, type StopTicker } from "$src/core/ticker";
-import { formatTimeForDisplay, getCurrentTime, timesEqual, type Meridiem, type Time } from "$src/core/time";
+import { startAlignedSecondTicker } from "$src/core/ticker";
+import type { StopTicker } from "$src/core/ticker";
+import { formatTimeForDisplay, getCurrentTime, timesEqual } from "$src/core/time";
+import type { Meridiem, Time } from "$src/core/time";
 import { applySettingsToDocument } from "$src/settings/apply";
 import type {
   PinnedTab,
@@ -17,12 +20,18 @@ import {
   subscribeToSettings,
   updateSettings,
 } from "$src/settings/storage";
-import { getSystemPrefersDark, resolveTheme, watchSystemTheme, type ThemeVariant } from "$src/settings/theme";
-import { createWeatherWidget, type WeatherWidgetController } from "$src/widgets/weather-widget";
-import { createPomodoroWidget, type PomodoroWidgetController } from "$src/widgets/pomodoro-widget";
-import { createTasksWidget, type TasksWidgetController } from "$src/widgets/tasks-widget";
-import { createNotesWidget, type NotesWidgetController } from "$src/widgets/notes-widget";
-import { createQuotesWidget, type QuotesWidgetController } from "$src/widgets/quotes-widget";
+import { getSystemPrefersDark, resolveTheme, watchSystemTheme } from "$src/settings/theme";
+import type { ThemeVariant } from "$src/settings/theme";
+import { createWeatherWidget } from "$src/widgets/weather-widget";
+import type { WeatherWidgetController } from "$src/widgets/weather-widget";
+import { createPomodoroWidget } from "$src/widgets/pomodoro-widget";
+import type { PomodoroWidgetController } from "$src/widgets/pomodoro-widget";
+import { createTasksWidget } from "$src/widgets/tasks-widget";
+import type { TasksWidgetController } from "$src/widgets/tasks-widget";
+import { createNotesWidget } from "$src/widgets/notes-widget";
+import type { NotesWidgetController } from "$src/widgets/notes-widget";
+import { createQuotesWidget } from "$src/widgets/quotes-widget";
+import type { QuotesWidgetController } from "$src/widgets/quotes-widget";
 import { WidgetLayoutManager } from "./layout-manager";
 
 // Firefox uses `browser` namespace for WebExtension APIs

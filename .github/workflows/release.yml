@@ -54,7 +54,8 @@ jobs:
             tabula-${{ steps.ver.outputs.version }}-chrome.zip
             tabula-${{ steps.ver.outputs.version }}-firefox.zip
 
-      - name: Attach to Release
+      # Step 1/2: Attach pre-built zips. XPI is not yet available here (signed below).
+      - name: Attach zips to Release
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v2.0.5
         with:
@@ -71,7 +72,8 @@ jobs:
           WEB_EXT_API_SECRET: ${{ secrets.AMO_JWT_SECRET }}
         run: bun run publish:firefox
 
-      - name: Upload signed XPI
+      # Kept separate from the zips upload — signed XPI is produced after AMO sign step.
+      - name: Upload signed XPI artifact
         if: github.event_name == 'release'
         uses: actions/upload-artifact@26f96dfa697d77e81fd5907df203aa23a56210a8 # v4.3.0
         with:
@@ -79,6 +81,8 @@ jobs:
           path: web-ext-artifacts/*.xpi
           if-no-files-found: ignore
 
+      # Step 2/2: Attach signed XPI. A second release step is required because
+      # the XPI is only available after the AMO signing step above.
       - name: Attach signed XPI to Release
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v2.0.5
