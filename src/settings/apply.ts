@@ -4,15 +4,27 @@ import { getActivePalette } from "$src/settings/theme";
 
 const formatPixels = (value: number): string => `${value}px`;
 
+const ALLOWED_DATA_URL = /^data:image\/(png|jpe?g|webp|gif|avif);base64,[A-Za-z0-9+/=]+$/i;
+
+const safeUrl = (url: string): string => {
+  try {
+    const u = new URL(url);
+    if (u.protocol === "https:") {
+      return u.toString().replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+    }
+  } catch {}
+  return "";
+};
+
 const formatBackgroundImage = (settings: Settings): string => {
   const { type, imageUrl, imageData } = settings.background;
   if (type !== "image") return "none";
-  if (imageData && imageData.trim().length > 0) {
-    return `url(${imageData})`;
+  if (imageData && ALLOWED_DATA_URL.test(imageData)) {
+    return `url("${imageData}")`;
   }
-  const trimmed = imageUrl.trim();
-  if (!trimmed) return "none";
-  return `url(${trimmed})`;
+  const safe = safeUrl(imageUrl);
+  if (!safe) return "none";
+  return `url("${safe}")`;
 };
 
 const getBackgroundMode = (settings: Settings): "image" | "color" => {

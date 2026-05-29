@@ -15,10 +15,10 @@ import type {
   TemperatureUnit,
   WidgetLayoutEntry,
   WidgetId,
-  WidgetAnchor,
   TaskItem,
 } from "$src/settings/schema";
 import { applyPresetToSettings, isPresetName } from "$src/settings/presets";
+import { cloneAnchor, sanitizeAnchor } from "$src/settings/anchor";
 
 const clamp = (value: number, fallback: number, min: number, max: number): number =>
   Number.isFinite(value) ? Math.min(max, Math.max(min, value)) : fallback;
@@ -96,71 +96,6 @@ const coerceTimeFormat = (value: unknown, fallback: TimeFormat): TimeFormat => {
 
 const KNOWN_WIDGET_IDS: readonly WidgetId[] = ["weather", "pomodoro", "tasks", "notes", "quotes"];
 
-const normaliseOffset = (value: unknown): number | undefined => {
-  const numeric = Number(value);
-  if (!Number.isFinite(numeric) || numeric < 0) {
-    return undefined;
-  }
-  return Math.round(numeric);
-};
-
-const cloneAnchor = (anchor: WidgetAnchor | undefined): WidgetAnchor | undefined => {
-  if (!anchor) {
-    return undefined;
-  }
-
-  const cloned: WidgetAnchor = {};
-
-  if (anchor.horizontal === "left" || anchor.horizontal === "right") {
-    cloned.horizontal = anchor.horizontal;
-    const offset = normaliseOffset(anchor.offsetX);
-    if (typeof offset === "number") {
-      cloned.offsetX = offset;
-    }
-  }
-
-  if (anchor.vertical === "top" || anchor.vertical === "bottom") {
-    cloned.vertical = anchor.vertical;
-    const offset = normaliseOffset(anchor.offsetY);
-    if (typeof offset === "number") {
-      cloned.offsetY = offset;
-    }
-  }
-
-  return Object.keys(cloned).length ? cloned : undefined;
-};
-
-const sanitizeAnchor = (value: unknown): WidgetAnchor | undefined => {
-  if (!value || typeof value !== "object") {
-    return undefined;
-  }
-
-  const candidate = value as Partial<WidgetAnchor> & { offsetX?: unknown; offsetY?: unknown };
-  const anchor: WidgetAnchor = {};
-
-  if (candidate.horizontal === "left" || candidate.horizontal === "right") {
-    anchor.horizontal = candidate.horizontal;
-    const offsetX = normaliseOffset(candidate.offsetX);
-    if (typeof offsetX === "number") {
-      anchor.offsetX = offsetX;
-    }
-  }
-
-  if (candidate.vertical === "top" || candidate.vertical === "bottom") {
-    anchor.vertical = candidate.vertical;
-    const offsetY = normaliseOffset(candidate.offsetY);
-    if (typeof offsetY === "number") {
-      anchor.offsetY = offsetY;
-    }
-  }
-
-  if (!anchor.horizontal && !anchor.vertical) {
-    return undefined;
-  }
-
-  return anchor;
-};
-
 const sanitizeWidgetLayout = (
   value: unknown,
   fallback: WidgetLayoutEntry[],
@@ -237,7 +172,7 @@ const sanitizePinnedTab = (value: unknown): PinnedTab | null => {
   const iconCandidate = typeof candidate.icon === "string" ? candidate.icon.trim() : "";
   const id = idCandidate || url;
   const base: PinnedTab = { id, title, url };
-  if (iconCandidate) {
+  if (iconCandidate && isValidUrl(iconCandidate)) {
     base.icon = iconCandidate;
   }
   return base;

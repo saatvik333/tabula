@@ -22,7 +22,11 @@ Permissions:
 - No data collection
 
 ## Privacy policy
-Tabula does not collect or transmit personal data. Settings are stored locally in your browser. No analytics.
+
+Tabula does not collect or transmit personal data. Settings are stored locally in
+your browser sandbox using sync/local storage areas. Outbound fetches are only
+made to QuotesSlate API, WeatherAPI, and Google Favicon service for functional
+widget displays. Please refer to [PRIVACY.md](/PRIVACY.md) for full details.
 
 ## Screenshots (suggested)
 1. New Tab — light theme with clock + tagline

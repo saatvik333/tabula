@@ -1,5 +1,6 @@
 import { createElement } from "$src/core/dom";
 import type { QuotesWidgetSettings } from "$src/settings/schema";
+import type { Widget } from "./widget";
 
 const QUOTES_CACHE_KEY = "tabula:quote-of-day";
 const QUOTESLATE_API = "https://quoteslate.vercel.app/api/quotes/random";
@@ -108,6 +109,10 @@ class QuotesWidget {
     this.element.hidden = false;
     this.element.style.display = "";
 
+    if (this.isLoading) {
+      return;
+    }
+
     // Check if we have a cached quote for today
     const cached = loadCachedQuote();
     if (cached) {
@@ -166,11 +171,9 @@ class QuotesWidget {
   }
 }
 
-export type QuotesWidgetController = {
-  element: HTMLElement;
-  update: (settings: QuotesWidgetSettings) => void;
+export interface QuotesWidgetController extends Widget<QuotesWidgetSettings> {
   destroy: () => void;
-};
+}
 
 export const createQuotesWidget = (): QuotesWidgetController => {
   const widget = new QuotesWidget();

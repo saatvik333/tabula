@@ -1,5 +1,6 @@
 import { createElement } from "$src/core/dom";
 import type { PomodoroWidgetSettings } from "$src/settings/schema";
+import type { Widget } from "./widget";
 
 type PomodoroMode = "focus" | "short-break" | "long-break";
 
@@ -48,10 +49,19 @@ const requestNotificationPermission = async (): Promise<boolean> => {
   }
 };
 
-const sendNotification = (title: string, body: string): void => {
+const cleanText = (text: string, maxLen: number): string => {
+  if (typeof text !== "string") return "";
+  return text.replace(/[\r\n\t]/g, " ").slice(0, maxLen).trim();
+};
+
+const sendNotification = (rawTitle: string, rawBody: string): void => {
   if (typeof Notification === "undefined" || Notification.permission !== "granted") {
     return;
   }
+
+  const cleanTitle = cleanText(rawTitle, 80);
+  const title = cleanTitle ? `Tabula • ${cleanTitle}` : "Tabula";
+  const body = cleanText(rawBody, 240);
 
   try {
     new Notification(title, {
@@ -389,7 +399,6 @@ class PomodoroWidget {
       this.advanceState(this.state);
       this.notifyModeChange();
     } else {
-      this.persistState(this.state);
       this.render();
     }
   }
@@ -501,11 +510,9 @@ class PomodoroWidget {
   }
 }
 
-export type PomodoroWidgetController = {
-  element: HTMLElement;
-  update: (settings: PomodoroWidgetSettings) => void;
+export interface PomodoroWidgetController extends Widget<PomodoroWidgetSettings> {
   destroy: () => void;
-};
+}
 
 export const createPomodoroWidget = (): PomodoroWidgetController => {
   const widget = new PomodoroWidget();

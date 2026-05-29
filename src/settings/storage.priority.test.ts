@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { SETTINGS_STORAGE_KEY } from "$src/settings/schema";
 
@@ -53,11 +53,19 @@ const importStorageModule = async () => {
   return mod;
 };
 
+const originalWindow = (globalThis as any).window;
+const originalChrome = (globalThis as any).chrome;
+
 describe("settings storage load priority prefers sync first", () => {
   beforeEach(() => {
     (globalThis as any).window = { localStorage: new MemoryStorage() } as any;
     moduleInitialized = false;
     delete (globalThis as any).chrome;
+  });
+
+  afterEach(() => {
+    (globalThis as any).window = originalWindow;
+    (globalThis as any).chrome = originalChrome;
   });
 
   it("loads from sync when both sync and local areas have values, even if local has different value", async () => {

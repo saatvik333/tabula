@@ -1,5 +1,6 @@
 import { createElement } from "$src/core/dom";
 import type { TemperatureUnit, WeatherWidgetSettings } from "$src/settings/schema";
+import type { Widget } from "./widget";
 
 type WeatherSnapshot = {
   temperatureC: number;
@@ -219,6 +220,13 @@ class WeatherWidget {
       return;
     }
 
+    if (!WEATHER_API_KEY || WEATHER_API_KEY.trim() === "") {
+      this.showStatus("Weather API key not configured.");
+      this.displayPlaceholder(location);
+      this.clearRefreshTimer();
+      return;
+    }
+
     this.showStatus("Updating weather…");
 
     // Cancel any previous in-flight request
@@ -294,11 +302,9 @@ class WeatherWidget {
   }
 }
 
-export type WeatherWidgetController = {
-  element: HTMLElement;
-  update: (settings: WeatherWidgetSettings) => void;
+export interface WeatherWidgetController extends Widget<WeatherWidgetSettings> {
   destroy: () => void;
-};
+}
 
 export const createWeatherWidget = (): WeatherWidgetController => {
   const widget = new WeatherWidget();

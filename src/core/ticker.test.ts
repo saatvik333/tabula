@@ -6,9 +6,7 @@ describe("startAlignedSecondTicker", () => {
   it("aligns the first tick to the next second boundary", () => {
     const nowSpy = vi.spyOn(Date, "now").mockReturnValue(new Date("2024-01-01T00:00:00.500Z").valueOf());
     const timeoutSpy = vi.spyOn(window, "setTimeout");
-    const intervalSpy = vi.spyOn(window, "setInterval");
     const clearTimeoutSpy = vi.spyOn(window, "clearTimeout");
-    const clearIntervalSpy = vi.spyOn(window, "clearInterval");
 
     const tick = vi.fn();
     const stop = startAlignedSecondTicker(tick);
@@ -25,23 +23,24 @@ describe("startAlignedSecondTicker", () => {
     }
 
     expect(tick).toHaveBeenCalledTimes(1);
-    expect(intervalSpy).toHaveBeenCalledWith(expect.any(Function), 1000);
+    // Under recursive setTimeout, the timeout is called again to schedule the next tick
+    expect(timeoutSpy).toHaveBeenCalledTimes(2);
 
-    const [intervalCallback] = intervalSpy.mock.calls[0] ?? [];
-    if (typeof intervalCallback === "function") {
-      intervalCallback();
+    const [nextCallback, nextDelay] = timeoutSpy.mock.calls[1] ?? [];
+    expect(nextDelay).toBe(500); // 1000 - (500 % 1000) = 500
+    expect(typeof nextCallback).toBe("function");
+
+    if (typeof nextCallback === "function") {
+      nextCallback();
     }
 
     expect(tick).toHaveBeenCalledTimes(2);
 
     stop();
     expect(clearTimeoutSpy).toHaveBeenCalled();
-    expect(clearIntervalSpy).toHaveBeenCalled();
 
     nowSpy.mockRestore();
     timeoutSpy.mockRestore();
-    intervalSpy.mockRestore();
     clearTimeoutSpy.mockRestore();
-    clearIntervalSpy.mockRestore();
   });
 });

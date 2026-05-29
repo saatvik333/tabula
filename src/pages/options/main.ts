@@ -132,38 +132,43 @@ const formatBytes = (size: number): string => {
  * Targets 2MB to leave headroom for Chrome storage limits.
  */
 const compressImage = async (dataUrl: string, maxBytes: number): Promise<string> => {
-  // Target 2MB for better Chrome compatibility
+  const initialBytes = estimateDataUrlBytes(dataUrl);
+  if (initialBytes > 20 * 1024 * 1024) {
+    throw new Error("Image file is too large (max 20MB).");
+  }
+
   const targetBytes = Math.min(maxBytes, 2 * 1024 * 1024);
+  if (initialBytes <= targetBytes) {
+    return dataUrl;
+  }
   
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
       let quality = 0.85;
-      let scale = 1.0;
+      let scale = Math.min(1.0, Math.sqrt(targetBytes / initialBytes));
       let attempts = 0;
-      const MAX_ATTEMPTS = 20;
+      const MAX_ATTEMPTS = 15;
+      
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        reject(new Error('Could not get canvas context'));
+        return;
+      }
       
       const tryCompress = (): void => {
         if (attempts++ > MAX_ATTEMPTS) {
-          // Give up after too many attempts
-          const canvas = document.createElement('canvas');
-          canvas.width = Math.floor(img.width * 0.3);
-          canvas.height = Math.floor(img.height * 0.3);
-          const ctx = canvas.getContext('2d');
-          if (ctx) {
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            resolve(canvas.toDataURL('image/jpeg', 0.6));
-          } else {
-            reject(new Error('Could not get canvas context'));
-          }
+          canvas.width = Math.max(100, Math.floor(img.width * 0.2));
+          canvas.height = Math.max(100, Math.floor(img.height * 0.2));
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL('image/jpeg', 0.5));
           return;
         }
         
-        const canvas = document.createElement('canvas');
         const targetWidth = Math.floor(img.width * scale);
         const targetHeight = Math.floor(img.height * scale);
         
-        // Minimum dimensions to prevent unusable images
         if (targetWidth < 400 || targetHeight < 300) {
           canvas.width = Math.max(400, targetWidth);
           canvas.height = Math.max(300, targetHeight);
@@ -172,28 +177,19 @@ const compressImage = async (dataUrl: string, maxBytes: number): Promise<string>
           canvas.height = targetHeight;
         }
         
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-          reject(new Error('Could not get canvas context'));
-          return;
-        }
-        
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         
         const compressed = canvas.toDataURL('image/jpeg', quality);
         const estimatedBytes = estimateDataUrlBytes(compressed);
         
-        // If still too large, reduce more aggressively
         if (estimatedBytes > targetBytes) {
-          if (scale > 0.35) {
-            // Reduce scale more aggressively
+          if (scale > 0.25) {
             scale -= 0.15;
-            tryCompress();
-          } else if (quality > 0.4) {
+            setTimeout(tryCompress, 0);
+          } else if (quality > 0.3) {
             quality -= 0.15;
-            tryCompress();
+            setTimeout(tryCompress, 0);
           } else {
-            // Best effort - return what we have
             resolve(compressed);
           }
         } else {

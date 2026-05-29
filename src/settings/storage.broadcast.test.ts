@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 // We dynamically import the storage module after setting globals
 let moduleInitialized = false;
@@ -44,6 +44,10 @@ class MemoryStorage {
   clear() { this.map.clear(); }
 }
 
+const originalWindow = (globalThis as any).window;
+const originalBroadcastChannel = (globalThis as any).BroadcastChannel;
+const originalChrome = (globalThis as any).chrome;
+
 describe("settings cross-tab broadcast keeps cache fresh", () => {
   beforeEach(() => {
     (globalThis as any).BroadcastChannel = MockBroadcastChannel as any;
@@ -51,6 +55,12 @@ describe("settings cross-tab broadcast keeps cache fresh", () => {
     (globalThis as any).window = { localStorage: new MemoryStorage() } as any;
     delete (globalThis as any).chrome;
     moduleInitialized = false;
+  });
+
+  afterEach(() => {
+    (globalThis as any).window = originalWindow;
+    (globalThis as any).BroadcastChannel = originalBroadcastChannel;
+    (globalThis as any).chrome = originalChrome;
   });
 
   it("updates cachedSettings on broadcast and returns fresh snapshot", async () => {

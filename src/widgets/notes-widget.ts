@@ -1,5 +1,6 @@
 import { createElement } from "$src/core/dom";
 import type { NotesWidgetSettings } from "$src/settings/schema";
+import type { Widget } from "./widget";
 
 const NOTES_DEBOUNCE_MS = 500;
 
@@ -73,12 +74,10 @@ class NotesWidget {
   }
 }
 
-export type NotesWidgetController = {
-  element: HTMLElement;
-  update: (settings: NotesWidgetSettings) => void;
+export interface NotesWidgetController extends Widget<NotesWidgetSettings> {
   setChangeHandler: (handler: NotesChangeHandler) => void;
   destroy: () => void;
-};
+}
 
 export const createNotesWidget = (): NotesWidgetController => {
   const widget = new NotesWidget();

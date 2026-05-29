@@ -1,5 +1,6 @@
 import { createElement } from "$src/core/dom";
 import type { TaskItem, Settings } from "$src/settings/schema";
+import type { Widget } from "./widget";
 
 const MAX_TASK_ITEMS = 60;
 
@@ -181,11 +182,9 @@ class TasksWidget {
   }
 }
 
-export type TasksWidgetController = {
-  element: HTMLElement;
-  update: (settings: TasksSettings) => void;
+export interface TasksWidgetController extends Widget<TasksSettings> {
   destroy: () => void;
-};
+}
 
 export const createTasksWidget = (options: TasksWidgetOptions): TasksWidgetController => {
   const widget = new TasksWidget(options);

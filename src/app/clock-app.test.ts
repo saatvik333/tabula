@@ -34,12 +34,12 @@ describe("ClockApp widget anchoring", () => {
     Object.defineProperty(window, "innerHeight", { value: 800, writable: true });
   });
 
-  const getPrivate = <T>(instance: unknown, key: string): T => (instance as Record<string, T | undefined>)[key] as T;
 
   it("derives anchors for widgets near edges", () => {
     const element = createWidgetElement(240, 180);
+    const manager = (app as any).layoutManager;
 
-    const deriveAnchor = (app as any).deriveAnchorFromPosition.bind(app) as (
+    const deriveAnchor = (manager as any).deriveAnchorFromPosition.bind(manager) as (
       element: HTMLElement,
       position: { x: number; y: number; anchor?: WidgetAnchor },
     ) => WidgetAnchor | undefined;
@@ -56,10 +56,11 @@ describe("ClockApp widget anchoring", () => {
 
   it("applies anchored positioning using CSS edges", () => {
     const element = createWidgetElement(200, 160);
-    const widgetLayout = getPrivate<Map<string, any>>(app, "widgetLayout");
+    const manager = (app as any).layoutManager;
+    const widgetLayout = (manager as any).widgetLayout;
     const anchor: WidgetAnchor = { horizontal: "right", vertical: "bottom", offsetX: 32, offsetY: 28 };
 
-    (app as any).applyWidgetPosition("weather", element, 900, 400, { updateLayout: true, anchor });
+    (manager as any).applyWidgetPosition("weather", element, 900, 400, { updateLayout: true, anchor });
 
     expect(element.style.left).toBe("");
     expect(element.style.right).toBe("32px");
@@ -72,17 +73,18 @@ describe("ClockApp widget anchoring", () => {
 
   it("recalculates anchored coordinates after viewport changes", () => {
     const element = createWidgetElement(240, 180);
+    const manager = (app as any).layoutManager;
     const anchor: WidgetAnchor = { horizontal: "right", offsetX: 40, vertical: "top", offsetY: 20 };
 
-    (app as any).applyWidgetPosition("weather", element, 920, 20, { updateLayout: true, anchor });
+    (manager as any).applyWidgetPosition("weather", element, 920, 20, { updateLayout: true, anchor });
     expect(element.style.right).toBe("40px");
 
     Object.defineProperty(window, "innerWidth", { value: 1600, writable: true });
     Object.defineProperty(window, "innerHeight", { value: 900, writable: true });
 
-    const widgetLayout = getPrivate<Map<string, any>>(app, "widgetLayout");
+    const widgetLayout = (manager as any).widgetLayout;
     const coords = widgetLayout.get("weather");
-    (app as any).applyWidgetPosition("weather", element, coords.x, coords.y, { updateLayout: true, anchor });
+    (manager as any).applyWidgetPosition("weather", element, coords.x, coords.y, { updateLayout: true, anchor });
 
     expect(element.style.right).toBe("40px");
     expect(element.style.top).toBe("20px");

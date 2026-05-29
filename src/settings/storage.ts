@@ -15,10 +15,12 @@ export const cloneSettings = (settings: Settings): Settings => {
   return JSON.parse(JSON.stringify(settings)) as Settings;
 };
 
-let extensionAPI: any = null;
-let syncStorage: any = null;
-let localStorageArea: any = null;
-let extensionOnChanged: any = null;
+type StorageArea = chrome.storage.StorageArea;
+
+let extensionAPI: typeof chrome | null = null;
+let syncStorage: StorageArea | null = null;
+let localStorageArea: StorageArea | null = null;
+let extensionOnChanged: chrome.storage.StorageChangedEvent | null = null;
 
 let broadcastChannel: BroadcastChannel | null = null;
 
@@ -36,7 +38,7 @@ assignGlobalAPIs();
 
 const hasExtensionStorage = (): boolean => !!(syncStorage || localStorageArea);
 
-const invokeGet = async (store: any, key: string): Promise<PartialSettings | undefined> => {
+const invokeGet = async (store: StorageArea | null, key: string): Promise<PartialSettings | undefined> => {
   if (!store) return undefined;
   try {
     const result = store.get(key);
@@ -59,7 +61,7 @@ const invokeGet = async (store: any, key: string): Promise<PartialSettings | und
   }
 };
 
-const invokeSet = async (store: any, key: string, value: Settings): Promise<void> => {
+const invokeSet = async (store: StorageArea | null, key: string, value: Settings | PartialSettings): Promise<void> => {
   if (!store) return;
   const payload = { [key]: value };
   const result = store.set(payload);
@@ -79,7 +81,7 @@ const invokeSet = async (store: any, key: string, value: Settings): Promise<void
   });
 };
 
-const invokeRemove = async (store: any, key: string): Promise<void> => {
+const invokeRemove = async (store: StorageArea | null, key: string): Promise<void> => {
   if (!store?.remove) return;
   const result = store.remove(key);
   if (result && typeof result.then === "function") {
@@ -215,9 +217,27 @@ export const loadSettings = async (): Promise<Settings> => {
       const combined = syncSettings ? { ...syncSettings } : { ...localSettings! };
 
       // If we have Sync settings, overlay imageData from Local (since Sync omits it)
-      if (syncSettings && localSettings?.background?.imageData) {
-        if (!combined.background) combined.background = {} as any;
-        combined.background!.imageData = localSettings.background.imageData;
+      if (syncSettings && localSettings?.background) {
+        const bg = {
+          ...localSettings.background,
+          ...(syncSettings.background || {}),
+        };
+        if (localSettings.background.imageData !== undefined) {
+          bg.imageData = localSettings.background.imageData;
+        }
+        combined.background = bg;
+      }
+
+      // If we have Sync settings, overlay notes content from Local (since Sync omits it)
+      if (syncSettings && localSettings?.widgets?.notes?.content) {
+        if (!combined.widgets) {
+          combined.widgets = {};
+        }
+        const widgets = combined.widgets;
+        widgets.notes = {
+          enabled: localSettings.widgets.notes.enabled ?? false,
+          content: localSettings.widgets.notes.content,
+        };
       }
 
       const merged = mergeWithDefaults(combined);
@@ -312,17 +332,26 @@ const combineWithCurrent = (current: Settings, partial: PartialSettings): Partia
 const persist = async (settings: Settings): Promise<void> => {
   let persisted = false;
 
-  // Extract imageData to store separately - it's too large for sync storage
+  // Extract imageData and notes content to store separately - they are too large for sync storage
   const { imageData, ...backgroundWithoutImage } = settings.background;
-  const settingsWithoutImageData: Partial<Settings> = {
+  const settingsWithoutSyncBlobs: PartialSettings = {
     ...settings,
     background: backgroundWithoutImage,
   };
+  if (settings.widgets) {
+    settingsWithoutSyncBlobs.widgets = {
+      ...settings.widgets,
+      notes: {
+        ...settings.widgets.notes,
+        content: "",
+      },
+    };
+  }
 
-  // Try sync storage first - WITHOUT imageData (avoids quota errors)
+  // Try sync storage first - WITHOUT imageData/notes content (avoids quota errors)
   if (syncStorage) {
     try {
-      await invokeSet(syncStorage, SETTINGS_STORAGE_KEY, settingsWithoutImageData as Settings);
+      await invokeSet(syncStorage, SETTINGS_STORAGE_KEY, settingsWithoutSyncBlobs);
       persisted = true;
     } catch (error) {
       console.warn("Failed to persist settings to sync storage", error);
@@ -334,7 +363,7 @@ const persist = async (settings: Settings): Promise<void> => {
     }
   }
 
-  // Store FULL settings (with imageData) to local storage
+  // Store FULL settings (with imageData + notes content) to local storage
   if (localStorageArea) {
     try {
       await invokeSet(localStorageArea, SETTINGS_STORAGE_KEY, settings);
@@ -382,7 +411,7 @@ export const subscribeToSettings = (listener: Listener): (() => void) => {
   };
 };
 
-export const __resetStorageModuleForTests = (api?: any): void => {
+export const __resetStorageModuleForTests = (api?: typeof chrome): void => {
   listeners.clear();
   cachedSettings = null;
 
