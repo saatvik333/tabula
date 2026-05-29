@@ -36,7 +36,7 @@ const manifestOut = join(distDir, "manifest.json");
 const manifestRaw = await readFile(manifestPath, "utf8");
 const manifest = JSON.parse(manifestRaw);
 
-if (process.env.CI || process.env.RELEASE_BUILD) {
+if (process.env.RELEASE_BUILD) {
   manifest.browser_specific_settings = manifest.browser_specific_settings || {};
   manifest.browser_specific_settings.gecko = manifest.browser_specific_settings.gecko || {};
   manifest.browser_specific_settings.gecko.data_collection = {

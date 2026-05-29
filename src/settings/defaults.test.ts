@@ -71,18 +71,18 @@ describe("mergeWithDefaults", () => {
   it("accepts valid background uploads and rejects invalid data", () => {
     const valid = mergeWithDefaults({
       background: {
-        type: "image",
+        type: "image-data",
         imageUrl: "https://example.com/wallpaper.jpg",
         imageData: "data:image/png;base64,Zm9v",
       },
     });
 
-    expect(valid.background.type).toBe("image");
+    expect(valid.background.type).toBe("image-data");
     expect(valid.background.imageData).toBe("data:image/png;base64,Zm9v");
 
     const invalid = mergeWithDefaults({
       background: {
-        type: "image",
+        type: "image-data",
         imageData: "not-a-data-url",
       },
     });

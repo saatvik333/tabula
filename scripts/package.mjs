@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { createWriteStream } from 'node:fs';
-import { mkdir, rm, stat } from 'node:fs/promises';
+import { copyFile, mkdir, rm, stat } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import archiver from 'archiver';
@@ -40,7 +40,7 @@ async function zipDir(sourceDir, outPath) {
   const firefoxZip = join(projectRoot, `tabula-${version}-firefox.zip`);
 
   await zipDir(distDir, chromeZip);
-  await zipDir(distDir, firefoxZip);
+  await copyFile(chromeZip, firefoxZip);
 
   console.log('Packages created:', chromeZip, firefoxZip);
 })();

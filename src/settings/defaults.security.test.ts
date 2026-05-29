@@ -25,7 +25,7 @@ describe("Security validations", () => {
       const settings = {
         ...DEFAULT_SETTINGS,
         background: {
-          type: "image" as const,
+          type: "image-url" as const,
           imageUrl: 'https://example.com/image.jpg?foo=\\"bar\\"',
           imageData: "",
           blur: 10,
@@ -51,7 +51,7 @@ describe("Security validations", () => {
         const settings = {
           ...DEFAULT_SETTINGS,
           background: {
-            type: "image" as const,
+            type: "image-url" as const,
             imageUrl: url,
             imageData: "",
             blur: 10,
@@ -72,7 +72,7 @@ describe("Security validations", () => {
       const settingsValid = {
         ...DEFAULT_SETTINGS,
         background: {
-          type: "image" as const,
+          type: "image-data" as const,
           imageUrl: "",
           imageData: validBase64,
           blur: 10,
@@ -85,7 +85,7 @@ describe("Security validations", () => {
       const settingsInvalid = {
         ...DEFAULT_SETTINGS,
         background: {
-          type: "image" as const,
+          type: "image-data" as const,
           imageUrl: "",
           imageData: invalidBase64,
           blur: 10,

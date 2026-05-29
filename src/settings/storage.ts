@@ -1,6 +1,8 @@
 import { DEFAULT_SETTINGS, mergeWithDefaults } from "$src/settings/defaults";
 import type { PartialSettings, Settings } from "$src/settings/schema";
 import { SETTINGS_STORAGE_KEY } from "$src/settings/schema";
+import { cloneSettings } from "$src/core/clone";
+export { cloneSettings };
 
 type Listener = (settings: Settings) => void;
 
@@ -8,12 +10,7 @@ const listeners = new Set<Listener>();
 
 let cachedSettings: Settings | null = null;
 
-export const cloneSettings = (settings: Settings): Settings => {
-  if (typeof structuredClone === "function") {
-    return structuredClone(settings);
-  }
-  return JSON.parse(JSON.stringify(settings)) as Settings;
-};
+
 
 type StorageArea = chrome.storage.StorageArea;
 
@@ -129,15 +126,24 @@ const writeToLocalStorage = (settings: Settings): void => {
   }
 };
 
+const getBroadcastChannel = (): BroadcastChannel | null => {
+  if (!broadcastChannel && typeof BroadcastChannel === "function") {
+    try {
+      broadcastChannel = new BroadcastChannel("tabula:settings");
+    } catch (error) {
+      console.warn("Failed to initialize BroadcastChannel", error);
+    }
+  }
+  return broadcastChannel;
+};
+
 const notify = (settings: Settings): void => {
   const snapshot = cloneSettings(settings);
   cachedSettings = snapshot;
   listeners.forEach((listener) => listener(cloneSettings(snapshot)));
   try {
-    if (!broadcastChannel && typeof BroadcastChannel === "function") {
-      broadcastChannel = new BroadcastChannel("tabula:settings");
-    }
-    broadcastChannel?.postMessage(snapshot);
+    const channel = getBroadcastChannel();
+    channel?.postMessage(snapshot);
   } catch (error) {
     console.warn("Failed to broadcast settings", error);
   }
@@ -165,13 +171,12 @@ let broadcastListenerInitialized = false;
 
 const ensureBroadcastListener = (): void => {
   if (broadcastListenerInitialized) return;
-  if (typeof BroadcastChannel !== "function") return;
+  
+  const channel = getBroadcastChannel();
+  if (!channel) return;
 
   try {
-    if (!broadcastChannel) {
-      broadcastChannel = new BroadcastChannel("tabula:settings");
-    }
-    broadcastChannel.onmessage = (event) => {
+    channel.onmessage = (event) => {
       if (!event?.data) return;
       const merged = mergeWithDefaults(event.data as PartialSettings);
       // Update local cache and notify all listeners without re-broadcasting to avoid loops

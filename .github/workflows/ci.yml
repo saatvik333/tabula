@@ -16,10 +16,10 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@4bc047ad259df6fc24a6c9e0f6d3b3b1da7e0c50 # v2.0.2
         with:
-          bun-version: latest
+          bun-version: 1.3.11
 
       - name: Install
-        run: bun install
+        run: bun install --frozen-lockfile
 
       - name: Type check
         run: bun run type-check
@@ -28,7 +28,27 @@ jobs:
         run: bun test
 
       - name: Build
+        env:
+          VITE_WEATHER_API_KEY: dummy_ci_key
         run: bun run build
+
+      - name: Verify package version parity
+        run: |
+          manifest_ver=$(jq -r .version manifest.json)
+          package_ver=$(jq -r .version package.json)
+          if [ "$manifest_ver" != "$package_ver" ]; then
+            echo "Error: Version mismatch! manifest.json is $manifest_ver, package.json is $package_ver"
+            exit 1
+          fi
+
+      - name: Verify bundle size budget
+        run: |
+          JS_BYTES=$(stat -c%s dist/assets/newtab.js)
+          echo "Main bundle size: $JS_BYTES bytes"
+          if [ "$JS_BYTES" -gt 80000 ]; then
+            echo "Error: Main bundle size exceeds budget of 80KB ($JS_BYTES bytes)"
+            exit 1
+          fi
 
       - name: Lint (Firefox)
         run: bun run lint:firefox

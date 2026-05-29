@@ -160,7 +160,7 @@ CI will:
 
 - Build and test
 - Package for both browsers
-- Publish to Chrome Web Store
+- Publish to Chrome Web Store (currently commented out by default)
 - Publish to Firefox AMO
 - Attach zips to GitHub Release
 

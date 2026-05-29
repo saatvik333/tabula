@@ -195,9 +195,10 @@ export const createPinnedTabsController = (
       iconImage.alt = "";
       iconImage.loading = "lazy";
       iconImage.addEventListener("error", () => {
-        clearIconAt(index);
-        updatePreview();
-        options.setStatus("Icon could not be loaded and was removed", "error");
+        const current = tabs[index];
+        if (current) {
+          applyFallback(resolveLabel(current));
+        }
       });
       iconWrapper.append(iconImage);
     };

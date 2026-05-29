@@ -10,7 +10,7 @@
   <a href="https://addons.mozilla.org/en-US/firefox/addon/saatvik333-tabula/"><img src="https://img.shields.io/badge/Firefox-Add--ons-FF7139?style=flat-square&logo=firefox-browser&logoColor=white" alt="Get it on Firefox Add-ons"></a>
   <a href="https://github.com/saatvik333/tabula/releases"><img src="https://img.shields.io/github/v/release/saatvik333/tabula?style=flat-square&color=blue" alt="Release"></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/saatvik333/tabula?style=flat-square" alt="License"></a>
-  <a href="https://github.com/saatvik333/tabula/actions"><img src="https://img.shields.io/github/actions/workflow/status/saatvik333/tabula/release.yml?style=flat-square" alt="CI"></a>
+  <a href="https://github.com/saatvik333/tabula/actions"><img src="https://img.shields.io/github/actions/workflow/status/saatvik333/tabula/ci.yml?style=flat-square" alt="CI"></a>
   <a href="https://github.com/sponsors/saatvik333"><img src="https://img.shields.io/badge/sponsor-💖-pink?style=flat-square" alt="Sponsor"></a>
 </p>
 
@@ -38,7 +38,7 @@ A customizable, minimalist New Tab extension for **Chrome**, **Edge**, **Brave**
 - **Tasks** — Simple todo list that persists across tabs
 - **Weather** — Current conditions at a glance
 - **Quick Notes** — Persistent scratchpad for quick thoughts
-- **Quote of the Day** — Daily motivational quotes from ZenQuotes API
+- **Quote of the Day** — Daily motivational quotes from QuoteSlate API
 
 ### Appearance
 
@@ -80,14 +80,20 @@ bun run build        # Production build
 ## 📁 Project Structure
 
 ```
-src/
-├── app/        # New Tab app composition
-├── clock/      # Clock display
-├── core/       # Utilities (time, DOM, ticker)
-├── pages/      # Page entrypoints
-├── settings/   # Schema, defaults, storage
-├── widgets/    # Pomodoro, tasks, weather, notes, quotes
-└── assets/     # Icons, styles
+├── .github/workflows/ # GitHub Actions CI/CD workflows
+├── docs/             # Store listings and compliance guides
+├── scripts/          # Build, clean, and packaging scripts
+├── src/
+│   ├── app/          # New Tab app composition
+│   ├── clock/        # Clock display
+│   ├── core/         # Utilities (time, DOM, ticker, clone, limits, ID)
+│   ├── pages/        # Page entrypoints (newtab, options)
+│   ├── settings/     # Schema, defaults, storage, apply
+│   ├── widgets/      # Pomodoro, tasks, weather, notes, quotes
+│   └── assets/       # Icons, styles
+├── bun-test.setup.ts # Bun testing environment setup
+├── vitest-shim.ts    # Vitest execution shims
+└── vitest.config.ts  # Vitest config file
 ```
 
 ## 🎨 Palettes

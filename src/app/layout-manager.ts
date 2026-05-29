@@ -30,6 +30,8 @@ export class WidgetLayoutManager {
     private readonly updateSettingsState: (settings: Settings) => void,
   ) {}
 
+  // 2. Drag Move gesture: Updates coordinates in real time based on mouse/pointer delta
+  //    relative to the initial clicked location, triggering visibility changes and preview offsets.
   private readonly handlePointerMove = (event: PointerEvent): void => {
     if (!this.activeDrag || event.pointerId !== this.activeDrag.pointerId) {
       return;
@@ -42,6 +44,8 @@ export class WidgetLayoutManager {
     this.applyWidgetPosition(this.activeDrag.id, this.activeDrag.element, nextX, nextY, { updateLayout: true });
   };
 
+  // 3. Drag End gesture: Releases event capture, removes pointer listeners from global window,
+  //    aligns elements to layout grid limits/snaps, and persists final coordinates to storage.
   private readonly handlePointerUp = (event: PointerEvent): void => {
     if (!this.activeDrag || event.pointerId !== this.activeDrag.pointerId) {
       return;
@@ -69,6 +73,8 @@ export class WidgetLayoutManager {
     this.reapplyWidgetLayout();
   };
 
+  // 1. Drag Begin gesture: Sets up active drag pointers, captures element click position coordinates,
+  //    attaches window listeners for movements/ends, and initiates is-dragging visual cues.
   beginWidgetDrag(id: WidgetId, element: HTMLElement, event: PointerEvent): void {
     if (event.pointerType === "mouse" && event.button !== 0) {
       return;

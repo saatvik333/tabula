@@ -21,13 +21,16 @@ type PomodoroBroadcastMessage = {
   source: string;
 };
 
-const MODE_LABELS: Record<PomodoroMode, string> = {
+const MODE_LABELS = {
   focus: "Focus",
   "short-break": "Short break",
   "long-break": "Long break",
-};
+} as const satisfies Record<PomodoroMode, string>;
 
 const requestNotificationPermission = async (): Promise<boolean> => {
+  if (typeof chrome !== "undefined" && chrome.notifications) {
+    return true;
+  }
   if (typeof Notification === "undefined") {
     return false;
   }
@@ -55,13 +58,28 @@ const cleanText = (text: string, maxLen: number): string => {
 };
 
 const sendNotification = (rawTitle: string, rawBody: string): void => {
-  if (typeof Notification === "undefined" || Notification.permission !== "granted") {
-    return;
-  }
-
   const cleanTitle = cleanText(rawTitle, 80);
   const title = cleanTitle ? `Tabula • ${cleanTitle}` : "Tabula";
   const body = cleanText(rawBody, 240);
+
+  if (typeof chrome !== "undefined" && chrome.notifications) {
+    try {
+      chrome.notifications.create("pomodoro-timer", {
+        type: "basic",
+        iconUrl: "icons/icon128.png",
+        title,
+        message: body,
+        priority: 0,
+      });
+      return;
+    } catch (error) {
+      console.warn("Failed to send chrome notification", error);
+    }
+  }
+
+  if (typeof Notification === "undefined" || Notification.permission !== "granted") {
+    return;
+  }
 
   try {
     new Notification(title, {
@@ -504,6 +522,8 @@ class PomodoroWidget {
         title = notifications.longBreakTitle;
         body = notifications.longBreakBody;
         break;
+      default:
+        return;
     }
 
     sendNotification(title, body);

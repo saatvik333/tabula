@@ -14,7 +14,7 @@
     "test:coverage": "vitest --run --coverage",
     "type-check": "tsc --noEmit",
     "lint:firefox": "web-ext lint -s dist",
-    "pack:chrome": "bun scripts/package.mjs",
+    "pack:zips": "bun scripts/package.mjs",
     "sign:firefox": "web-ext sign -s dist -a web-ext-artifacts",
     "publish:firefox": "web-ext sign -s dist -a web-ext-artifacts --channel=listed --amo-metadata=.amo-metadata.json --use-submission-api",
     "version": "bun scripts/version.mjs",
@@ -22,6 +22,10 @@
   },
   "author": "Saatvik Sharma",
   "license": "MIT",
+  "engines": {
+    "node": ">=20",
+    "bun": ">=1.1.0"
+  },
   "devDependencies": {
     "@types/chrome": "^0.0.266",
     "@types/node": "^24.7.2",
@@ -34,7 +38,7 @@
     "vite": "^7.1.7",
     "vitest": "^3.2.4",
     "web-ext": "^7.11.0",
-    "bun-types": "latest"
+    "bun-types": "^1.1.29"
   },
   "webExt": {
     "sourceDir": "dist",

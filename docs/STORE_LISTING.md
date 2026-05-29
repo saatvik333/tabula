@@ -13,7 +13,7 @@ Highlights:
 - Minimalist design; no tracking, works offline
 - Clock: 12/24-hour, optional seconds, adjustable size and styling
 - Tagline: show/hide and customize your text
-- Widgets: tasks, pomodoro, and weather — drag to position
+- Widgets: tasks, pomodoro, weather, notes, and quotes — drag to position
 - Search box and pinned tabs for quick access
 - Themes, palettes, and background images
 

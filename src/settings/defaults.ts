@@ -19,6 +19,12 @@ import type {
 } from "$src/settings/schema";
 import { applyPresetToSettings, isPresetName } from "$src/settings/presets";
 import { cloneAnchor, sanitizeAnchor } from "$src/settings/anchor";
+import { generateId } from "$src/core/id";
+import {
+  MAX_TASK_ITEMS,
+  MAX_TASK_LENGTH,
+  MAX_PINNED_TAB_TITLE_LENGTH,
+} from "$src/core/limits";
 
 const clamp = (value: number, fallback: number, min: number, max: number): number =>
   Number.isFinite(value) ? Math.min(max, Math.max(min, value)) : fallback;
@@ -35,11 +41,14 @@ const coerceThemeMode = (value: unknown): ThemeMode => {
   return "system";
 };
 
-const coerceBackgroundType = (value: unknown): BackgroundType => {
-  if (value === "image") {
+const coerceBackgroundType = (value: unknown, hasImageData: boolean, fallback: BackgroundType): BackgroundType => {
+  if (value === "color" || value === "image-url" || value === "image-data") {
     return value;
   }
-  return "image";
+  if (value === "image") {
+    return hasImageData ? "image-data" : "image-url";
+  }
+  return fallback;
 };
 
 const coerceSearchEngine = (value: unknown): SearchEngine => {
@@ -159,7 +168,7 @@ const sanitizePinnedTab = (value: unknown): PinnedTab | null => {
   if (!url || !isValidUrl(url)) {
     return null;
   }
-  let title = sanitizeString(candidate.title, "");
+  let title = sanitizeString(candidate.title, "").slice(0, MAX_PINNED_TAB_TITLE_LENGTH);
   if (!title) {
     try {
       const parsed = new URL(url);
@@ -195,8 +204,7 @@ const sanitizePinnedTabs = (value: unknown, fallback: PinnedTab[]): PinnedTab[] 
   return result;
 };
 
-const MAX_TASK_ITEMS = 60;
-const MAX_TASK_LENGTH = 120;
+
 
 const sanitizeTaskItem = (value: unknown): TaskItem | null => {
   if (!value || typeof value !== "object") return null;
@@ -207,7 +215,7 @@ const sanitizeTaskItem = (value: unknown): TaskItem | null => {
   }
   const truncated = text.slice(0, MAX_TASK_LENGTH);
   const idCandidate = typeof candidate.id === "string" && candidate.id.trim().length > 0 ? candidate.id.trim() : null;
-  const id = idCandidate ?? `task-${Math.random().toString(36).slice(2, 10)}`;
+  const id = idCandidate ?? generateId("task");
   return { id, text: truncated };
 };
 
@@ -331,7 +339,7 @@ export const DEFAULT_PALETTE_DARK: Palette = MATERIAL_DARK;
 const BASE_DEFAULT_SETTINGS: Settings = {
   themeMode: "system",
   background: {
-    type: "image",
+    type: "color",
     color: "#111111",
     imageUrl: "",
     blur: 12,
@@ -427,8 +435,9 @@ const mergeBackground = (
       ? value.imageData.trim()
       : fallback.imageData;
 
+  const hasImageData = typeof sanitizedImageData === "string" && sanitizedImageData.trim().length > 0;
   const background: Settings["background"] = {
-    type: coerceBackgroundType(value?.type),
+    type: coerceBackgroundType(value?.type, hasImageData, fallback.type),
     color: isHexColor(value?.color) ? value!.color : fallback.color,
     imageUrl: sanitizeString(value?.imageUrl, ""),
     blur: clamp(Number(value?.blur), fallback.blur, 0, 40),
@@ -454,7 +463,7 @@ const mergeSearch = (
 export const mergeWithDefaults = (partial: PartialSettings | undefined): Settings => {
   const source = (partial ?? {}) as Partial<Settings>;
 
-  const presetProvided = partial !== undefined && Object.prototype.hasOwnProperty.call(partial as object, "preset");
+  const presetProvided = partial !== undefined && Object.hasOwn(partial as object, "preset");
 
   const themeMode = coerceThemeMode(source.themeMode);
   const background = mergeBackground(source.background, DEFAULT_SETTINGS.background);
@@ -482,6 +491,8 @@ export const mergeWithDefaults = (partial: PartialSettings | undefined): Setting
     pinnedTabsShowIcons: sanitizeBoolean(source.pinnedTabsShowIcons, DEFAULT_SETTINGS.pinnedTabsShowIcons),
   };
 
+  // 4-Branch merge logic decision tree:
+  // 1. If no partial settings are provided at all, apply and return the default preset
   if (!presetProvided && typeof partial === "undefined") {
     const applied = applyPresetToSettings(DEFAULT_SETTINGS.preset as Exclude<PresetName, "custom">, baseSettings);
     return {
@@ -493,6 +504,7 @@ export const mergeWithDefaults = (partial: PartialSettings | undefined): Setting
     };
   }
 
+  // 2. If a specific preset name is provided (and it is not 'custom'), apply that preset over custom properties
   if (presetProvided && initialPreset !== "custom") {
     const applied = applyPresetToSettings(initialPreset as Exclude<PresetName, "custom">, baseSettings);
     return {
@@ -504,6 +516,7 @@ export const mergeWithDefaults = (partial: PartialSettings | undefined): Setting
     };
   }
 
+  // 3. If settings are provided but without a preset field, detect modifications to check if we should fall back to custom
   if (!presetProvided) {
     const shouldMarkCustom = Boolean(source.palettes) || Boolean(source.background);
     return {
@@ -512,5 +525,6 @@ export const mergeWithDefaults = (partial: PartialSettings | undefined): Setting
     };
   }
 
+  // 4. If the preset is explicitly specified as 'custom', return base settings directly
   return baseSettings;
 };

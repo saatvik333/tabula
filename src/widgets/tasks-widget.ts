@@ -1,15 +1,10 @@
 import { createElement } from "$src/core/dom";
 import type { TaskItem, Settings } from "$src/settings/schema";
 import type { Widget } from "./widget";
+import { generateId } from "$src/core/id";
+import { MAX_TASK_ITEMS } from "$src/core/limits";
 
-const MAX_TASK_ITEMS = 60;
-
-const generateTaskId = (): string => {
-  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
-    return crypto.randomUUID();
-  }
-  return `task-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-};
+const generateTaskId = (): string => generateId("task");
 
 type TasksSettings = Settings["widgets"]["tasks"];
 

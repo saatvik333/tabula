@@ -14,11 +14,9 @@ import { applyPresetToSettings, listAvailablePresets } from "$src/settings/prese
 import { loadSettings, saveSettings } from "$src/settings/storage";
 import { getSystemPrefersDark, resolveTheme } from "$src/settings/theme";
 import { createPinnedTabsController } from "./pinned-tabs";
-
-const clone = <T>(value: T): T =>
-  typeof structuredClone === "function"
-    ? structuredClone(value)
-    : (JSON.parse(JSON.stringify(value)) as T);
+import { clone } from "$src/core/clone";
+import { generateId } from "$src/core/id";
+import { MAX_PINNED_TABS, MAX_IMAGE_BYTES } from "$src/core/limits";
 
 const getElement = <T extends HTMLElement>(id: string): T => {
   const element = document.getElementById(id);
@@ -111,8 +109,12 @@ let previewHandle = 0;
 let isApplyingPreset = false;
 let presetButtons: HTMLButtonElement[] = [];
 
-const MAX_PINNED_TABS = 12;
-const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
+const markCustom = (): void => {
+  if (!isApplyingPreset) {
+    state.preset = "custom";
+    markPresetActive(state.preset);
+  }
+};
 
 type UploadMeta = {
   name: string;
@@ -130,6 +132,14 @@ const formatBytes = (size: number): string => {
 /**
  * Compresses an image to fit within target bytes by aggressively resizing.
  * Targets 2MB to leave headroom for Chrome storage limits.
+ *
+ * Magic Thresholds & Yielding Details:
+ * 1. 20MB Initial Cap: Bails early if initial size is > 20MB to prevent out-of-memory browser crashes.
+ * 2. 2MB Target: Caps compression destination size to 2MB, leaving plenty of headroom below chrome.storage.local limits.
+ * 3. Scaling Formula: Uses square root of (target / initial) size ratio as a heuristic scaling factor.
+ * 4. Yielding: Invokes setTimeout(..., 0) during decompression iterations to yield control back to the UI thread,
+ *    preventing the browser page from freezing.
+ * 5. Canvas Recycling: Creates a single canvas and context reuse across attempts in the closure.
  */
 const compressImage = async (dataUrl: string, maxBytes: number): Promise<string> => {
   const initialBytes = estimateDataUrlBytes(dataUrl);
@@ -211,13 +221,6 @@ const estimateDataUrlBytes = (dataUrl: string): number => {
   return Math.floor((base64.length * 3) / 4);
 };
 
-const generatePinnedId = (): string => {
-  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
-    return crypto.randomUUID();
-  }
-  return `pin-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
-};
-
 const isValidPinnedUrl = (value: string): boolean => {
   if (!value) return false;
   try {
@@ -250,7 +253,7 @@ const pinnedTabsController = createPinnedTabsController({
     submit: pinnedAddButton,
   },
   maxItems: MAX_PINNED_TABS,
-  generateId: generatePinnedId,
+  generateId: () => generateId("pin"),
   validateUrl: isValidPinnedUrl,
   onChange: (tabs) => {
     state.pinnedTabs = tabs;
@@ -409,7 +412,7 @@ const setClockFormat = (format: TimeFormat): void => {
 };
 
 const renderPresetChips = () => {
-  presetContainer.innerHTML = "";
+  presetContainer.replaceChildren();
   const fragment = document.createDocumentFragment();
   presetButtons = listAvailablePresets().map((preset) => {
     const button = document.createElement("button");
@@ -517,10 +520,7 @@ const syncForm = (settings: Settings) => {
 
 const handleThemeModeChange = () => {
   state.themeMode = themeModeSelect.value as ThemeMode;
-  if (!isApplyingPreset) {
-    state.preset = "custom";
-    markPresetActive(state.preset);
-  }
+  markCustom();
   schedule(() => {
     applyPreview();
     setStatus("Preview updated");
@@ -578,16 +578,19 @@ showSecondsInput.addEventListener("change", () => {
 
 backgroundImageInput.addEventListener("input", () => {
   state.background.imageUrl = backgroundImageInput.value.trim();
-  if (!isApplyingPreset) {
-    state.preset = "custom";
-    markPresetActive(state.preset);
-  }
+  markCustom();
   schedule(applyPreview);
 });
 
 backgroundImageUpload.addEventListener("change", async () => {
   const [file] = backgroundImageUpload.files ?? [];
   if (!file) return;
+
+  if (file.size > 20 * 1024 * 1024) {
+    backgroundImageUpload.value = "";
+    setStatus("Image file is too large (max 20MB).", "error");
+    return;
+  }
 
   const reader = new FileReader();
   reader.addEventListener("load", async () => {
@@ -615,13 +618,10 @@ backgroundImageUpload.addEventListener("change", async () => {
     }
 
     state.background.imageData = imageData;
-    state.background.type = "image";
+    state.background.type = "image-data";
     uploadedImageMeta = { name: file.name, size: estimateDataUrlBytes(imageData) };
     updateBackgroundImageStatus();
-    if (!isApplyingPreset) {
-      state.preset = "custom";
-      markPresetActive(state.preset);
-    }
+    markCustom();
     schedule(applyPreview);
     if (initialSize <= MAX_IMAGE_BYTES) {
       setStatus(`Custom background image "${file.name}" added`, "success");
@@ -637,13 +637,11 @@ backgroundImageUpload.addEventListener("change", async () => {
 
 backgroundImageClear.addEventListener("click", () => {
   delete state.background.imageData;
+  state.background.type = "color";
   uploadedImageMeta = null;
   updateBackgroundImageStatus();
   backgroundImageUpload.value = "";
-  if (!isApplyingPreset) {
-    state.preset = "custom";
-    markPresetActive(state.preset);
-  }
+  markCustom();
   schedule(applyPreview);
   setStatus("Removed uploaded image", "success");
 });
@@ -651,50 +649,35 @@ backgroundImageClear.addEventListener("click", () => {
 backgroundBlurRange.addEventListener("input", () => {
   state.background.blur = Number(backgroundBlurRange.value);
   backgroundBlurValue.value = `${Math.round(state.background.blur)}px`;
-  if (!isApplyingPreset) {
-    state.preset = "custom";
-    markPresetActive(state.preset);
-  }
+  markCustom();
   schedule(applyPreview);
 });
 
 clockScaleRange.addEventListener("input", () => {
   state.clock.scale = Number(clockScaleRange.value);
   clockScaleValue.value = `${state.clock.scale.toFixed(2)}x`;
-  if (!isApplyingPreset) {
-    state.preset = "custom";
-    markPresetActive(state.preset);
-  }
+  markCustom();
   schedule(applyPreview);
 });
 
 rimWidthRange.addEventListener("input", () => {
   state.clock.rimWidth = Number(rimWidthRange.value);
   rimWidthValue.value = `${state.clock.rimWidth.toFixed(1)}px`;
-  if (!isApplyingPreset) {
-    state.preset = "custom";
-    markPresetActive(state.preset);
-  }
+  markCustom();
   schedule(applyPreview);
 });
 
 handWidthRange.addEventListener("input", () => {
   state.clock.handWidth = Number(handWidthRange.value);
   handWidthValue.value = `${state.clock.handWidth.toFixed(1)}px`;
-  if (!isApplyingPreset) {
-    state.preset = "custom";
-    markPresetActive(state.preset);
-  }
+  markCustom();
   schedule(applyPreview);
 });
 
 dotSizeRange.addEventListener("input", () => {
   state.clock.dotSize = Number(dotSizeRange.value);
   dotSizeValue.value = `${Math.round(state.clock.dotSize)}px`;
-  if (!isApplyingPreset) {
-    state.preset = "custom";
-    markPresetActive(state.preset);
-  }
+  markCustom();
   schedule(applyPreview);
 });
 
@@ -704,10 +687,7 @@ const handleColorInput = (
   getter: () => string,
 ) => {
   handlePaletteChange(theme, key, getter());
-  if (!isApplyingPreset) {
-    state.preset = "custom";
-    markPresetActive(state.preset);
-  }
+  markCustom();
 };
 
 lightBackgroundInput.addEventListener("input", () => handleColorInput("light", "background", () => lightBackgroundInput.value));

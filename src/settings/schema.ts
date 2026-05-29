@@ -1,6 +1,6 @@
 export type ThemeMode = "system" | "light" | "dark";
 
-export type BackgroundType = "image";
+export type BackgroundType = "color" | "image-url" | "image-data";
 
 export type SearchEngine = "google" | "bing" | "duckduckgo" | "brave";
 
