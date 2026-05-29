@@ -1,6 +1,6 @@
 {
   "name": "tabula-extension",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "description": "Tabula – a customizable new tab extension. Your space, no noise.",
   "type": "module",
   "scripts": {
